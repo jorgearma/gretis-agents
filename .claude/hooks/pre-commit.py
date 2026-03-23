@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 
@@ -33,6 +34,7 @@ REQUIRED_PATHS = [
     ROOT / ".claude" / "schemas" / "operator-approval.json",
     ROOT / ".claude" / "schemas" / "result.json",
     ROOT / ".claude" / "schemas" / "review.json",
+    ROOT / ".claude" / "runtime" / "execution-brief.json",
     ROOT / ".claude" / "runtime" / "execution-brief.md",
     ROOT / ".claude" / "runtime" / "plan.json",
     ROOT / ".claude" / "runtime" / "execution-dispatch.json",
@@ -43,6 +45,32 @@ REQUIRED_PATHS = [
     ROOT / ".claude" / "commands" / "review-change.md",
 ]
 
+JSON_FILES = [
+    ROOT / ".claude" / "plugin.json",
+    ROOT / ".claude" / "schemas" / "reader-context.json",
+    ROOT / ".claude" / "schemas" / "plan.json",
+    ROOT / ".claude" / "schemas" / "execution-brief.json",
+    ROOT / ".claude" / "schemas" / "execution-dispatch.json",
+    ROOT / ".claude" / "schemas" / "operator-approval.json",
+    ROOT / ".claude" / "schemas" / "result.json",
+    ROOT / ".claude" / "schemas" / "review.json",
+    ROOT / ".claude" / "runtime" / "execution-brief.json",
+    ROOT / ".claude" / "runtime" / "plan.json",
+    ROOT / ".claude" / "runtime" / "execution-dispatch.json",
+    ROOT / ".claude" / "runtime" / "operator-approval.json",
+]
+
+
+def validate_json_file(path: Path) -> str | None:
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            json.load(fh)
+    except json.JSONDecodeError as exc:
+        return f"{path.relative_to(ROOT)}: invalid JSON at line {exc.lineno} column {exc.colno}"
+    except OSError as exc:
+        return f"{path.relative_to(ROOT)}: cannot be read ({exc})"
+    return None
+
 
 def main() -> int:
     missing = [str(path.relative_to(ROOT)) for path in REQUIRED_PATHS if not path.exists()]
@@ -50,6 +78,13 @@ def main() -> int:
         print("Missing required Claude plugin files:")
         for path in missing:
             print(f"- {path}")
+        return 1
+
+    invalid_json = [error for path in JSON_FILES if (error := validate_json_file(path))]
+    if invalid_json:
+        print("Invalid JSON files detected:")
+        for error in invalid_json:
+            print(f"- {error}")
         return 1
 
     print("Claude plugin structure ok")

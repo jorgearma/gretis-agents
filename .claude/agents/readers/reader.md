@@ -19,6 +19,7 @@ Leer la peticion del usuario, decidir que readers son necesarios y devolver un J
 - clasificar la peticion en una o varias rutas: `project-reader`, `db-reader`, `query-reader`, `ui-reader`
 - activar solo los readers necesarios segun la peticion
 - decidir si hace falta leer mas de un mapa antes de delegar al resto del flujo
+- elegir un `primary_reader` estable incluso cuando la peticion mezcle dominios
 - devolver archivos concretos para abrir y revisar
 - entregar una decision clara para `orchestrator` y `planner`
 
@@ -37,6 +38,11 @@ Leer la peticion del usuario, decidir que readers son necesarios y devolver un J
 - usa `query-reader` para consultas, filtros, joins, rendimiento y acceso a datos
 - usa `ui-reader` para pantallas, componentes, estados visuales y experiencia de usuario
 - si la peticion mezcla dominios, empieza por el mapa dominante y menciona los mapas adicionales necesarios
+- para elegir `primary_reader`, usa el dominio donde probablemente ocurrira el primer cambio real
+- si la peticion es visual pero necesita datos de apoyo, usa `ui-reader` como primario y añade `query-reader` o `db-reader` como secundarios
+- si la peticion nace en una query, filtro o rendimiento que impacta en pantalla, usa `query-reader` como primario
+- si la peticion exige cambiar esquema o persistencia para soportar otra capa, usa `db-reader` como primario
+- si la peticion es ambigua, transversal o de ubicacion de codigo, usa `project-reader` como primario
 - no actives readers innecesarios
 - si un reader no aporta contexto real, no lo incluyas en `selected_readers`
 - si el contexto es insuficiente, indica que mapa necesita ser enriquecido
@@ -47,6 +53,9 @@ Leer la peticion del usuario, decidir que readers son necesarios y devolver un J
 - prioriza señales fuertes del mapa y de la peticion del usuario
 - si la peticion es simple, manten la seleccion de readers minima
 - si la peticion afecta frontend y backend, deja esa relacion clara para el `planner`
+- devuelve solo JSON valido, sin markdown, sin comentarios y sin texto antes o despues
+- el JSON final debe cumplir exactamente `.claude/schemas/reader-context.json`
+- usa `notes` solo cuando aporte contexto real o falten datos en algun mapa
 
 ## Salida esperada
 
@@ -64,3 +73,10 @@ Devuelve un JSON compatible con `.claude/schemas/reader-context.json`.
   "reason": "La peticion afecta estructura general y una pantalla concreta."
 }
 ```
+
+## Criterios practicos
+
+- `files_to_open` debe contener el conjunto minimo de archivos para orientarse rapido
+- `files_to_review` debe contener archivos con probabilidad real de cambio o riesgo tecnico
+- evita duplicar rutas entre `files_to_open` y `files_to_review` salvo que sea imprescindible
+- si ningun mapa da rutas concretas, deja constancia en `notes` y devuelve listas vacias antes que inventar archivos

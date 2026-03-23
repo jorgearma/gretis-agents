@@ -53,9 +53,22 @@ Una respuesta estructurada con archivos y carpetas del proyecto que deben abrirs
 
 ## Formato de salida esperado
 
-La salida debe ayudar a completar el JSON de `reader-context` para el `planner`, incluyendo como minimo:
+Devuelve un JSON parcial, sin markdown ni texto adicional, con esta forma:
 
-- archivos o carpetas clave que abrir
-- archivos que conviene revisar antes de implementar
-- breve razon arquitectonica
-- notas de dependencias o riesgos entre modulos
+```json
+{
+  "reader": "project-reader",
+  "needed": true,
+  "files_to_open": ["ruta/o/carpeta"],
+  "files_to_review": ["ruta/o/archivo"],
+  "reason": "motivo breve",
+  "notes": "riesgos, dependencias o carencias del mapa"
+}
+```
+
+## Reglas de salida
+
+- usa `needed: false` si este reader no aporta contexto real a la peticion
+- si `needed` es `false`, devuelve listas vacias y una razon breve
+- no inventes rutas: si el mapa no las concreta, usa listas vacias y explicalo en `notes`
+- `reason` debe ser breve y accionable

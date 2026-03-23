@@ -53,9 +53,22 @@ Una respuesta estructurada con pantallas, componentes y estilos que deben abrirs
 
 ## Formato de salida esperado
 
-La salida debe ayudar a completar el JSON de `reader-context` para el `planner`, incluyendo como minimo:
+Devuelve un JSON parcial, sin markdown ni texto adicional, con esta forma:
 
-- pantallas, componentes o estilos que abrir
-- archivos que conviene revisar antes de implementar
-- breve razon de impacto en UI
-- notas de riesgo visual, accesibilidad o responsive
+```json
+{
+  "reader": "ui-reader",
+  "needed": true,
+  "files_to_open": ["ruta/pantalla.tsx"],
+  "files_to_review": ["ruta/componente.tsx"],
+  "reason": "motivo breve",
+  "notes": "riesgos visuales, accesibilidad, responsive o dependencias"
+}
+```
+
+## Reglas de salida
+
+- usa `needed: false` si este reader no aporta contexto real a la peticion
+- si `needed` es `false`, devuelve listas vacias y una razon breve
+- no inventes pantallas, componentes ni rutas si el mapa no los sustenta
+- si la UI depende de queries o backend, dejalo indicado en `notes`

@@ -53,9 +53,22 @@ Una respuesta estructurada con servicios, repositorios o queries que deben abrir
 
 ## Formato de salida esperado
 
-La salida debe ayudar a completar el JSON de `reader-context` para el `planner`, incluyendo como minimo:
+Devuelve un JSON parcial, sin markdown ni texto adicional, con esta forma:
 
-- queries, repositorios o servicios que abrir
-- archivos que conviene revisar por impacto en acceso a datos
-- breve razon tecnica
-- notas de riesgo sobre rendimiento o consistencia
+```json
+{
+  "reader": "query-reader",
+  "needed": true,
+  "files_to_open": ["ruta/repository.ts"],
+  "files_to_review": ["ruta/query.sql"],
+  "reason": "motivo breve",
+  "notes": "riesgos de rendimiento, consistencia o dependencias"
+}
+```
+
+## Reglas de salida
+
+- usa `needed: false` si este reader no aporta contexto real a la peticion
+- si `needed` es `false`, devuelve listas vacias y una razon breve
+- no inventes queries, servicios ni rutas si el mapa no las sostiene
+- si el impacto depende de esquema o UI, indicalo claramente en `notes`

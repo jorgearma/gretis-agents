@@ -40,7 +40,8 @@
   "reader_output_schema": ".claude/schemas/reader-context.json"
   ,
   "writer_output_schema": ".claude/schemas/execution-brief.json",
-  "writer_output_file": ".claude/runtime/execution-brief.md",
+  "writer_output_file": ".claude/runtime/execution-brief.json",
+  "writer_human_output_file": ".claude/runtime/execution-brief.md",
   "operator_approval_schema": ".claude/schemas/operator-approval.json",
   "operator_approval_file": ".claude/runtime/operator-approval.json",
   "dispatch_schema": ".claude/schemas/execution-dispatch.json",

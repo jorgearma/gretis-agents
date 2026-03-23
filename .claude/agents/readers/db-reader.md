@@ -53,9 +53,22 @@ Una respuesta estructurada con modelos, migraciones y archivos de persistencia q
 
 ## Formato de salida esperado
 
-La salida debe ayudar a completar el JSON de `reader-context` para el `planner`, incluyendo como minimo:
+Devuelve un JSON parcial, sin markdown ni texto adicional, con esta forma:
 
-- archivos de esquema o modelos que abrir
-- archivos de persistencia o migraciones que revisar
-- breve razon del impacto en base de datos
-- notas de riesgo si hay cambios delicados
+```json
+{
+  "reader": "db-reader",
+  "needed": true,
+  "files_to_open": ["ruta/schema.sql"],
+  "files_to_review": ["ruta/migracion.sql"],
+  "reason": "motivo breve",
+  "notes": "riesgos de integridad, compatibilidad o huecos del mapa"
+}
+```
+
+## Reglas de salida
+
+- usa `needed: false` si este reader no aporta contexto real a la peticion
+- si `needed` es `false`, devuelve listas vacias y una razon breve
+- no inventes modelos, tablas ni rutas si el mapa no las sustenta
+- si detectas impacto en queries o APIs, dejalo reflejado en `notes`

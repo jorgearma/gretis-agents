@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PLAN_PATH = ROOT / ".claude" / "runtime" / "plan.json"
+BRIEF_PATH = ROOT / ".claude" / "runtime" / "execution-brief.json"
 APPROVAL_PATH = ROOT / ".claude" / "runtime" / "operator-approval.json"
 DISPATCH_PATH = ROOT / ".claude" / "runtime" / "execution-dispatch.json"
 ALLOWED_AGENTS = {"frontend", "backend"}
@@ -38,6 +39,19 @@ def main() -> int:
         }
         write_json(DISPATCH_PATH, payload)
         print("Execution blocked: plan is not approved.")
+        return 1
+
+    if not BRIEF_PATH.exists():
+        payload = {
+            "status": "blocked",
+            "approved": True,
+            "task": plan.get("task", ""),
+            "selected_agents": [],
+            "step_ids": [],
+            "reason": "Execution brief is missing. Run writer before dispatching execution.",
+        }
+        write_json(DISPATCH_PATH, payload)
+        print("Execution blocked: execution brief is missing.")
         return 1
 
     if not plan.get("task"):
