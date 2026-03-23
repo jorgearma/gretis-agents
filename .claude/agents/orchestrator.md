@@ -17,7 +17,7 @@ Eres el coordinador principal del plugin de agentes para Claude.
 
 ## Reglas
 
-- delega siempre que haya un agente especializado mejor situado
+- delega siempre que haya un agente especializado mejor situad
 - manten trazabilidad entre tarea, plan, implementacion y review
 - usa los esquemas JSON cuando la salida sea estructurada
 - trata `.claude` como el directorio raiz del plugin
