@@ -1,147 +1,90 @@
 # PROJECT_MAP.md — panchi-bot
 
-Sistema de gestión de pedidos para restaurante: clientes piden por WhatsApp, navegan el menú en web y pagan via Monei. Personal gestiona pedidos desde dashboard con roles diferenciados.
+Bot de WhatsApp para gestión de pedidos de un restaurante en Tarancón (España). Los clientes interactúan por WhatsApp, seleccionan productos desde un menú web y pagan con Monei.
 
 ## Stack
 
-| Capa | Tecnología |
-|------|------------|
-| Backend | Python 3.12 + Flask 3.1 |
-| DB | SQL Server (SQLAlchemy 2.0 + pyodbc) |
-| Caché / Sesiones | Redis 5.2 (FakeRedis en tests) |
-| WhatsApp | Twilio o Meta Cloud API (configurable por env) |
-| Pagos | Monei 2.5 |
-| Geolocalización | Google Maps API + Shapely 2.1 |
-| NLP | spaCy 3.8 (`es_core_news_sm`) |
-| Frontend | Jinja2 + HTML/CSS/JS |
-| Infra | gunicorn + Nginx + Docker Compose |
-| Monitoreo | Sentry SDK 2.54 |
+| Paquete / Framework | Versión |
+|---------------------|---------|
+| Flask               | 3.1.0   |
+| Pydantic            | 2.10.6  |
+| Redis               | 5.2.1   |
+| SQLAlchemy          | 2.0.38  |
+| Sentry              | 2.54.0  |
+| Tenacity            | 9.1.4   |
+| Twilio              | 9.4.6   |
+| aiohttp             | 3.11.13 |
+| httpx               | 0.28.1  |
+| requests            | 2.32.3  |
+
+**Lenguajes:** python, javascript
 
 ## Estructura
 
 ```
 panchi-bot/
-├── blueprints/     → routing HTTP; solo serialización, sin lógica de negocio
-├── controllers/    → lógica de negocio, máquinas de estado
-├── managers/       → acceso a datos (DB + Redis)
-├── services/       → adaptadores externos (WhatsApp, Maps, tokens)
-├── schemas/        → validación de entrada con Pydantic
-├── utils/          → helpers sin estado
-├── templates/      → Jinja2 por feature (auth/dashboard/empleado/picker/repartidor/productos/macros)
-├── static/         → CSS, JS, imágenes
-├── tests/          → 395 funciones de test en 31 archivos (pytest + FakeRedis)
-├── migrations/     → scripts SQL manuales
-├── main.py         → app factory + registra 11 blueprints
-├── models.py       → 21 modelos ORM
-├── states.py       → enums y reglas de transición de estado
-├── database.py     → sesión SQLAlchemy
-└── config.py       → carga de variables de entorno
+├── blueprints/ → routing HTTP
+├── controllers/ → lógica de negocio
+├── docs/ → documentación
+├── managers/ → acceso a datos (DB + caché)
+├── migrations/ → migraciones DB
+├── schemas/ → validación de entrada
+├── scripts/ → scripts de utilidad
+├── services/ → adaptadores externos / lógica de servicio
+├── static/ → assets estáticos
+├── templates/ → plantillas HTML
+├── tests/ → tests
+├── utils/ → helpers sin estado
+├── main.py → entry point
+├── config.py → config
+├── database.py → db connection
+├── models.py → model
 ```
 
 ## Arquitectura
 
-Dependencias unidireccionales de arriba a abajo. Los blueprints nunca llaman a services directamente.
+CONTROLLERS → SERVICES → MANAGERS → [DB | Redis | APIs externas]
 
-`BLUEPRINTS → CONTROLLERS → MANAGERS → SERVICES → [SQL Server | Redis | Twilio/Meta | Monei | Google Maps]`
+**Entry points:** `main.py`
 
-**Redis — 4 usos en la misma instancia:**
+## Módulos por capa
 
-| Uso | Clave | Gestor |
-|-----|-------|--------|
-| Estado de registro | `<telefono>` | gestor_redis |
-| Bloqueo anti-spam | `bloqueo:<telefono>` | gestor_redis |
-| Token de menú | `<uuid-token>` | token_service |
-| Carrito (sesión) | `pedido:<uuid>` | controllers/pago |
+**Entry Point:** `main.py`
+**Service:** `services/token_service.py`, `services/whatsapp_service.py`, `services/maps_service.py`, `tests/test_whatsapp_service.py`, `tests/test_token_service.py`
+**Data Access:** `managers/gestor_dashboard.py`, `managers/gestor_pedidos.py`, `managers/gestor_usuarios.py`, `managers/gestor_redis.py`, `managers/gestor_productos.py`, `managers/gestor_empleado.py`, `managers/gestor_metricas.py`, `managers/dashboard/gestor_estadisticas_mixin.py`
+**Model:** `models.py`
+**Utility:** `managers/dashboard/_helpers.py`, `utils/text_utils.py`
+**Config:** `config.py`
+**State Machine:** `states.py`, `tests/test_states.py`
+**Db Connection:** `database.py`, `tests/test_database.py`
+**Migration:** `scripts/migrate_capacidades.py`, `scripts/run_migrations.py`
 
-**Dos flujos independientes** que comparten managers y DB:
-- Bot: `WhatsApp → /webhook → controllers → managers → respuesta WA`
-- Dashboard: `Navegador → /dashboard* /picker* /repartidor* → managers → HTML`
+## Archivos más modificados (git)
 
-## Blueprints registrados
+| Archivo                         | Commits |
+|---------------------------------|---------|
+| managers/gestor_dashboard.py    | 48      |
+| templates/dashboard/index.html  | 25      |
+| templates/repartidor/index.html | 21      |
+| CLAUDE.md                       | 19      |
+| blueprints/webhook.py           | 17      |
+| blueprints/dashboard.py         | 16      |
+| main.py                         | 16      |
+| templates/picker/index.html     | 15      |
+| blueprints/api.py               | 15      |
+| models.py                       | 14      |
 
-| Blueprint | Prefijo de rutas | Propósito |
-|-----------|-----------------|-----------|
-| `auth` | `/auth/*` | Login/logout del personal |
-| `webhook` | `/webhook`, `/webhook/monei`, `/webhook/meta` | Entrada de mensajes WA y pagos |
-| `menu` | `/menu/<token>`, `/confirmacion_pago` | Menú web del cliente |
-| `api` | `/api/confirmacion`, `/api/agregar_pedido` | Carrito y pagos |
-| `dashboard` | `/dashboard/*` | Panel de operaciones (admin) |
-| `picker` | `/picker/*` | Cola de preparación (almacén) |
-| `repartidor` | `/repartidor/*` | Cola y tracking de entregas |
-| `empleado` | `/empleado/*` | Fichaje y métricas del empleado |
-| `productos` | `/productos-admin/*` | Gestión de stock y precios |
-| `metricas_operacion` | `/metricas/operacion/*` | Métricas en tiempo real |
-| `metricas_analitica` | `/metricas/analitica/*` | Métricas históricas |
-| *(global)* | `/health` | Health check: verifica Redis + DB |
+## Archivos que siempre cambian juntos
 
-## Flujos clave
+- `.claude/runtime/execution-brief.json` ↔ `managers/gestor_dashboard.py`, `templates/dashboard/index.html`, `templates/repartidor/index.html`
+- `.claude/runtime/execution-brief.md` ↔ `managers/gestor_dashboard.py`, `templates/dashboard/index.html`, `templates/repartidor/index.html`
+- `.claude/runtime/plan.json` ↔ `managers/gestor_dashboard.py`, `templates/dashboard/index.html`, `templates/repartidor/index.html`
+- `.claude/runtime/reader-context.json` ↔ `managers/gestor_dashboard.py`, `templates/dashboard/index.html`, `templates/repartidor/index.html`
+- `blueprints/empleado.py` ↔ `managers/gestor_dashboard.py`, `templates/dashboard/index.html`, `templates/repartidor/index.html`
 
-**Registro (usuario nuevo):**
-`/webhook [sin usuario en DB] → controllers/registro.py [máquina de estados en Redis] → SALUDO_INICIAL → ESPERANDO_NOMBRE [spaCy] → ESPERANDO_DIRECCION [Maps+Shapely] → CONFIRMANDO_DIRECCION → guardar en DB → borrar estado Redis`
+## Problemas detectados
 
-Rollback posible: si el usuario corrige la dirección, el estado vuelve a `ESPERANDO_DIRECCION`.
-
-**Pedido online:**
-`/webhook [usuario en DB] → genera token Redis (TTL) → GET /menu/<token> → POST /api/confirmacion [guarda carrito Redis] → POST /api/agregar_pedido [valida precios vs DB] → crea pedido + pedido_detalles → crea pago Monei → POST /webhook/monei [verifica HMAC] → PAGADO → crea picking_pedido`
-
-**Pedido en efectivo:**
-`POST /api/agregar_pedido_efectivo → crea pedido → CONTRA_REEMBOLSO (salta flujo Monei)`
-
-**Flujo operativo (picking → reparto):**
-`PAGADO/CONTRA_REEMBOLSO → dashboard asigna picker → EN_PREPARACION → /picker/cola → picker actualiza items → PREPARADO → dashboard asigna repartidor → EN_REPARTO [registro en reparto] → /repartidor/cola → repartidor marca entrega → ENTREGADO`
-
-## Estados del pedido
-
-Camino principal: `PENDIENTE → ENLACE → ENLACE2 → CONFIRMANDO_PAGO → PAGADO → EN_PREPARACION → PREPARADO → EN_REPARTO → ENTREGADO`
-Efectivo: `ENLACE2 → CONTRA_REEMBOLSO → PAGADO`
-Cancelación: `PAGADO → CANCELADO → REEMBOLSADO`
-
-Todas las transiciones validadas en `states.py`. Todo cambio de estado pasa por `gestor_pedidos.py`, que registra historial en `historial_estados_pedido`.
-
-## Variables de entorno
-
-| Variable | Condición |
-|----------|-----------|
-| `SECRET_KEY`, `SQL_SERVER`, `SQL_DATABASE`, `SQL_UID`, `SQL_PWD` | Siempre |
-| `REDIS_HOST`, `PUBLIC_URL`, `MONEI_API_KEY`, `MONEI_WEBHOOK_SECRET` | Siempre |
-| `GOOGLE_MAPS_API_KEY`, `INTERNAL_API_TOKEN`, `WHATSAPP_PROVIDER` | Siempre |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER` | Si `PROVIDER=twilio` |
-| `META_ACCESS_TOKEN`, `META_PHONE_NUMBER_ID`, `META_APP_SECRET`, `META_VERIFY_TOKEN` | Si `PROVIDER=meta` |
-| `ALLOWED_ORIGIN`, `SENTRY_DSN`, `CUSTOMER_SUPPORT_PHONE` | Recomendadas |
-
-Valores y formato en `.env.example`.
-
-## Dependencias críticas
-
-| Paquete | Versión | Crítico si falla |
-|---------|---------|-----------------|
-| SQLAlchemy + pyodbc | 2.0.38 / 5.2.0 | Sistema completo caído |
-| redis + fakeredis | 5.2.1 / 2.27.0 | Sin estado entre mensajes / sin tests |
-| tenacity | 9.1.4 | Fragilidad ante timeouts en DB y APIs |
-| monei | 2.5.2 | Sin cobros online |
-| spacy (`es_core_news_sm`) | 3.8.11 | Registro de usuarios fallido |
-| shapely | 2.1.2 | Cualquier dirección aceptada sin validar zona |
-| pydantic | 2.10.6 | Sin validación de input en webhooks |
-
-⚠ `pyodbc` requiere **ODBC Driver 18 for SQL Server** instalado en el SO (no es pip). En Docker debe incluirse en la imagen base.
-⚠ `es_core_news_sm` no se instala con pip: requiere `python -m spacy download es_core_news_sm`.
-
-## Problemas conocidos
-
-**`managers/gestor_dashboard.py` (121 KB) — God Object.** Concentra toda la lógica de agregación del dashboard. Cambios en cualquier área requieren tocar este archivo; imposible hacer tests unitarios granulares. Fix: extraer por dominio (`gestor_pedidos_dashboard.py`, `gestor_turnos.py`, `gestor_reparto_dashboard.py`).
-
-**`managers/gestor_metricas.py` (48 KB) — Sobredimensionado.** Mezcla métricas operacionales (tiempo real) e históricas (analítica) con ciclos de cambio distintos. Fix: separar en `gestor_metricas_operacion.py` y `gestor_metricas_analitica.py`, alineado con la separación ya existente en blueprints.
-
-**Threading sin pool en `blueprints/picker.py`, `repartidor.py`, `dashboard.py`.** `threading.Thread(...).start()` directo, sin pool ni captura de excepciones. Notificaciones WhatsApp fallidas son invisibles en producción. Fix: `ThreadPoolExecutor` con pool acotado + try/except con logging dentro del thread.
-
-**Ruta typo activa: `/webhoo/monei` en `blueprints/webhook.py`.** Alias con error tipográfico expuesto en producción procesando pagos reales (hay un TODO pendiente). Fix: verificar que el dashboard de Monei apunte a `/webhook/monei` y eliminar la ruta errónea.
-
-**Sin CI/CD.** 395 funciones de test que nunca se ejecutan automáticamente. Fix: GitHub Actions con `pytest` en cada push (FakeRedis + mocks ya evitan dependencias externas).
-
-**`openai==1.64.0` en `requirements.txt` sin usar.** Dependencia fantasma de ~50 MB sin ningún `import` en el código. Fix: eliminar.
-
-**Sin rate limiting en `POST /webhook`.** El bloqueo Redis actúa post-procesamiento; un número puede disparar múltiples llamadas a Maps, spaCy y DB antes de bloquearse. Fix: `flask-limiter` por número de teléfono antes de entrar al procesamiento de negocio.
-
-**Lógica de negocio en `blueprints/api.py`.** Validación de precios del carrito contra DB y coordinación de múltiples managers directamente en el blueprint. Fix: extraer a `controllers/carrito.py`.
-
-**SQL Server + pyodbc — acoplamiento al SO.** Imposible usar otro motor en tests de integración. Onboarding complejo en macOS/Linux sin ODBC Driver 18.
+- `models.py` — 21 clases en un archivo
+- `tests/test_empleado.py` — 11 clases en un archivo
+- `tests/test_gestor_metricas.py` — 14 clases en un archivo
+- `tests/test_migracion_bd_dashboard.py` — 10 clases en un archivo

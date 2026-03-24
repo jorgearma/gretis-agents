@@ -10,6 +10,13 @@ Plugin base para Claude con agentes especializados, comandos reutilizables y con
 # Validar estructura del plugin
 python3 .claude/hooks/pre-commit.py
 
+# Analizar repositorio y generar MAP.md (requiere aprobacion previa)
+python3 .claude/hooks/approve-map-scan.py approve --by "nombre"
+python3 .claude/hooks/analyze-repo.py                        # analiza todo
+python3 .claude/hooks/analyze-repo.py --maps project,db      # solo esos MAPs
+python3 .claude/hooks/analyze-repo.py --root /otro/repo      # repo externo
+python3 .claude/hooks/analyze-repo.py --force                # sin gate (testing)
+
 # Gestion de aprobacion del plan
 python3 .claude/hooks/approve-plan.py approve --by "nombre"
 python3 .claude/hooks/approve-plan.py reject --by "nombre" --notes "motivo"

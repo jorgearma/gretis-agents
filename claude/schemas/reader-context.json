@@ -47,7 +47,7 @@
       "minItems": 1,
       "items": {
         "type": "string",
-        "enum": ["PROJECT_MAP.md", "DB_MAP.md", "QUERY_MAP.md", "UI_MAP.md"]
+        "enum": ["PROJECT_MAP.json", "DB_MAP.json", "QUERY_MAP.json", "UI_MAP.json"]
       }
     },
     "files_to_open": {

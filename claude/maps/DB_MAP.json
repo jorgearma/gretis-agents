@@ -1,0 +1,448 @@
+{
+  "orm": "SQLAlchemy",
+  "database": "SQLAlchemy",
+  "connection_files": [
+    "database.py",
+    "tests/test_database.py"
+  ],
+  "models": [
+    {
+      "name": "AuditLog",
+      "table": "audit_log",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "pedido_id:Integer",
+        "empleado_id:Integer",
+        "accion",
+        "detalles:Text",
+        "created_at:DateTime"
+      ],
+      "relationships": [
+        "pedido",
+        "empleado"
+      ]
+    },
+    {
+      "name": "Ausencia",
+      "table": "ausencias",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "empleado_id:Integer",
+        "fecha:Date",
+        "tipo",
+        "estado",
+        "aprobado_por:Integer",
+        "aprobado_en:DateTime",
+        "notas",
+        "created_at:DateTime"
+      ],
+      "relationships": [
+        "empleado",
+        "aprobador"
+      ]
+    },
+    {
+      "name": "Categoria",
+      "table": "categorias",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "nombre",
+        "orden_display:Integer",
+        "activa:Boolean"
+      ],
+      "relationships": [
+        "productos"
+      ]
+    },
+    {
+      "name": "CheckIn",
+      "table": "check_ins",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "empleado_id:Integer",
+        "fecha:Date",
+        "inicio:DateTime",
+        "fin:DateTime",
+        "turno_id:Integer",
+        "estado_validacion",
+        "minutos_tarde:Integer",
+        "created_at:DateTime"
+      ],
+      "relationships": [
+        "empleado",
+        "turno",
+        "tramos"
+      ]
+    },
+    {
+      "name": "Empleado",
+      "table": "empleados",
+      "file": "models.py",
+      "fields": [
+        "EmpleadoID:Integer",
+        "rol_id:Integer",
+        "Nombre",
+        "Apellido",
+        "Email",
+        "Telefono",
+        "Direccion",
+        "Puesto",
+        "Salario",
+        "activo:Boolean",
+        "estado_operativo",
+        "password_hash",
+        "created_at:DateTime",
+        "updated_at:DateTime",
+        "rol_activo"
+      ],
+      "relationships": [
+        "rol",
+        "pickings",
+        "repartos",
+        "incidencias_asignadas",
+        "turnos",
+        "check_ins",
+        "capacidades"
+      ]
+    },
+    {
+      "name": "EmpleadoCapacidad",
+      "table": "empleado_capacidades",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "empleado_id:Integer",
+        "rol"
+      ],
+      "relationships": [
+        "empleado"
+      ]
+    },
+    {
+      "name": "HistorialEstadoPedido",
+      "table": "historial_estados_pedido",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "pedido_id:Integer",
+        "estado_anterior",
+        "estado_nuevo",
+        "cambiado_en:DateTime",
+        "notas",
+        "empleado_id:Integer"
+      ],
+      "relationships": [
+        "pedido"
+      ]
+    },
+    {
+      "name": "Incidencia",
+      "table": "incidencias",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "pedido_id:Integer",
+        "cliente_id:Integer",
+        "asignado_a:Integer",
+        "tipo",
+        "descripcion:Text",
+        "estado",
+        "resolucion:Text",
+        "created_at:DateTime",
+        "resuelta_en:DateTime"
+      ],
+      "relationships": [
+        "pedido",
+        "cliente",
+        "asignado"
+      ]
+    },
+    {
+      "name": "MetricaDiariaEmpleado",
+      "table": "metricas_diarias_empleado",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "empleado_id:Integer",
+        "fecha:Date",
+        "rol",
+        "horas_trabajadas_min:Integer",
+        "pedidos_completados:Integer",
+        "tiempo_medio_operacion_min:Integer",
+        "incidencias:Integer",
+        "minutos_tarde:Integer",
+        "calculado_en:DateTime"
+      ],
+      "relationships": [
+        "empleado"
+      ]
+    },
+    {
+      "name": "Pago",
+      "table": "pagos",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "pedido_id:Integer",
+        "proveedor",
+        "referencia_externa",
+        "estado",
+        "importe",
+        "importe_reembolsado",
+        "moneda",
+        "datos_raw:Text",
+        "created_at:DateTime",
+        "updated_at:DateTime"
+      ],
+      "relationships": [
+        "pedido"
+      ]
+    },
+    {
+      "name": "Pedido",
+      "table": "pedidos",
+      "file": "models.py",
+      "fields": [
+        "PedidoID:Integer",
+        "ClienteID:Integer",
+        "FechaCreacion:DateTime",
+        "FechaActualizacion:DateTime",
+        "Estado",
+        "Total",
+        "DireccionEntrega",
+        "TelefonoEntrega",
+        "enlace",
+        "redisID",
+        "estadopago",
+        "estadoauxiliar",
+        "forma_pago",
+        "lat_entrega:Float",
+        "lng_entrega:Float",
+        "cancel_reason",
+        "cancelled_by:Integer",
+        "cancelled_at:DateTime",
+        "Notas"
+      ],
+      "relationships": [
+        "cliente",
+        "detalles",
+        "pagos",
+        "historial_estados",
+        "picking",
+        "reparto",
+        "incidencias"
+      ]
+    },
+    {
+      "name": "PedidoDetalle",
+      "table": "pedido_detalles",
+      "file": "models.py",
+      "fields": [
+        "DetalleID:Integer",
+        "PedidoID:Integer",
+        "ProductoID:Integer",
+        "Cantidad:Integer",
+        "PrecioUnitario",
+        "NombreProducto",
+        "Subtotal"
+      ],
+      "relationships": [
+        "pedido",
+        "producto",
+        "picking_item"
+      ]
+    },
+    {
+      "name": "PickingItem",
+      "table": "picking_items",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "picking_id:Integer",
+        "pedido_detalle_id:Integer",
+        "estado",
+        "cantidad_encontrada:Integer",
+        "producto_sustituto_id:Integer",
+        "notas"
+      ],
+      "relationships": [
+        "picking",
+        "pedido_detalle",
+        "producto_sustituto"
+      ]
+    },
+    {
+      "name": "PickingPedido",
+      "table": "picking_pedido",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "pedido_id:Integer",
+        "empleado_id:Integer",
+        "estado",
+        "iniciado_en:DateTime",
+        "completado_en:DateTime",
+        "notas",
+        "created_at:DateTime"
+      ],
+      "relationships": [
+        "pedido",
+        "empleado",
+        "items"
+      ]
+    },
+    {
+      "name": "Producto",
+      "table": "productos",
+      "file": "models.py",
+      "fields": [
+        "ProductoID:Integer",
+        "categoria_id:Integer",
+        "Nombre",
+        "Precio",
+        "Categoria",
+        "Ingredientes",
+        "Ubicacion",
+        "Stock:Integer",
+        "ImagenURL",
+        "Descripcion",
+        "Descuento",
+        "Disponible:Boolean",
+        "created_at:DateTime",
+        "updated_at:DateTime"
+      ],
+      "relationships": [
+        "categoria_rel",
+        "detalles"
+      ]
+    },
+    {
+      "name": "Reparto",
+      "table": "repartos",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "pedido_id:Integer",
+        "repartidor_id:Integer",
+        "estado",
+        "hora_salida:DateTime",
+        "hora_estimada_entrega:DateTime",
+        "hora_entrega_real:DateTime",
+        "motivo_no_entrega",
+        "prueba_entrega_url",
+        "notas",
+        "metodo_cobro",
+        "importe_cobrado",
+        "cambio_devuelto",
+        "importe_efectivo",
+        "importe_tarjeta",
+        "created_at:DateTime",
+        "updated_at:DateTime"
+      ],
+      "relationships": [
+        "pedido",
+        "repartidor"
+      ]
+    },
+    {
+      "name": "Rol",
+      "table": "roles",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "nombre",
+        "descripcion"
+      ],
+      "relationships": [
+        "empleados"
+      ]
+    },
+    {
+      "name": "SolicitudCambioTurno",
+      "table": "solicitudes_cambio_turno",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "turno_cedido_id:Integer",
+        "solicitante_id:Integer",
+        "sustituto_id:Integer",
+        "estado",
+        "aprobado_por:Integer",
+        "aprobado_en:DateTime",
+        "motivo",
+        "created_at:DateTime"
+      ],
+      "relationships": [
+        "turno_cedido",
+        "solicitante",
+        "sustituto",
+        "aprobador"
+      ]
+    },
+    {
+      "name": "TramoTurno",
+      "table": "tramos_turno",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "check_in_id:Integer",
+        "rol",
+        "inicio:DateTime",
+        "fin:DateTime"
+      ],
+      "relationships": [
+        "check_in"
+      ]
+    },
+    {
+      "name": "Turno",
+      "table": "turnos",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "empleado_id:Integer",
+        "fecha:Date",
+        "hora_inicio:Time",
+        "hora_fin:Time",
+        "notas",
+        "estado",
+        "tipo",
+        "creado_por:Integer",
+        "turno_origen_id:Integer",
+        "created_at:DateTime"
+      ],
+      "relationships": [
+        "empleado",
+        "turno_origen"
+      ]
+    },
+    {
+      "name": "Usuario",
+      "table": "usuarios",
+      "file": "models.py",
+      "fields": [
+        "id:Integer",
+        "nombre",
+        "numero_cliente",
+        "direccion"
+      ],
+      "relationships": [
+        "pedidos",
+        "incidencias"
+      ]
+    }
+  ],
+  "migrations": [
+    "scripts/migrate_capacidades.py",
+    "scripts/run_migrations.py"
+  ],
+  "seeds": [
+    "scripts/seed_pedidos_prueba.sql",
+    "scripts/seed_simple.sql",
+    "scripts/seed_turnos_ui.sql"
+  ]
+}

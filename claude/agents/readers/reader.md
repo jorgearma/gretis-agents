@@ -19,43 +19,49 @@ Antes de leer ningun archivo, reformula la peticion del operador como un prompt 
 
 Guarda este texto como `improved_prompt`.
 
-### Paso 2 — Leer README.md y PROJECT_MAP.md (siempre obligatorio)
+### Paso 2 — Leer PROJECT_MAP.json (siempre obligatorio)
 
-Lee los dos archivos en este orden:
+Lee `.claude/maps/PROJECT_MAP.json`.
 
-1. **`README.md`** — busca el archivo en la raiz del proyecto. Si existe, extraelo completo. Si no existe, continua sin error.
-   - Del README extrae: proposito del proyecto, tecnologias y frameworks usados, dependencias principales, comandos o entornos relevantes.
-   - Si el README no existe o no tiene informacion util, `tech_stack` quedara como lista vacia.
+El MAP esta **vacio o es invalido** si:
+- El archivo no existe.
+- `modules` esta vacio (`{}`).
+- `structure` esta vacio (`{}`).
+- `name` es el nombre del plugin y no de un proyecto real.
 
-2. **`.claude/maps/PROJECT_MAP.md`** — obligatorio. Evalua si tiene contenido real. Un MAP esta **vacio** si solo contiene texto de plantilla como "Describe aqui", "## Sugerencias" o encabezados sin datos concretos del proyecto.
-   - Si `PROJECT_MAP.md` esta vacio, detente y devuelve JSON con `status: "blocked_no_maps"` y `map_scan_requested: true`. No actives ningun subagente.
+Si el MAP esta vacio, detente y devuelve JSON con `status: "blocked_no_maps"` y `map_scan_requested: true`. No actives ningun subagente.
 
-### Paso 3 — Construir contexto y extraer stack tecnologico
+Si el MAP tiene contenido real, extrae directamente:
+- `tech_stack` desde `project_map.stack` — las claves del objeto son los nombres normalizados de las tecnologias.
+- `context_summary` usando `project_map.description`, `project_map.architecture`, `project_map.modules` y `project_map.structure`.
 
-Con `improved_prompt`, el README y `PROJECT_MAP.md`, produce dos salidas:
+No necesitas leer el README para el stack: el script ya lo extrajo y lo puso en `stack`.
 
-**`tech_stack`** — lista de tecnologias y frameworks concretos identificados en README o PROJECT_MAP.md. Usa nombres normalizados y breves (ej. `"Python"`, `"FastAPI"`, `"PostgreSQL"`, `"React"`, `"Laravel"`, `"Docker"`). No incluyas librerias menores ni utilidades genericas. Esta lista se usara en el futuro para activar agentes ejecutores especializados segun la tecnologia involucrada.
+### Paso 3 — Construir context_summary
 
-**`context_summary`** — parrafo conciso (3-6 lineas) que describe:
-- que tipo de proyecto es, su proposito y su stack principal
-- que area o capa del proyecto afecta la peticion
-- que dependencias tecnicas o modulos son relevantes
-- cualquier restriccion o patron arquitectonico importante para el trabajo
+Con `improved_prompt` y los datos de `PROJECT_MAP.json`, construye un `context_summary`: parrafo conciso (3-6 lineas) que describe:
 
-Este resumen se pasara a todos los subagentes activos para que trabajen con contexto compartido desde el inicio.
+- tipo de proyecto, proposito y stack principal (desde `description` + `stack`)
+- capa o modulos que afecta la peticion (desde `modules` + `architecture`)
+- dependencias tecnicas relevantes
+- cualquier restriccion arquitectonica importante (desde `architecture` + `problems`)
 
-### Paso 4 — Verificar otros MAPs necesarios
+### Paso 4 — Decidir MAPs adicionales
 
-Determina que MAPs adicionales necesitas segun el dominio detectado en `improved_prompt` y `PROJECT_MAP.md`.
+Segun el dominio de la peticion y los datos de `PROJECT_MAP.json`:
 
-Lee cada MAP adicional relevante y evalua si tiene contenido real. Si todos los MAPs adicionales necesarios estan vacios, continua solo con `project-reader`.
+- Si la peticion afecta persistencia, modelos o migraciones → lee `.claude/maps/DB_MAP.json`
+- Si la peticion afecta consultas, repositorios o acceso a datos → lee `.claude/maps/QUERY_MAP.json`
+- Si la peticion afecta vistas, componentes o rutas UI → lee `.claude/maps/UI_MAP.json`
+
+Para cada JSON adicional: si existe y tiene contenido real en sus arrays principales (`models`, `files`, `views`), usalo. Si esta vacio, continua sin el.
 
 **Nunca explores el repositorio directamente como sustituto de los MAPs.**
 
 ### Paso 5 — Activar readers y consolidar
 
 1. Activa solo los readers necesarios (minimo uno, maximo los que aporten contexto real).
-2. Pasa a cada reader activo: `improved_prompt`, `context_summary`, y el contenido del MAP correspondiente.
+2. Pasa a cada reader activo: `improved_prompt`, `context_summary`, y el JSON completo del MAP correspondiente.
 3. Consolida sus respuestas.
 4. Devuelve el JSON para el `planner`.
 
@@ -67,13 +73,12 @@ Lee cada MAP adicional relevante y evalua si tiene contenido real. Si todos los 
 - `ui-reader` → pantallas, componentes, estados visuales, experiencia de usuario
 - si la peticion mezcla dominios, elige un `primary_reader` segun donde ocurre el primer cambio real
 - no actives readers que no aporten contexto real para esta peticion
-- si un reader activo no encuentra contexto util, excluyelo de `selected_readers`
 
 ## Reglas de salida
 
 - devuelve solo JSON valido, sin markdown ni texto adicional
 - el JSON debe cumplir `.claude/schemas/reader-context.json`
-- no inventes rutas ni archivos si los readers no los sustentan
+- no inventes rutas ni archivos si los MAPs no los sustentan
 - usa `notes` solo si falta informacion en algun mapa o hay riesgo a comunicar al planner
 
 ## Salida esperada — flujo normal
@@ -82,24 +87,22 @@ Lee cada MAP adicional relevante y evalua si tiene contenido real. Si todos los 
 {
   "improved_prompt": "Implementar validacion de sesion en el middleware de autenticacion: al recibir un token expirado, el endpoint debe devolver HTTP 401 con cuerpo JSON estandar y no propagar la request al controlador.",
   "tech_stack": ["Python", "Flask", "PostgreSQL", "JWT"],
-  "context_summary": "API REST en Flask con arquitectura en capas (routes → middleware → services → models). La peticion afecta la capa de middleware de autenticacion. Dependencia directa con el modulo de tokens (src/auth/tokens.py) y el esquema de respuesta de error estandar. No hay impacto en base de datos.",
+  "context_summary": "API REST en Flask con arquitectura BLUEPRINTS → CONTROLLERS → MANAGERS → [DB | Redis]. La peticion afecta la capa de middleware de autenticacion. Dependencia directa con el modulo de tokens (services/token_service.py) y el esquema de respuesta de error estandar. No hay impacto en base de datos.",
   "primary_reader": "project-reader",
   "selected_readers": ["project-reader"],
-  "maps_used": ["PROJECT_MAP.md"],
-  "files_to_open": ["src/auth/middleware.py"],
-  "files_to_review": ["src/auth/tokens.py", "src/utils/responses.py"],
+  "maps_used": ["PROJECT_MAP.json"],
+  "files_to_open": ["blueprints/auth.py"],
+  "files_to_review": ["services/token_service.py", "utils/responses.py"],
   "reason": "La peticion afecta el middleware de autenticacion y su manejo de tokens expirados."
 }
 ```
 
-## Salida esperada — MAPs vacios (flujo bloqueado)
-
-Cuando `PROJECT_MAP.md` o todos los MAPs necesarios estan vacios o son solo plantilla:
+## Salida esperada — MAP vacio (flujo bloqueado)
 
 ```json
 {
   "improved_prompt": "texto del prompt mejorado aunque no se pueda continuar",
-  "tech_stack": ["Python", "Django"],
+  "tech_stack": [],
   "context_summary": "",
   "status": "blocked_no_maps",
   "primary_reader": "project-reader",
@@ -108,7 +111,7 @@ Cuando `PROJECT_MAP.md` o todos los MAPs necesarios estan vacios o son solo plan
   "files_to_open": [],
   "files_to_review": [],
   "map_scan_requested": true,
-  "reason": "Los MAPs requeridos (PROJECT_MAP.md) estan vacios. No es posible continuar sin contexto real del proyecto.",
-  "notes": "El operador debe aprobar el escaneo del repositorio ejecutando: python3 .claude/hooks/approve-map-scan.py approve --by nombre"
+  "reason": "PROJECT_MAP.json esta vacio o no existe. No es posible continuar sin contexto real del proyecto.",
+  "notes": "Ejecuta: python3 .claude/hooks/approve-map-scan.py approve --by nombre && python3 .claude/hooks/analyze-repo.py"
 }
 ```

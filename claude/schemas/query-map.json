@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QueryMap",
+  "description": "Mapa de acceso a datos generado por analyze-repo.py. Consumido por query-reader.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pattern", "files"],
+  "properties": {
+    "pattern": {
+      "type": "string",
+      "description": "Patrón de acceso a datos detectado. Ej: 'Manager / Repository', 'Direct DB access'."
+    },
+    "files": {
+      "type": "array",
+      "description": "Archivos con acceso directo a DB o con rol data_access. Cada elemento es un objeto enriquecido con semántica.",
+      "items": {
+        "type": "object",
+        "required": ["path", "role", "purpose", "search_keywords", "related_to", "functions", "query_examples"],
+        "additionalProperties": false,
+        "properties": {
+          "path":            { "type": "string" },
+          "role":            { "type": "string" },
+          "purpose":         { "type": "string", "description": "Descripción del propósito del archivo. Del docstring o inferida." },
+          "search_keywords": { "type": "array", "items": { "type": "string" }, "description": "Términos para encontrar este archivo." },
+          "related_to":      { "type": "array", "items": { "type": "string" }, "description": "Stems de módulos relacionados." },
+          "functions":       { "type": "array", "items": { "type": "string" }, "description": "Funciones o exports principales." },
+          "query_examples":  { "type": "array", "items": { "type": "string" }, "description": "Patrones ORM/SQL reales extraídos del código. Máx 4 por archivo." }
+        }
+      }
+    },
+    "cochange_with_models": {
+      "type": "array",
+      "description": "Archivos de acceso a datos que co-cambian con archivos de modelos según git.",
+      "items": {
+        "type": "object",
+        "required": ["file", "cochanges"],
+        "properties": {
+          "file":      { "type": "string" },
+          "cochanges": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
