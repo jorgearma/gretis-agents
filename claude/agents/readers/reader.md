@@ -119,6 +119,7 @@ Antes de invocar cada reader, filtra el MAP para eliminar el ruido que no aporta
 - Incluye `cochange` solo si el archivo principal de la peticion aparece como clave en el objeto.
 - Incluye `hotspots` solo si algun archivo relevante para la peticion aparece en la lista.
 - Descarta `problems` si ninguno de sus archivos coincide con los modulos filtrados.
+- Para `dependencies`: si existe, extrae el campo `forward` del grafo bidireccional. Filtra para incluir solo archivos que aparecen en `files_to_open`, `files_to_review`, o sus dependencias directas. Esto identifica qué cambios propagan hacia dónde en archivos relevantes para la tarea.
 
 **Para DB_MAP.json:**
 - Conserva en `models` solo los modelos cuyo `name`, `table` o algun `fields[].name` coincide con los conceptos de la peticion.
@@ -189,6 +190,10 @@ Regla: si tras filtrar un MAP queda mas del 60% de su contenido original, es pro
       "estimated_relevance": "medium"
     }
   ],
+  "dependency_graph": {
+    "blueprints/auth.py": ["services/token_service.py", "utils/responses.py"],
+    "services/token_service.py": ["models/user.py"]
+  },
   "reason": "La peticion afecta el middleware de autenticacion y su manejo de tokens expirados."
 }
 ```

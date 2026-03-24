@@ -68,6 +68,11 @@
     },
     "map_scan_requested": {
       "type": "boolean"
+    },
+    "dependency_graph": {
+      "type": "object",
+      "description": "Grafo de dependencias forward filtrado: solo archivos relevantes para la tarea. Clave: ruta del archivo. Valor: array de rutas que importa. Identifica qué cambios propagan hacia dónde.",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
     }
   },
   "$defs": {

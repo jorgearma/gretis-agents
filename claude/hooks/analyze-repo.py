@@ -1205,35 +1205,147 @@ def build_query_entry(
     }
 
 
-def resolve_dependencies(files: list[FileInfo]) -> dict[str, list[str]]:
+def resolve_dependencies(files: list[FileInfo]) -> dict:
     """
-    Construye grafo de dependencias: {ruta_archivo: [rutas_que_importa]}.
-    Resuelve imports internos a rutas reales usando stem matching.
+    Construye grafo de dependencias bidireccional:
+    {"forward": {file: [dep_paths]}, "reverse": {file: [dependent_paths]}}
+
+    Estrategias de resolución (orden descendente de precisión):
+    1. Ruta completa sin extensión  → by_full_no_ext
+    2. Claves multi-segmento (2-4)  → by_segments
+    3. Directorio index (index/__init__) → by_index
+    4. Stem (último segmento)       → by_stem
     """
-    by_stem: dict[str, str] = {}
+    # ── Construir índices ──────────────────────────────────────────────────────
+    by_stem:         dict[str, str] = {}   # "views" → rel_path
+    by_segments:     dict[str, str] = {}   # "auth/views" → rel_path
+    by_full_no_ext:  dict[str, str] = {}   # "src/auth/views" → rel_path
+    by_index:        dict[str, str] = {}   # "src/auth" → "src/auth/index.ts"
+
     for f in files:
-        stem = Path(f.rel_path).stem.lower()
+        p = Path(f.rel_path)
+        # Ruta completa sin extensión (lowercase, forward slashes)
+        no_ext = str(p.with_suffix("")).lower().replace("\\", "/")
+        by_full_no_ext[no_ext] = f.rel_path
+
+        stem = p.stem.lower()
         if stem not in by_stem:
             by_stem[stem] = f.rel_path
 
-    result: dict[str, list[str]] = {}
+        # Multi-segmento: keys de 2 a 4 componentes del path sin extensión
+        parts = p.with_suffix("").parts
+        for n in range(2, min(len(parts) + 1, 5)):
+            key = "/".join(parts[-n:]).lower()
+            if key not in by_segments:
+                by_segments[key] = f.rel_path
+
+        # Index files: __init__.py / index.ts / index.js
+        if stem in ("__init__", "index"):
+            dir_key = str(p.parent).lower().replace("\\", "/")
+            if dir_key not in by_index:
+                by_index[dir_key] = f.rel_path
+
+    # ── Resolvers por lenguaje ─────────────────────────────────────────────────
+
+    def _lookup(parts_list: list[str]) -> str | None:
+        """Intenta resolver una lista de segmentos usando los índices, de más específico a menos."""
+        if not parts_list:
+            return None
+        # 1. Ruta completa normalizada
+        full_key = "/".join(p.lower() for p in parts_list)
+        if full_key in by_full_no_ext:
+            return by_full_no_ext[full_key]
+        # 2. Multi-segmento (decreciente)
+        for n in range(min(len(parts_list), 4), 1, -1):
+            key = "/".join(p.lower() for p in parts_list[-n:])
+            if key in by_segments:
+                return by_segments[key]
+        # 3. Index del directorio
+        dir_key = "/".join(p.lower() for p in parts_list)
+        if dir_key in by_index:
+            return by_index[dir_key]
+        # 4. Stem del último segmento
+        last_stem = Path(parts_list[-1]).stem.lower()
+        if last_stem and last_stem not in ("index", "__init__") and last_stem in by_stem:
+            return by_stem[last_stem]
+        return None
+
+    def resolve_python(imp: str, file_path: str) -> str | None:
+        p_file = Path(file_path)
+        if imp.startswith("."):
+            # Import relativo: ".module", "..pkg.module"
+            level = len(imp) - len(imp.lstrip("."))
+            module_part = imp.lstrip(".")
+            base = p_file.parent
+            for _ in range(level - 1):
+                base = base.parent
+            if not module_part:
+                # "from . import X" → __init__.py del directorio actual
+                dir_key = str(base).lower().replace("\\", "/")
+                return by_index.get(dir_key)
+            module_path = module_part.replace(".", "/")
+            target_parts = list(base.parts) + module_path.split("/")
+            return _lookup(target_parts)
+        else:
+            # Import absoluto interno: "myapp.auth.views"
+            parts_list = imp.split(".")
+            return _lookup(parts_list)
+
+    def resolve_js(imp: str, file_path: str) -> str | None:
+        # Normaliza separadores
+        imp_clean = imp.replace("\\", "/")
+        file_dir_parts = file_path.replace("\\", "/").split("/")[:-1]
+
+        # Resuelve el path relativo manualmente (sin acceso al filesystem real)
+        out: list[str] = list(file_dir_parts)
+        for segment in imp_clean.split("/"):
+            if segment in ("", "."):
+                continue
+            elif segment == "..":
+                if out:
+                    out.pop()
+            else:
+                out.append(segment)
+
+        if not out:
+            return None
+
+        # Elimina extensión si el último segmento ya la trae
+        last = out[-1]
+        for ext in (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"):
+            if last.lower().endswith(ext):
+                out[-1] = last[: -len(ext)]
+                break
+
+        return _lookup(out)
+
+    # ── Construir grafo forward ────────────────────────────────────────────────
+    forward: dict[str, list[str]] = {}
+
     for f in files:
-        deps: list[str] = []
+        seen: set[str] = set()
         for imp in f.imports_internal:
-            # Normaliza el import a stem: ".auth" → "auth", "./controllers/auth" → "auth"
-            clean = imp.strip().lstrip("./").replace("\\", "/")
-            parts = [p for p in clean.replace(".", "/").split("/") if p]
-            # Intenta desde el segmento más específico al más general
-            for candidate in reversed(parts):
-                candidate_low = candidate.lower()
-                if candidate_low and candidate_low in by_stem:
-                    dep_path = by_stem[candidate_low]
-                    if dep_path != f.rel_path and dep_path not in deps:
-                        deps.append(dep_path)
-                    break
-        if deps:
-            result[f.rel_path] = deps
-    return result
+            resolved = (
+                resolve_python(imp, f.rel_path)
+                if f.language == "python"
+                else resolve_js(imp, f.rel_path)
+            )
+            if resolved and resolved != f.rel_path and resolved not in seen:
+                seen.add(resolved)
+        if seen:
+            forward[f.rel_path] = sorted(seen)
+
+    # ── Construir grafo reverse ────────────────────────────────────────────────
+    reverse: dict[str, list[str]] = {}
+    for src, deps in forward.items():
+        for dep in deps:
+            reverse.setdefault(dep, [])
+            if src not in reverse[dep]:
+                reverse[dep].append(src)
+    for k in reverse:
+        reverse[k].sort()
+
+    return {"forward": forward, "reverse": reverse}
 
 # ─── Constructores de MAP (producen dicts → serializados a JSON) ──────────────
 
@@ -1378,7 +1490,10 @@ def build_ui_map(proj: ProjectSummary) -> dict:
 
 # ─── Validación de calidad del análisis ───────────────────────────────────────
 
-def detect_dependency_cycles(deps: dict[str, list[str]]) -> list[list[str]]:
+def detect_dependency_cycles(deps: dict) -> list[list[str]]:
+    """Acepta tanto el grafo forward plano como el objeto {forward, reverse}."""
+    if isinstance(deps, dict) and "forward" in deps:
+        deps = deps["forward"]
     """Detecta ciclos en el grafo de dependencias mediante DFS."""
     visited: set[str] = set()
     in_stack: set[str] = set()
@@ -1435,8 +1550,9 @@ def validate_maps(proj: ProjectSummary, project_map: dict) -> list[dict]:
             })
 
     # 3. Ciclos de dependencia
-    deps = project_map.get("dependencies", {})
-    cycles = detect_dependency_cycles(deps)
+    dep_graph = project_map.get("dependencies", {})
+    forward_graph = dep_graph.get("forward", dep_graph) if isinstance(dep_graph, dict) else {}
+    cycles = detect_dependency_cycles(forward_graph)
     for cycle in cycles:
         issues.append({
             "type": "dependency_cycle",
@@ -1444,23 +1560,21 @@ def validate_maps(proj: ProjectSummary, project_map: dict) -> list[dict]:
             "detail": f"Ciclo: {' → '.join(cycle)}",
         })
 
-    # 4. Imports internos que no resuelven a ningún archivo conocido
-    known_paths = {f.rel_path for f in proj.files}
+    # 4. Archivos con imports internos que no resolvieron a ningún archivo conocido
+    # Usa el grafo forward: archivos con imports pero sin ninguna resolución exitosa
+    resolved_sources = set(forward_graph.keys())
     for fi in proj.files:
-        for imp in fi.imports_internal:
-            clean = imp.strip().lstrip("./").replace("\\", "/")
-            parts = [p for p in clean.replace(".", "/").split("/") if p]
-            if not parts:
-                continue
-            resolved = any(
-                Path(f).stem.lower() == parts[-1].lower()
-                for f in known_paths
-            )
-            if not resolved and len(parts) > 0 and len(parts[-1]) > 3:
+        if fi.imports_internal and fi.rel_path not in resolved_sources:
+            # Al menos un import no pudo resolverse
+            unresolved = [
+                imp for imp in fi.imports_internal
+                if len(imp.strip().lstrip("./").replace(".", "/").split("/")[-1]) > 3
+            ]
+            if unresolved:
                 issues.append({
                     "type": "broken_import",
                     "path": fi.rel_path,
-                    "detail": f"Import interno '{imp}' no resuelve a ningún archivo del proyecto",
+                    "detail": f"Ningún import interno resolvió: {unresolved[:3]}",
                 })
 
     # Deduplica broken_import (mismo archivo puede tener muchos)

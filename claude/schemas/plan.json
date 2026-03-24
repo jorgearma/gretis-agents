@@ -38,6 +38,11 @@
             "type": "string"
           }
         },
+        "dependency_graph": {
+          "type": "object",
+          "description": "Grafo de dependencias forward filtrado del reader. Clave: ruta del archivo. Valor: array de rutas que importa. Usalo para identificar qué cambios se propagan hacia dónde.",
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        },
         "notes": {
           "type": "string"
         }

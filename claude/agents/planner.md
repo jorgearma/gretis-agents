@@ -23,8 +23,9 @@ Lee el JSON de entrada (`reader-context.json`). Extrae:
 - `improved_prompt` — la tarea a planificar
 - `files_to_open` — array de objetos hint con `path`, `hint`, `key_symbols` y `estimated_relevance`
 - `files_to_review` — igual que `files_to_open` pero para archivos de referencia
+- `dependency_graph` — grafo de dependencias filtrado. Usalo para identificar archivos cuya modificación propaga cambios hacia otros
 
-Al escribir `plan.json`, copia solo los `path` de cada objeto como strings en `context_inputs.files_to_open` y `context_inputs.files_to_review` — los hints son para uso interno del planner, no viajan al plan.
+Al escribir `plan.json`, copia solo los `path` de cada objeto como strings en `context_inputs.files_to_open` y `context_inputs.files_to_review` — los hints son para uso interno del planner, no viajan al plan. Copia `dependency_graph` como `context_inputs.dependency_graph` si existe.
 
 ### Paso 2 — Leer secciones relevantes y guardar cache
 
@@ -63,6 +64,7 @@ El writer consumira este cache sin releer nada del proyecto.
 Antes de construir el plan, analiza el impacto real del cambio sobre el codigo leido:
 
 - cuenta cuantos archivos se modifican directamente
+- usa `dependency_graph` para identificar archivos que dependen de los archivos modificados (propagan el cambio hacia afuera) y archivos de los que dependen (necesitan ser estables)
 - identifica endpoints o contratos publicos que cambian de firma o comportamiento (`endpoints_affected`)
 - lista los breaking changes concretos: firmas de funciones, tipos de retorno, claves de JSON, nombres de columnas (`breaking_changes`)
 - determina si se necesita migracion de datos o schema (`migration_needed`)

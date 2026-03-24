@@ -10,7 +10,7 @@ No mejoras el plan. No lo reescribes. Solo lo auditas y produces un veredicto es
 
 ## Fuentes de verdad — lee en este orden
 
-1. `.claude/runtime/reader-context.json` — contexto original: `improved_prompt`, `tech_stack`, `context_summary`, archivos relevantes
+1. `.claude/runtime/reader-context.json` — contexto original: `improved_prompt`, `tech_stack`, `context_summary`, archivos relevantes, `dependency_graph` para validar impacto
 2. `.claude/runtime/plan.json` — el plan generado por `planner`
 3. `.claude/runtime/execution-brief.json` — la guia operativa generada por `writer`
 
@@ -54,6 +54,7 @@ Revisa cada categoria. Si no hay problema, omitela del output. Si lo hay, regist
 ### 8. Dependencias implicitas sin orden
 - El paso B requiere que el paso A haya terminado, pero no hay ninguna nota de dependencia
 - El orden de pasos en el brief no refleja dependencias tecnicas reales (ej. backend antes que frontend cuando frontend consume el endpoint)
+- El `dependency_graph` del reader-context muestra que el cambio propaga hacia archivos no mencionados en el plan — esto sugiere scope incompleto
 
 ### 9. Conflicto de stack
 - Un paso implica una tecnologia, libreria o patron que no esta en `tech_stack`

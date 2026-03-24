@@ -74,8 +74,21 @@
     },
     "dependencies": {
       "type": "object",
-      "description": "Grafo de dependencias resuelto. Clave: ruta del archivo. Valor: rutas de los archivos que importa.",
-      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+      "description": "Grafo de dependencias bidireccional. Contiene 'forward' (archivos que A importa) y 'reverse' (archivos que importan A).",
+      "additionalProperties": false,
+      "properties": {
+        "forward": {
+          "type": "object",
+          "description": "Dependencias forward: archivo → lista de archivos que importa. Clave: ruta. Valor: array de rutas.",
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        },
+        "reverse": {
+          "type": "object",
+          "description": "Dependencias reverse: archivo → lista de archivos que lo importan. Clave: ruta. Valor: array de rutas.",
+          "additionalProperties": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "required": ["forward", "reverse"]
     },
     "problems": {
       "type": "array",

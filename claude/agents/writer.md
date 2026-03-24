@@ -50,7 +50,8 @@ Lee y respeta, en este orden:
 4. Construye `target_agents` a partir de los owners realmente implicados en la ejecucion posterior.
 5. Redacta `context_summary` como un resumen breve pero util para trabajar sin releer todo el plan.
 6. Copia `files_to_open` y `files_to_review` desde `context_inputs`, sin inventar rutas nuevas.
-7. Convierte cada paso ejecutable en una instruccion concreta dentro de `implementation_steps`. Aprovecha el codigo real del cache: nombra funciones existentes, indica donde insertar cambios, senala dependencias concretas. Para cada paso, escribe un `expected_output` especifico (HTTP status + payload, nombre de funcion + valor de retorno, estado de UI observable) y un `verification_checklist` con condiciones binarias que el reviewer pueda comprobar una a una. Evita outputs vagos como "feature implementada" o "funciona correctamente".
+7. Usa `context_inputs.dependency_graph` para ordenar los pasos: si file_a depende de file_b, backend (que modifica file_b) debe ejecutarse antes que frontend (que necesita file_b). Incluye notas sobre dependencias tecnicas entre pasos si aplica.
+8. Convierte cada paso ejecutable en una instruccion concreta dentro de `implementation_steps`. Aprovecha el codigo real del cache: nombra funciones existentes, indica donde insertar cambios, senala dependencias concretas. Para cada paso, escribe un `expected_output` especifico (HTTP status + payload, nombre de funcion + valor de retorno, estado de UI observable) y un `verification_checklist` con condiciones binarias que el reviewer pueda comprobar una a una. Evita outputs vagos como "feature implementada" o "funciona correctamente".
 8. Si un paso del plan es demasiado vago para ejecutarse, mantenlo pero vuelve explicita la ambiguedad en `notes`.
 9. Deja una `operator_action` clara para aprobar, rechazar o pedir ajuste del plan.
 

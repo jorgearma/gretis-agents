@@ -22,15 +22,53 @@
         "search_keywords": [
           "dispatch",
           "reviewer",
+          "load_json",
           "load",
           "json",
+          "write_json",
           "write",
-          "main"
+          "main",
+          "genera",
+          "tras",
+          "ejecucion"
         ],
         "related_to": [
+          "planner",
           "db-reader",
-          "project-reader",
-          "query-reader"
+          "project-reader"
+        ],
+        "symbols": [
+          {
+            "name": "load_json",
+            "line": 16,
+            "kind": "function",
+            "end_line": 18,
+            "complexity": 3,
+            "params": [
+              "path"
+            ],
+            "return_type": "dict"
+          },
+          {
+            "name": "write_json",
+            "line": 21,
+            "kind": "function",
+            "end_line": 22,
+            "complexity": 2,
+            "params": [
+              "path",
+              "payload"
+            ],
+            "return_type": "None"
+          },
+          {
+            "name": "main",
+            "line": 25,
+            "kind": "function",
+            "end_line": 76,
+            "complexity": 52,
+            "return_type": "int"
+          }
         ]
       }
     ],
@@ -41,164 +79,413 @@
         "search_keywords": [
           "analyze",
           "repo",
+          "FileInfo",
           "file",
           "info",
+          "ModelField",
           "model",
           "field",
-          "check",
-          "approval"
+          "FunctionInfo",
+          "function",
+          "ModelInfo",
+          "ProjectSummary",
+          "project",
+          "summary",
+          "check_approval"
         ],
         "related_to": [
+          "planner",
           "db-reader",
-          "project-reader",
-          "query-reader"
+          "project-reader"
+        ],
+        "symbols": [
+          {
+            "name": "FileInfo",
+            "line": 198,
+            "kind": "class"
+          },
+          {
+            "name": "ModelField",
+            "line": 216,
+            "kind": "class"
+          },
+          {
+            "name": "FunctionInfo",
+            "line": 221,
+            "kind": "class"
+          },
+          {
+            "name": "ModelInfo",
+            "line": 233,
+            "kind": "class"
+          },
+          {
+            "name": "ProjectSummary",
+            "line": 241,
+            "kind": "class"
+          },
+          {
+            "name": "check_approval",
+            "line": 260,
+            "kind": "function",
+            "end_line": 273,
+            "complexity": 14,
+            "params": [
+              "force"
+            ],
+            "return_type": "None"
+          },
+          {
+            "name": "detect_stack",
+            "line": 277,
+            "kind": "function",
+            "end_line": 321,
+            "complexity": 45,
+            "params": [
+              "root"
+            ],
+            "return_type": "dict[str, str]"
+          },
+          {
+            "name": "detect_project_name",
+            "line": 323,
+            "kind": "function",
+            "end_line": 351,
+            "complexity": 29,
+            "params": [
+              "root"
+            ],
+            "return_type": "tuple[str, str]"
+          },
+          {
+            "name": "detect_readme_summary",
+            "line": 353,
+            "kind": "function",
+            "end_line": 365,
+            "complexity": 13,
+            "params": [
+              "root"
+            ],
+            "return_type": "str"
+          },
+          {
+            "name": "classify_role",
+            "line": 369,
+            "kind": "function",
+            "end_line": 374,
+            "complexity": 6,
+            "params": [
+              "rel_path"
+            ],
+            "return_type": "str"
+          },
+          {
+            "name": "should_ignore",
+            "line": 376,
+            "kind": "function",
+            "end_line": 380,
+            "complexity": 5,
+            "params": [
+              "path"
+            ],
+            "return_type": "bool"
+          },
+          {
+            "name": "scan_structure",
+            "line": 382,
+            "kind": "function",
+            "end_line": 400,
+            "complexity": 19,
+            "params": [
+              "root"
+            ],
+            "return_type": "dict[str, str]"
+          },
+          {
+            "name": "walk_source_files",
+            "line": 402,
+            "kind": "function",
+            "end_line": 416,
+            "complexity": 15,
+            "params": [
+              "root"
+            ],
+            "return_type": "list[Path]"
+          },
+          {
+            "name": "extract_query_examples",
+            "line": 429,
+            "kind": "function",
+            "end_line": 439,
+            "complexity": 11,
+            "params": [
+              "source"
+            ],
+            "return_type": "list[str]"
+          },
+          {
+            "name": "_ast_name",
+            "line": 443,
+            "kind": "function",
+            "end_line": 448,
+            "complexity": 6,
+            "params": [
+              "node"
+            ],
+            "return_type": "str"
+          }
         ]
       }
     ]
   },
   "hotspots": [
     {
+      "file": "claude/agents/planner.md",
+      "commits": 7
+    },
+    {
       "file": "claude/agents/readers/db-reader.md",
-      "commits": 5
+      "commits": 7
     },
     {
       "file": "claude/agents/readers/project-reader.md",
-      "commits": 5
+      "commits": 7
     },
     {
       "file": "claude/agents/readers/query-reader.md",
-      "commits": 5
-    },
-    {
-      "file": "claude/agents/readers/reader.md",
-      "commits": 5
+      "commits": 7
     },
     {
       "file": "claude/agents/readers/ui-reader.md",
+      "commits": 7
+    },
+    {
+      "file": "claude/agents/reviewer.md",
+      "commits": 6
+    },
+    {
+      "file": "claude/agents/writer.md",
+      "commits": 6
+    },
+    {
+      "file": "claude/agents/readers/reader.md",
+      "commits": 6
+    },
+    {
+      "file": "claude/schemas/reader-context.json",
       "commits": 5
     },
     {
       "file": "claude/hooks/pre-commit.py",
       "commits": 5
+    }
+  ],
+  "recent_changes": [
+    {
+      "file": "claude/agents/planner.md",
+      "commits_30d": 7
     },
     {
-      "file": "CLAUDE.md",
-      "commits": 4
+      "file": "claude/agents/readers/db-reader.md",
+      "commits_30d": 7
     },
     {
-      "file": "claude/schemas/reader-context.json",
-      "commits": 4
+      "file": "claude/agents/readers/project-reader.md",
+      "commits_30d": 7
+    },
+    {
+      "file": "claude/agents/readers/query-reader.md",
+      "commits_30d": 7
+    },
+    {
+      "file": "claude/agents/readers/ui-reader.md",
+      "commits_30d": 7
+    },
+    {
+      "file": "claude/agents/reviewer.md",
+      "commits_30d": 6
     },
     {
       "file": "claude/agents/writer.md",
-      "commits": 4
+      "commits_30d": 6
     },
     {
-      "file": "claude/agents/planner.md",
-      "commits": 4
+      "file": "claude/agents/readers/reader.md",
+      "commits_30d": 6
+    },
+    {
+      "file": "claude/schemas/reader-context.json",
+      "commits_30d": 5
+    },
+    {
+      "file": "claude/hooks/pre-commit.py",
+      "commits_30d": 5
     }
   ],
+  "ownership": {
+    "claude/agents/map-scanner.md": "CLAUDE.md",
+    "claude/agents/readers/db-reader.md": "CLAUDE.md",
+    "claude/agents/readers/project-reader.md": "CLAUDE.md",
+    "claude/agents/readers/query-reader.md": "CLAUDE.md",
+    "claude/agents/readers/reader.md": "CLAUDE.md",
+    "claude/agents/readers/ui-reader.md": "CLAUDE.md",
+    "claude/hooks/__pycache__/analyze-repo.cpython-312.pyc": "CLAUDE.md",
+    "claude/hooks/analyze-repo.py": "CLAUDE.md",
+    "claude/hooks/pre-commit.py": "CLAUDE.md",
+    "claude/maps/DB_MAP.json": "CLAUDE.md",
+    "claude/maps/DB_MAP.md": "CLAUDE.md",
+    "claude/maps/PROJECT_MAP.json": "CLAUDE.md",
+    "claude/maps/PROJECT_MAP.md": "CLAUDE.md",
+    "claude/maps/QUERY_MAP.json": "CLAUDE.md",
+    "claude/maps/QUERY_MAP.md": "CLAUDE.md",
+    "claude/maps/UI_MAP.json": "CLAUDE.md",
+    "claude/maps/UI_MAP.md": "CLAUDE.md",
+    "claude/schemas/db-map.json": "CLAUDE.md",
+    "claude/schemas/project-map.json": "CLAUDE.md",
+    "claude/schemas/query-map.json": "CLAUDE.md",
+    "claude/schemas/reader-context.json": "CLAUDE.md",
+    "claude/schemas/ui-map.json": "CLAUDE.md",
+    "claude/agents/plan-reviewer.md": "CLAUDE.md",
+    "claude/agents/writer.md": "CLAUDE.md",
+    "claude/schemas/plan-review.json": "CLAUDE.md",
+    "claude/agents/backend.md": "CLAUDE.md",
+    "claude/agents/frontend.md": "CLAUDE.md",
+    "claude/agents/orchestrator.md": "CLAUDE.md",
+    "claude/agents/planner.md": "CLAUDE.md",
+    "claude/agents/reviewer.md": "CLAUDE.md",
+    "claude/commands/implement-feature.md": "CLAUDE.md",
+    "claude/commands/review-change.md": "CLAUDE.md",
+    "claude/hooks/__pycache__/approve-plan.cpython-312.pyc": "CLAUDE.md",
+    "claude/hooks/__pycache__/execute-plan.cpython-312.pyc": "CLAUDE.md",
+    "claude/hooks/__pycache__/pre-commit.cpython-312.pyc": "CLAUDE.md",
+    "claude/hooks/approve-plan.py": "CLAUDE.md",
+    "claude/hooks/execute-plan.py": "CLAUDE.md",
+    "claude/plugin.json": "CLAUDE.md",
+    "claude/runtime/execution-brief.json": "CLAUDE.md",
+    "claude/runtime/execution-brief.md": "CLAUDE.md",
+    "claude/runtime/execution-dispatch.json": "CLAUDE.md",
+    "claude/runtime/operator-approval.json": "CLAUDE.md",
+    "claude/runtime/plan.json": "CLAUDE.md",
+    "claude/schemas/execution-brief.json": "CLAUDE.md",
+    "claude/schemas/execution-dispatch.json": "CLAUDE.md",
+    "claude/schemas/operator-approval.json": "CLAUDE.md",
+    "claude/schemas/plan.json": "CLAUDE.md",
+    "claude/schemas/result.json": "CLAUDE.md",
+    "claude/schemas/review.json": "CLAUDE.md"
+  },
+  "pending_changes": [
+    "claude/hooks/analyze-repo.py"
+  ],
   "cochange": {
-    "CLAUDE.md": [
+    "claude/agents/plan-reviewer.md": [
+      "claude/agents/planner.md",
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md"
+    ],
+    "claude/agents/planner.md": [
       "claude/agents/readers/db-reader.md",
       "claude/agents/readers/project-reader.md",
       "claude/agents/readers/query-reader.md"
     ],
-    "claude/agents/map-scanner.md": [
+    "claude/agents/quick-agent.md": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
+    ],
+    "claude/agents/reviewer.md": [
+      "claude/agents/planner.md",
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md"
+    ],
+    "claude/agents/sense-checker.md": [
+      "claude/agents/planner.md",
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md"
+    ],
+    "claude/agents/writer.md": [
+      "claude/agents/planner.md",
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md"
     ],
     "claude/agents/readers/db-reader.md": [
+      "claude/agents/planner.md",
       "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md",
-      "claude/agents/readers/reader.md"
+      "claude/agents/readers/query-reader.md"
     ],
     "claude/agents/readers/project-reader.md": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/query-reader.md",
-      "claude/agents/readers/reader.md"
+      "claude/agents/readers/query-reader.md"
     ],
     "claude/agents/readers/query-reader.md": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
     "claude/agents/readers/reader.md": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
     "claude/agents/readers/ui-reader.md": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/hooks/__pycache__/analyze-repo.cpython-312.pyc": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
     "claude/hooks/analyze-repo.py": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
-    "claude/hooks/pre-commit.py": [
+    "claude/hooks/quick-execute.py": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
-    "claude/maps/DB_MAP.json": [
+    "claude/runtime/operator-approval.json": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
-    "claude/maps/DB_MAP.md": [
+    "claude/runtime/quick-dispatch.json": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
-    "claude/maps/PROJECT_MAP.json": [
+    "claude/schemas/clarifications.json": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/maps/PROJECT_MAP.md": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/maps/QUERY_MAP.json": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/maps/QUERY_MAP.md": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/maps/UI_MAP.json": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/maps/UI_MAP.md": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/schemas/db-map.json": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
     ],
     "claude/schemas/project-map.json": [
+      "claude/agents/planner.md",
       "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
+      "claude/agents/readers/project-reader.md"
+    ],
+    "claude/schemas/quick-dispatch.json": [
+      "claude/agents/planner.md",
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md"
+    ],
+    "claude/schemas/reader-context.json": [
+      "claude/agents/planner.md",
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md"
+    ],
+    "claude/schemas/sense-check.json": [
+      "claude/agents/planner.md",
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md"
     ]
   },
-  "problems": []
+  "dependencies": {
+    "forward": {},
+    "reverse": {}
+  },
+  "problems": [
+    {
+      "file": "claude/hooks/analyze-repo.py` (67 KB)",
+      "issue": "archivo sobredimensionado, posible God Object"
+    }
+  ]
 }
