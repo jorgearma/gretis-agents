@@ -1,6 +1,6 @@
 # Plugin runtime state (regenerated each cycle — do not commit)
-.claude/runtime/plan.json
-.claude/runtime/execution-brief.json
-.claude/runtime/execution-brief.md
-.claude/runtime/execution-dispatch.json
-.claude/runtime/result.json
+claude/runtime/plan.json
+claude/runtime/execution-brief.json
+claude/runtime/execution-brief.md
+claude/runtime/execution-dispatch.json
+claude/runtime/result.json
