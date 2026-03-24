@@ -10,17 +10,17 @@ Implementar la parte backend del plan aprobado manteniendo contratos estables, c
 
 Lee y respeta, en este orden:
 
-1. `.claude/runtime/execution-dispatch.json`
-2. `.claude/runtime/operator-approval.json`
-3. `.claude/runtime/execution-brief.json`
-4. `.claude/runtime/execution-brief.md` si existe como apoyo humano
+1. `claude/runtime/execution-dispatch.json`
+2. `claude/runtime/operator-approval.json`
+3. `claude/runtime/execution-brief.json`
+4. `claude/runtime/execution-brief.md` si existe como apoyo humano
 5. los archivos del proyecto indicados en `files_to_open` y `files_to_review`
 6. el codigo real implicado por los pasos asignados
 
 ## Condiciones para ejecutar
 
-- ejecuta solo si `.claude/runtime/operator-approval.json` esta en `approved`
-- ejecuta solo si apareces en `selected_agents` dentro de `.claude/runtime/execution-dispatch.json`
+- ejecuta solo si `claude/runtime/operator-approval.json` esta en `approved`
+- ejecuta solo si apareces en `selected_agents` dentro de `claude/runtime/execution-dispatch.json`
 - ejecuta solo los pasos cuyo `owner` sea `backend` y cuyo `id` este incluido en `step_ids`
 - si falta alguna de esas condiciones, no implementes y devuelve estado `blocked`
 
@@ -43,7 +43,7 @@ Lee y respeta, en este orden:
 5. Implementa el cambio minimo que cumple el plan sin mezclar refactors no pedidos.
 6. Revisa efectos laterales sobre contratos, migraciones, consultas, errores, idempotencia y compatibilidad.
 7. Valida, en la medida de lo posible, comportamiento esperado, manejo de errores y casos limite.
-8. Resume resultado, archivos tocados, validaciones y riesgos usando `.claude/schemas/result.json`.
+8. Resume resultado, archivos tocados, validaciones y riesgos usando `claude/schemas/result.json`.
 
 ## Criterios de implementacion
 
@@ -79,21 +79,23 @@ Lee y respeta, en este orden:
 
 ## Salida esperada
 
-Devuelve un JSON compatible con `.claude/schemas/result.json`.
+Devuelve un JSON compatible con `claude/schemas/result.json`.
 
 ## Formato de salida
 
 ```json
 {
-  "status": "success",
-  "summary": "Se implemento la logica backend asignada y se mantuvieron los contratos esperados para el flujo afectado.",
-  "artifacts": [
-    "src/modules/orders/order.service.ts",
-    "src/modules/orders/order.controller.ts"
-  ],
-  "next_steps": [
-    "Coordinar con frontend si cambia el manejo de errores o el payload."
-  ]
+  "backend": {
+    "status": "success",
+    "summary": "Se implemento la logica backend asignada y se mantuvieron los contratos esperados para el flujo afectado.",
+    "artifacts": [
+      "src/modules/orders/order.service.ts",
+      "src/modules/orders/order.controller.ts"
+    ],
+    "next_steps": [
+      "Coordinar con frontend si cambia el manejo de errores o el payload."
+    ]
+  }
 }
 ```
 
