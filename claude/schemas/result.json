@@ -3,25 +3,27 @@
   "title": "ClaudeResult",
   "type": "object",
   "additionalProperties": false,
-  "required": ["status", "summary", "artifacts", "next_steps"],
   "properties": {
-    "status": {
-      "type": "string",
-      "enum": ["success", "partial", "blocked"]
-    },
-    "summary": {
-      "type": "string"
-    },
-    "artifacts": {
-      "type": "array",
-      "items": {
-        "type": "string"
+    "frontend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "summary", "artifacts", "next_steps"],
+      "properties": {
+        "status": { "type": "string", "enum": ["success", "partial", "blocked"] },
+        "summary": { "type": "string" },
+        "artifacts": { "type": "array", "items": { "type": "string" } },
+        "next_steps": { "type": "array", "items": { "type": "string" } }
       }
     },
-    "next_steps": {
-      "type": "array",
-      "items": {
-        "type": "string"
+    "backend": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "summary", "artifacts", "next_steps"],
+      "properties": {
+        "status": { "type": "string", "enum": ["success", "partial", "blocked"] },
+        "summary": { "type": "string" },
+        "artifacts": { "type": "array", "items": { "type": "string" } },
+        "next_steps": { "type": "array", "items": { "type": "string" } }
       }
     }
   }
