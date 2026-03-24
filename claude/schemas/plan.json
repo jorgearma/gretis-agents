@@ -59,7 +59,7 @@
           },
           "owner": {
             "type": "string",
-            "enum": ["frontend", "backend", "reviewer"]
+            "enum": ["frontend", "backend", "reviewer", "test-runner"]
           },
           "notes": {
             "type": "string"
@@ -78,6 +78,40 @@
       "minItems": 1,
       "items": {
         "type": "string"
+      }
+    },
+    "impact_analysis": {
+      "type": "object",
+      "description": "Analisis de impacto generado por el planner tras leer el codigo real.",
+      "additionalProperties": false,
+      "required": ["files_affected", "breaking_changes", "migration_needed"],
+      "properties": {
+        "files_affected":    { "type": "integer", "description": "Numero de archivos que el cambio modifica directamente." },
+        "endpoints_affected": { "type": "array", "items": { "type": "string" }, "description": "Endpoints o rutas publicas que cambian de contrato." },
+        "breaking_changes":  { "type": "array", "items": { "type": "string" }, "description": "Cambios incompatibles hacia atras. Ej: firma de funcion, contrato de API." },
+        "migration_needed":  { "type": "boolean", "description": "true si el cambio requiere migracion de datos o schema." },
+        "notes":             { "type": "string" }
+      }
+    },
+    "rollback_plan": {
+      "type": "object",
+      "description": "Plan de rollback para revertir el cambio si algo falla en produccion.",
+      "additionalProperties": false,
+      "required": ["enabled", "steps"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "owner"],
+            "properties": {
+              "action": { "type": "string" },
+              "owner":  { "type": "string", "enum": ["frontend", "backend"] }
+            }
+          }
+        }
       }
     }
   }

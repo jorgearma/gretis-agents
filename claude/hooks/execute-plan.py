@@ -11,8 +11,9 @@ PLUGIN_DIR = Path(__file__).resolve().parents[1]
 PLAN_PATH = PLUGIN_DIR / "runtime" / "plan.json"
 BRIEF_PATH = PLUGIN_DIR / "runtime" / "execution-brief.json"
 APPROVAL_PATH = PLUGIN_DIR / "runtime" / "operator-approval.json"
+REVIEW_PATH = PLUGIN_DIR / "runtime" / "plan-review.json"
 DISPATCH_PATH = PLUGIN_DIR / "runtime" / "execution-dispatch.json"
-ALLOWED_AGENTS = {"frontend", "backend"}
+ALLOWED_AGENTS = {"frontend", "backend", "test-runner"}
 
 
 def load_json(path: Path) -> dict:
@@ -27,6 +28,59 @@ def write_json(path: Path, payload: dict) -> None:
 def main() -> int:
     approval = load_json(APPROVAL_PATH)
     plan = load_json(PLAN_PATH)
+
+    # --- Validacion plan-review.json ---
+    if not REVIEW_PATH.exists():
+        payload = {
+            "status": "blocked",
+            "approved": False,
+            "task": plan.get("task", ""),
+            "selected_agents": [],
+            "step_ids": [],
+            "reason": "plan-review.json no encontrado. El plan-reviewer debe ejecutarse antes de despachar.",
+        }
+        write_json(DISPATCH_PATH, payload)
+        print("Ejecucion bloqueada: plan-review.json no existe.")
+        print("Ejecuta el flujo completo desde el writer para generar la revision.")
+        return 1
+
+    review = load_json(REVIEW_PATH)
+    verdict = review.get("verdict")
+
+    if verdict == "blocked":
+        errors = [i for i in review.get("issues", []) if i.get("severity") == "error"]
+        payload = {
+            "status": "blocked",
+            "approved": False,
+            "task": plan.get("task", ""),
+            "selected_agents": [],
+            "step_ids": [],
+            "reason": f"Plan-reviewer bloqueo la ejecucion: {review.get('summary', '')}",
+        }
+        write_json(DISPATCH_PATH, payload)
+        print("=" * 60)
+        print("EJECUCION BLOQUEADA — El plan-reviewer encontro errores criticos")
+        print("=" * 60)
+        print(f"Resumen: {review.get('summary', '')}")
+        print()
+        for issue in errors:
+            print(f"  [{issue.get('id', '?')}] {issue.get('location', '?')}")
+            print(f"  Categoria: {issue.get('category', '?')}")
+            print(f"  Problema:  {issue.get('description', '')}")
+            if issue.get("suggestion"):
+                print(f"  Sugerido:  {issue['suggestion']}")
+            print()
+        print("Para reiniciar el flujo desde cero:")
+        print("  python3 .claude/hooks/approve-plan.py reset")
+        print("=" * 60)
+        return 1
+
+    if verdict == "warning":
+        warnings = [i for i in review.get("issues", []) if i.get("severity") == "warning"]
+        print(f"ADVERTENCIA — El plan-reviewer detecto {len(warnings)} riesgo(s): {review.get('summary', '')}")
+        for w in warnings:
+            print(f"  [{w.get('id', '?')}] {w.get('location', '?')}: {w.get('description', '')}")
+        print()
 
     if approval.get("status") != "approved":
         payload = {
@@ -100,6 +154,8 @@ def main() -> int:
         "step_ids": step_ids,
         "reason": "Execution can proceed for the selected specialized agents.",
     }
+    if "rollback_plan" in plan:
+        payload["rollback_plan"] = plan["rollback_plan"]
     write_json(DISPATCH_PATH, payload)
 
     print("Execution ready")

@@ -19,7 +19,28 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["frontend", "backend"]
+        "enum": ["frontend", "backend", "test-runner"]
+      }
+    },
+    "rollback_plan": {
+      "type": "object",
+      "description": "Plan de rollback propagado desde plan.json. Presente solo si el plan lo define.",
+      "additionalProperties": false,
+      "required": ["enabled", "steps"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["action", "owner"],
+            "properties": {
+              "action": { "type": "string" },
+              "owner":  { "type": "string", "enum": ["frontend", "backend"] }
+            }
+          }
+        }
       }
     },
     "step_ids": {

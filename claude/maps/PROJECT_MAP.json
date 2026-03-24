@@ -1,755 +1,204 @@
 {
-  "name": "panchi-bot",
-  "description": "Bot de WhatsApp para gestión de pedidos de un restaurante en Tarancón (España). Los clientes interactúan por WhatsApp, seleccionan productos desde un menú web y pagan con Monei.",
+  "name": "losgretis",
+  "description": "",
   "languages": [
-    "python",
-    "javascript"
+    "python"
   ],
-  "stack": {
-    "Sentry": "2.54.0",
-    "SQLAlchemy": "2.0.38",
-    "Tenacity": "9.1.4",
-    "aiohttp": "3.11.13",
-    "Flask": "3.1.0",
-    "httpx": "0.28.1",
-    "Pydantic": "2.10.6",
-    "Redis": "5.2.1",
-    "requests": "2.32.3",
-    "Twilio": "9.4.6"
-  },
+  "stack": {},
   "structure": {
-    "blueprints": "routing HTTP",
-    "controllers": "lógica de negocio",
-    "docs": "documentación",
-    "managers": "acceso a datos (DB + caché)",
-    "migrations": "migraciones DB",
-    "schemas": "validación de entrada",
-    "scripts": "scripts de utilidad",
-    "services": "adaptadores externos / lógica de servicio",
-    "static": "assets estáticos",
-    "templates": "plantillas HTML",
-    "tests": "tests",
-    "utils": "helpers sin estado"
+    "claude": "",
+    "claude/commands": "comandos CQRS",
+    "claude/hooks": "hooks del sistema",
+    "claude/schemas": "validación de entrada",
+    "docs": "documentación"
   },
-  "architecture": "BLUEPRINTS → CONTROLLERS → SERVICES → MANAGERS → [DB | Redis | APIs externas]",
-  "entry_points": [
-    "main.py"
-  ],
+  "architecture": "Arquitectura no inferida — revisar estructura de carpetas",
+  "entry_points": [],
   "modules": {
-    "entry_point": [
+    "controller": [
       {
-        "path": "main.py",
-        "purpose": "Punto de entrada de la aplicación main",
+        "path": "claude/hooks/dispatch-reviewer.py",
+        "purpose": "Genera reviewer-dispatch",
         "search_keywords": [
-          "main",
-          "create",
-          "app",
-          "health",
-          "manejar",
-          "errores",
-          "globales"
+          "dispatch",
+          "reviewer",
+          "load",
+          "json",
+          "write",
+          "main"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      }
-    ],
-    "config": [
-      {
-        "path": "config.py",
-        "purpose": "Configuración de config",
-        "search_keywords": [
-          "config"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      }
-    ],
-    "db_connection": [
-      {
-        "path": "database.py",
-        "purpose": "Gestiona la conexión a la base de datos database",
-        "search_keywords": [
-          "database",
-          "close",
-          "conectar",
-          "bd1"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_database.py",
-        "purpose": "Tests for database initialization and ORM models",
-        "search_keywords": [
-          "database",
-          "conectar",
-          "bd1",
-          "incluye",
-          "audit",
-          "log",
-          "fuente",
-          "empleado"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      }
-    ],
-    "model": [
-      {
-        "path": "models.py",
-        "purpose": "Define los modelos ORM de models",
-        "search_keywords": [
-          "models",
-          "usuario",
-          "categoria",
-          "producto"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      }
-    ],
-    "state_machine": [
-      {
-        "path": "states.py",
-        "purpose": "Define la máquina de estados de states",
-        "search_keywords": [
-          "states",
-          "estado",
-          "registro",
-          "pedido",
-          "picking",
-          "transicion",
-          "valida"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_states.py",
-        "purpose": "Tests de la máquina de estados: funciones puras, sin dependencias externas",
-        "search_keywords": [
-          "states",
-          "estado",
-          "pedido",
-          "enum",
-          "registro",
-          "transicion",
-          "valida",
-          "happy"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
+          "db-reader",
+          "project-reader",
+          "query-reader"
         ]
       }
     ],
     "data_access": [
       {
-        "path": "managers/gestor_dashboard.py",
-        "purpose": "GestorDashboard — Public API",
+        "path": "claude/hooks/analyze-repo.py",
+        "purpose": "analyze-repo",
         "search_keywords": [
-          "gestor",
-          "dashboard"
+          "analyze",
+          "repo",
+          "file",
+          "info",
+          "model",
+          "field",
+          "check",
+          "approval"
         ],
         "related_to": [
-          "index"
-        ]
-      },
-      {
-        "path": "managers/gestor_pedidos.py",
-        "purpose": "Gestiona acceso a datos de pedidos",
-        "search_keywords": [
-          "gestor",
-          "pedidos",
-          "session",
-          "iniciar",
-          "pedido",
-          "guardar",
-          "enlace",
-          "hay"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/gestor_usuarios.py",
-        "purpose": "Gestiona acceso a datos de usuarios",
-        "search_keywords": [
-          "gestor",
-          "usuarios",
-          "session",
-          "obtener",
-          "usuario",
-          "guardar",
-          "completo",
-          "verificar"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/gestor_redis.py",
-        "purpose": "Gestiona acceso a datos de redis",
-        "search_keywords": [
-          "gestor",
-          "redis",
-          "manager",
-          "delete",
-          "esta",
-          "bloqueado",
-          "bloquear",
-          "usuario"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/gestor_productos.py",
-        "purpose": "Gestiona acceso a datos de productos",
-        "search_keywords": [
-          "gestor",
-          "productos",
-          "producto",
-          "manager",
-          "session",
-          "obtener",
-          "por",
-          "codigo"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/gestor_empleado.py",
-        "purpose": "Gestiona acceso a datos de empleado",
-        "search_keywords": [
-          "gestor",
-          "empleado",
-          "session",
-          "perfil",
-          "cambiar",
-          "estado",
-          "turno",
-          "hoy"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/gestor_metricas.py",
-        "purpose": "Gestiona acceso a datos de metricas",
-        "search_keywords": [
-          "gestor",
-          "metricas",
-          "session",
-          "resumen",
-          "operacion",
-          "asistencia",
-          "hoy",
-          "colas"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/dashboard/gestor_estadisticas_mixin.py",
-        "purpose": "Mixin: analítica histórica de ventas y operaciones",
-        "search_keywords": [
-          "gestor",
-          "estadisticas",
-          "mixin"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/dashboard/gestor_empleados_mixin.py",
-        "purpose": "Mixin: monitorización de empleados y rendimiento individual/colectivo",
-        "search_keywords": [
-          "gestor",
-          "empleados",
-          "mixin",
-          "disponibles",
-          "monitor",
-          "rendimiento",
-          "resumen",
-          "empleado"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/dashboard/gestor_picking_mixin.py",
-        "purpose": "Mixin: operaciones de picking — asignación, reclamación, completado",
-        "search_keywords": [
-          "gestor",
-          "picking",
-          "mixin",
-          "activo",
-          "buscar",
-          "productos",
-          "asignar",
-          "picker"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/dashboard/gestor_reparto_mixin.py",
-        "purpose": "Mixin: operaciones de reparto — asignación, entrega, cobro, cierre de caja",
-        "search_keywords": [
-          "gestor",
-          "reparto",
-          "mixin",
-          "repartidores",
-          "mapa",
-          "asignar",
-          "repartidor",
-          "marcar"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/dashboard/gestor_turnos_mixin.py",
-        "purpose": "Mixin: gestión de turnos y asistencia — consultas, creación, edición, cancelación",
-        "search_keywords": [
-          "gestor",
-          "turnos",
-          "mixin",
-          "hoy",
-          "historial",
-          "planificacion",
-          "crear",
-          "turno"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "managers/dashboard/gestor_pedidos_mixin.py",
-        "purpose": "Mixin: consultas de pedidos activos, métricas diarias, alertas e historial",
-        "search_keywords": [
-          "gestor",
-          "pedidos",
-          "mixin",
-          "metricas",
-          "activos",
-          "alertas",
-          "eventos",
-          "historial"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_gestor_dashboard.py",
-        "purpose": "Gestiona acceso a datos de gestor dashboard",
-        "search_keywords": [
-          "gestor",
-          "dashboard",
-          "metricas",
-          "keys",
-          "existentes",
-          "presentes",
-          "incluye",
-          "cancelaciones"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_gestor_usuarios.py",
-        "purpose": "Tests for managers/gestor_usuarios",
-        "search_keywords": [
-          "gestor",
-          "usuarios",
-          "verificar",
-          "usuario",
-          "obtener",
-          "completo",
-          "guardar",
-          "make"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_gestor_metricas.py",
-        "purpose": "Gestiona acceso a datos de gestor metricas",
-        "search_keywords": [
-          "gestor",
-          "metricas",
-          "resumen",
-          "operacion",
-          "asistencia",
-          "hoy",
-          "colas",
-          "detalle"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_gestor_pedidos.py",
-        "purpose": "Tests de GestorPedidos",
-        "search_keywords": [
-          "gestor",
-          "pedidos",
-          "actualizar",
-          "estado",
-          "valido",
-          "invalido",
-          "pedido",
-          "encontrado"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      }
-    ],
-    "utility": [
-      {
-        "path": "managers/dashboard/_helpers.py",
-        "purpose": "Constantes y helpers de módulo compartidos por todos los mixins del dashboard",
-        "search_keywords": [
-          "helpers"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "utils/text_utils.py",
-        "purpose": "Utilidades para utils",
-        "search_keywords": [
-          "text",
-          "utils",
-          "limpiar",
-          "texto"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      }
-    ],
-    "migration": [
-      {
-        "path": "scripts/migrate_capacidades.py",
-        "purpose": "Migración: poblar empleado_capacidades desde rol_id actual",
-        "search_keywords": [
-          "migrate",
-          "capacidades",
-          "main"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "scripts/run_migrations.py",
-        "purpose": "Ejecuta todas las migraciones SQL en orden desde el directorio migrations/",
-        "search_keywords": [
-          "migrations"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      }
-    ],
-    "service": [
-      {
-        "path": "services/token_service.py",
-        "purpose": "Adapta el servicio externo de service",
-        "search_keywords": [
-          "token",
-          "service",
-          "generar",
-          "temporal",
-          "enlace"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "services/whatsapp_service.py",
-        "purpose": "Adapta el servicio externo de service",
-        "search_keywords": [
-          "whatsapp",
-          "service",
-          "enviar",
-          "mensaje"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "services/maps_service.py",
-        "purpose": "Adapta el servicio externo de service",
-        "search_keywords": [
-          "maps",
-          "service",
-          "limpiar",
-          "direccion",
-          "construir",
-          "url",
-          "validar",
-          "coordenadas"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_whatsapp_service.py",
-        "purpose": "Adapta el servicio externo de whatsapp service",
-        "search_keywords": [
-          "whatsapp",
-          "service",
-          "enviar",
-          "mensaje",
-          "twilio",
-          "meta",
-          "proveedor",
-          "por"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
-        ]
-      },
-      {
-        "path": "tests/test_token_service.py",
-        "purpose": "Tests for services/token_service",
-        "search_keywords": [
-          "token",
-          "service",
-          "generar",
-          "temporal",
-          "enlace",
-          "datos",
-          "validos",
-          "retorna"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "index"
+          "db-reader",
+          "project-reader",
+          "query-reader"
         ]
       }
     ]
   },
   "hotspots": [
     {
-      "file": "managers/gestor_dashboard.py",
-      "commits": 48
+      "file": "claude/agents/readers/db-reader.md",
+      "commits": 5
     },
     {
-      "file": "templates/dashboard/index.html",
-      "commits": 25
+      "file": "claude/agents/readers/project-reader.md",
+      "commits": 5
     },
     {
-      "file": "templates/repartidor/index.html",
-      "commits": 21
+      "file": "claude/agents/readers/query-reader.md",
+      "commits": 5
+    },
+    {
+      "file": "claude/agents/readers/reader.md",
+      "commits": 5
+    },
+    {
+      "file": "claude/agents/readers/ui-reader.md",
+      "commits": 5
+    },
+    {
+      "file": "claude/hooks/pre-commit.py",
+      "commits": 5
     },
     {
       "file": "CLAUDE.md",
-      "commits": 19
+      "commits": 4
     },
     {
-      "file": "blueprints/webhook.py",
-      "commits": 17
+      "file": "claude/schemas/reader-context.json",
+      "commits": 4
     },
     {
-      "file": "blueprints/dashboard.py",
-      "commits": 16
+      "file": "claude/agents/writer.md",
+      "commits": 4
     },
     {
-      "file": "main.py",
-      "commits": 16
-    },
-    {
-      "file": "templates/picker/index.html",
-      "commits": 15
-    },
-    {
-      "file": "blueprints/api.py",
-      "commits": 15
-    },
-    {
-      "file": "models.py",
-      "commits": 14
+      "file": "claude/agents/planner.md",
+      "commits": 4
     }
   ],
   "cochange": {
-    ".claude/runtime/execution-brief.json": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "CLAUDE.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/runtime/execution-brief.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/agents/map-scanner.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/runtime/plan.json": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/agents/readers/db-reader.md": [
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md",
+      "claude/agents/readers/reader.md"
     ],
-    ".claude/runtime/reader-context.json": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/agents/readers/project-reader.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/query-reader.md",
+      "claude/agents/readers/reader.md"
     ],
-    "blueprints/empleado.py": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/agents/readers/query-reader.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/reader.md"
     ],
-    "managers/gestor_empleado.py": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/agents/readers/reader.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    "templates/dashboard/turnos.html": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/agents/readers/ui-reader.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    "templates/empleado/index.html": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/hooks/__pycache__/analyze-repo.cpython-312.pyc": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    "templates/empleado/turnos.html": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/hooks/analyze-repo.py": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/architecture-analyzer.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/hooks/pre-commit.py": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/backend-developer.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/DB_MAP.json": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/backend.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/DB_MAP.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/code-reviewer.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/PROJECT_MAP.json": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/frontend-developer.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/PROJECT_MAP.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/frontend.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/QUERY_MAP.json": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/fullstack-developer.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/QUERY_MAP.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/mobile-developer.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/UI_MAP.json": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/planner.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/maps/UI_MAP.md": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/python-refactor-engineer.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/schemas/db-map.json": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ],
-    ".claude/agents/readers/db-reader.md": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/index.html",
-      "templates/repartidor/index.html"
+    "claude/schemas/project-map.json": [
+      "claude/agents/readers/db-reader.md",
+      "claude/agents/readers/project-reader.md",
+      "claude/agents/readers/query-reader.md"
     ]
   },
-  "problems": [
-    {
-      "file": "models.py",
-      "issue": "21 clases en un archivo"
-    },
-    {
-      "file": "tests/test_empleado.py",
-      "issue": "11 clases en un archivo"
-    },
-    {
-      "file": "tests/test_gestor_metricas.py",
-      "issue": "14 clases en un archivo"
-    },
-    {
-      "file": "tests/test_migracion_bd_dashboard.py",
-      "issue": "10 clases en un archivo"
-    }
-  ]
+  "problems": []
 }

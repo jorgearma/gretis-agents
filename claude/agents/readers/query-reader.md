@@ -30,9 +30,16 @@ Accede a las claves del JSON directamente:
 - `files` — array de archivos con acceso a DB. Cada elemento tiene `path`, `role` y `functions`. Filtra los archivos cuyas funciones son relevantes para la peticion.
 - `cochange_with_models` — archivos de query que co-cambian con modelos segun git. Si la peticion toca un modelo, sus archivos de query asociados probablemente tambien cambian.
 
+## Busqueda semantica
+
+Si la peticion menciona una operacion (ej: "filtrar", "buscar", "paginar", "cancelar") que no coincide con ningun `path` en `files[]`:
+- Compara el concepto con los nombres en `functions[]` de cada archivo — la funcion afectada revela el archivo correcto
+- Usa `cochange_with_models` como pista adicional: si la peticion toca un modelo conocido, sus archivos de query asociados son candidatos directos
+- Si no hay coincidencia, indicalo en `notes`
+
 ## Responsabilidades
 
-- identificar que archivos de `files[]` son relevantes para la peticion
+- identificar que archivos de `files[]` son relevantes para la peticion, buscando por path Y por nombres de funcion
 - localizar las funciones especificas (`functions[]`) que implementan la consulta o acceso afectado
 - detectar riesgos de rendimiento o consistencia
 - usar `cochange_with_models` para anticipar que otros archivos pueden necesitar cambios

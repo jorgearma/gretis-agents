@@ -33,9 +33,16 @@ Accede a las claves del JSON directamente:
 - `migrations` — archivos de migracion. Relevantes si la peticion requiere cambio de esquema.
 - `seeds` — archivos de datos iniciales. Relevantes si la peticion afecta datos de referencia.
 
+## Busqueda semantica
+
+Si la peticion menciona un concepto (ej: "usuario", "pedido", "estado", "cancelar") que no coincide literalmente con ningun `name` o `table` en `models[]`:
+- Compara el concepto con los `fields[].name` de cada modelo — un campo relevante revela el modelo correcto
+- Compara con `relationships[].model` — la relacion puede apuntar al modelo que la peticion afecta indirectamente
+- Si `models[]` esta vacio o sin coincidencia, indicalo en `notes`
+
 ## Responsabilidades
 
-- identificar que modelos de `models[]` afecta la peticion por nombre o tabla
+- identificar que modelos de `models[]` afecta la peticion por nombre, tabla, campo o relacion
 - localizar sus campos (`fields`) y relaciones (`relationships`) relevantes
 - detectar si se necesita migracion (nuevo campo, nueva tabla, cambio de relacion)
 - detectar riesgos de integridad: relaciones que pueden romperse, cascadas, campos requeridos

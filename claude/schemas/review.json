@@ -9,6 +9,29 @@
       "type": "string",
       "enum": ["approved", "changes_requested", "blocked"]
     },
+    "code_diff": {
+      "type": "object",
+      "description": "Resumen de cambios reales detectados por el reviewer comparando estado anterior vs final.",
+      "additionalProperties": false,
+      "required": ["files"],
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path"],
+            "properties": {
+              "path":              { "type": "string" },
+              "added_lines":       { "type": "integer" },
+              "removed_lines":     { "type": "integer" },
+              "complexity_delta":  { "type": "string", "description": "Cambio de complejidad estimado. Ej: '+2', '-1', '0'." },
+              "unexpected_change": { "type": "boolean", "description": "true si el archivo fue modificado fuera del scope declarado en el plan." }
+            }
+          }
+        }
+      }
+    },
     "findings": {
       "type": "array",
       "items": {

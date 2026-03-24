@@ -43,7 +43,8 @@ Lee y respeta, en este orden:
 5. Implementa el cambio minimo que cumple el plan sin mezclar refactors no pedidos.
 6. Revisa efectos laterales sobre contratos, migraciones, consultas, errores, idempotencia y compatibilidad.
 7. Valida, en la medida de lo posible, comportamiento esperado, manejo de errores y casos limite.
-8. Resume resultado, archivos tocados, validaciones y riesgos usando `.claude/schemas/result.json`.
+8. Por cada archivo que modificaste, genera un diff unificado (formato `--- antes / +++ despues` con 3 lineas de contexto). Incluye `lines_added`, `lines_removed` y marca `out_of_scope: true` si el archivo no estaba en `files_to_open` ni `files_to_review` del plan. Incluye estos diffs en `modified_files` del resultado.
+9. Resume resultado, archivos tocados, validaciones y riesgos usando `.claude/schemas/result.json`.
 
 ## Criterios de implementacion
 

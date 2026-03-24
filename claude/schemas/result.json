@@ -9,10 +9,15 @@
       "additionalProperties": false,
       "required": ["status", "summary", "artifacts", "next_steps"],
       "properties": {
-        "status": { "type": "string", "enum": ["success", "partial", "blocked"] },
-        "summary": { "type": "string" },
+        "status":    { "type": "string", "enum": ["success", "partial", "blocked"] },
+        "summary":   { "type": "string" },
         "artifacts": { "type": "array", "items": { "type": "string" } },
-        "next_steps": { "type": "array", "items": { "type": "string" } }
+        "next_steps": { "type": "array", "items": { "type": "string" } },
+        "modified_files": {
+          "type": "array",
+          "description": "Archivos modificados con diff incluido. El reviewer los usa para no releer el codigo.",
+          "items": { "$ref": "#/$defs/modified_file" }
+        }
       }
     },
     "backend": {
@@ -20,10 +25,35 @@
       "additionalProperties": false,
       "required": ["status", "summary", "artifacts", "next_steps"],
       "properties": {
-        "status": { "type": "string", "enum": ["success", "partial", "blocked"] },
-        "summary": { "type": "string" },
+        "status":    { "type": "string", "enum": ["success", "partial", "blocked"] },
+        "summary":   { "type": "string" },
         "artifacts": { "type": "array", "items": { "type": "string" } },
-        "next_steps": { "type": "array", "items": { "type": "string" } }
+        "next_steps": { "type": "array", "items": { "type": "string" } },
+        "modified_files": {
+          "type": "array",
+          "description": "Archivos modificados con diff incluido. El reviewer los usa para no releer el codigo.",
+          "items": { "$ref": "#/$defs/modified_file" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "modified_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "lines_added", "lines_removed", "diff"],
+      "properties": {
+        "path":          { "type": "string" },
+        "lines_added":   { "type": "integer" },
+        "lines_removed": { "type": "integer" },
+        "diff": {
+          "type": "string",
+          "description": "Diff unificado del cambio. Formato: --- antes / +++ despues con contexto de 3 lineas."
+        },
+        "out_of_scope": {
+          "type": "boolean",
+          "description": "true si este archivo no estaba en files_to_open ni files_to_review del plan."
+        }
       }
     }
   }

@@ -57,13 +57,18 @@
           },
           "owner": {
             "type": "string",
-            "enum": ["frontend", "backend", "reviewer"]
+            "enum": ["frontend", "backend", "reviewer", "test-runner"]
           },
           "instruction": {
             "type": "string"
           },
           "expected_output": {
             "type": "string"
+          },
+          "verification_checklist": {
+            "type": "array",
+            "description": "Lista de condiciones concretas y verificables que el reviewer puede comprobar una a una.",
+            "items": { "type": "string" }
           }
         }
       }

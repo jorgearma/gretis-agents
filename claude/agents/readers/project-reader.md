@@ -34,11 +34,22 @@ Accede a las claves del JSON directamente:
 - `problems` — code smells detectados. Si la peticion toca un archivo marcado aqui, comunicarlo en `notes`.
 - `entry_points` — punto de arranque de la app. Util para trazar el flujo desde la entrada.
 
+## Busqueda semantica con search_keywords
+
+Cada modulo en `modules` tiene un campo `search_keywords`: lista de terminos extraidos del nombre del archivo, clases y funciones que contiene.
+
+Si la peticion menciona una funcion, clase o concepto que no aparece directamente en ningun `path`, busca por coincidencia en `search_keywords`:
+- Extrae los sustantivos tecnicos clave del `improved_prompt` (ej: "authenticate", "session", "JWT", "cancel order")
+- Compara con los `search_keywords` de cada modulo
+- Si hay coincidencia, incluye ese modulo aunque su path no sea obvio
+
+Usa tambien `related_to` para expandir: si un modulo relevante apunta a otros mediante `related_to`, esos son candidatos para `files_to_review`.
+
 ## Responsabilidades
 
-- identificar que archivos de `modules` son relevantes para la peticion
+- identificar que archivos de `modules` son relevantes para la peticion, usando path Y search_keywords
 - localizar el flujo entre capas segun `architecture`
-- detectar dependencias tecnicas usando `cochange`
+- detectar dependencias tecnicas usando `cochange` y `related_to`
 - proponer que archivos conviene abrir primero y cuales revisar en profundidad
 - indicar si un archivo tocado tiene `problems` conocidos
 

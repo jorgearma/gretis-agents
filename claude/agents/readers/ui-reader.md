@@ -32,9 +32,16 @@ Accede a las claves del JSON directamente:
 - `routers` — archivos con rol `controller` que definen rutas. Relevantes si la peticion afecta routing o nuevas rutas.
 - `static` — carpeta de assets. Relevante si la peticion afecta CSS, JS o imagenes.
 
+## Busqueda semantica
+
+Si la peticion menciona una pantalla o componente (ej: "dashboard", "formulario de pedido", "modal de confirmacion") que no coincide literalmente con ninguna clave en `views`:
+- Busca coincidencias parciales entre el concepto y los nombres de archivo dentro de cada carpeta de `views`
+- Revisa `routers[]` para encontrar rutas cuya URL o nombre coincida con el concepto
+- Si no hay coincidencia clara, indicalo en `notes` con las carpetas mas probables
+
 ## Responsabilidades
 
-- identificar que carpetas de `views` contienen las vistas afectadas por la peticion
+- identificar que carpetas de `views` contienen las vistas afectadas por la peticion, buscando por nombre de carpeta, archivo y ruta
 - localizar los archivos de template o componente concretos
 - identificar los routers de `routers[]` que exponen las rutas afectadas
 - detectar riesgos de consistencia visual si el cambio afecta componentes compartidos

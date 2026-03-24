@@ -11,10 +11,10 @@ Recibir el plan del `planner` y convertirlo en un handoff ejecutable, claro y tr
 Lee y respeta, en este orden:
 
 1. `.claude/runtime/plan.json`
-2. `.claude/schemas/plan.json`
-3. `.claude/schemas/execution-brief.json`
-4. `.claude/runtime/operator-approval.json`
-5. el contexto previo generado por `reader` si esta disponible en el plan
+2. `.claude/runtime/files-read.json` — cache de archivos leidos por el planner (no releer)
+3. `.claude/schemas/plan.json`
+4. `.claude/schemas/execution-brief.json`
+5. `.claude/runtime/operator-approval.json`
 
 ## Responsabilidades
 
@@ -41,13 +41,14 @@ Lee y respeta, en este orden:
 ## Como trabajar
 
 1. Lee `plan.json` completo y verifica que tenga `task`, `steps`, `done_criteria` y `context_inputs`.
-2. Identifica que pasos son operativos y cuales son solo de coordinacion.
-3. Construye `target_agents` a partir de los owners realmente implicados en la ejecucion posterior.
-4. Redacta `context_summary` como un resumen breve pero util para trabajar sin releer todo el plan.
-5. Copia `files_to_open` y `files_to_review` desde `context_inputs`, sin inventar rutas nuevas.
-6. Convierte cada paso ejecutable en una instruccion concreta dentro de `implementation_steps`.
-7. Si un paso del plan es demasiado vago para ejecutarse, mantenlo pero vuelve explicita la ambiguedad en `notes`.
-8. Deja una `operator_action` clara para aprobar, rechazar o pedir ajuste del plan.
+2. Lee `files-read.json`. Usa el contenido de los archivos y las `notes` del planner para escribir instrucciones que referencien funciones, clases y lineas concretas. No releas los archivos del proyecto — el cache ya los tiene.
+3. Identifica que pasos son operativos y cuales son solo de coordinacion.
+4. Construye `target_agents` a partir de los owners realmente implicados en la ejecucion posterior.
+5. Redacta `context_summary` como un resumen breve pero util para trabajar sin releer todo el plan.
+6. Copia `files_to_open` y `files_to_review` desde `context_inputs`, sin inventar rutas nuevas.
+7. Convierte cada paso ejecutable en una instruccion concreta dentro de `implementation_steps`. Aprovecha el codigo real del cache: nombra funciones existentes, indica donde insertar cambios, senala dependencias concretas. Para cada paso, escribe un `expected_output` especifico (HTTP status + payload, nombre de funcion + valor de retorno, estado de UI observable) y un `verification_checklist` con condiciones binarias que el reviewer pueda comprobar una a una. Evita outputs vagos como "feature implementada" o "funciona correctamente".
+8. Si un paso del plan es demasiado vago para ejecutarse, mantenlo pero vuelve explicita la ambiguedad en `notes`.
+9. Deja una `operator_action` clara para aprobar, rechazar o pedir ajuste del plan.
 
 ## Calidad esperada
 

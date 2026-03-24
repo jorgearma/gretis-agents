@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClaudeFilesRead",
+  "description": "Cache de secciones relevantes leidas por el planner. El writer lo consume para evitar releer archivos completos.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["files"],
+  "properties": {
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "role", "total_lines", "relevant_sections"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Ruta del archivo relativa a la raiz del proyecto"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["open", "review"],
+            "description": "open = archivo de implementacion principal, review = dependencia o referencia"
+          },
+          "total_lines": {
+            "type": "integer",
+            "description": "Total de lineas del archivo. Permite al writer estimar si falta contexto."
+          },
+          "relevant_sections": {
+            "type": "array",
+            "description": "Secciones del archivo que son relevantes para la tarea. Solo estas lineas, no el archivo completo.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["start_line", "end_line", "content", "reason"],
+              "properties": {
+                "start_line": { "type": "integer" },
+                "end_line":   { "type": "integer" },
+                "content":    { "type": "string", "description": "Lineas exactas del archivo en ese rango" },
+                "reason":     { "type": "string", "description": "Por que esta seccion es relevante para la tarea" }
+              }
+            }
+          },
+          "symbols": {
+            "type": "array",
+            "description": "Funciones, clases o constantes identificadas en el archivo que el planner considero relevantes.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "line"],
+              "properties": {
+                "name": { "type": "string" },
+                "line": { "type": "integer" },
+                "kind": { "type": "string", "description": "function, class, const, type, etc." }
+              }
+            }
+          },
+          "notes": {
+            "type": "string",
+            "description": "Observaciones del planner sobre este archivo (contratos, riesgos, dependencias)"
+          }
+        }
+      }
+    }
+  }
+}

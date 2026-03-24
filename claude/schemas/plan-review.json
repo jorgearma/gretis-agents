@@ -44,7 +44,8 @@
               "brechas_de_archivos",
               "dependencias_implicitas",
               "conflicto_de_stack",
-              "efectos_secundarios"
+              "efectos_secundarios",
+              "breaking_change"
             ],
             "description": "Categoria del error segun el checklist del plan-reviewer."
           },
@@ -59,6 +60,19 @@
           "suggestion": {
             "type": "string",
             "description": "Correccion concreta sugerida. Opcional pero recomendado para issues de severidad error o warning."
+          },
+          "breaking_change": {
+            "type": "boolean",
+            "description": "true si el issue implica incompatibilidad hacia atras con clientes existentes."
+          },
+          "affected_clients": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Clientes o consumidores que se rompen con este cambio. Ej: ['mobile-app@v1', 'web-app@v2']."
+          },
+          "migration_path": {
+            "type": "string",
+            "description": "Ruta de migracion sugerida para mantener compatibilidad. Ej: 'Versionar el endpoint con /v2/'."
           }
         }
       }

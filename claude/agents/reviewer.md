@@ -34,7 +34,8 @@ Lee y respeta, en este orden:
    - Si el archivo esta vacio (`{}`), devuelve `blocked` con reason: "result.json esta vacio — ningun agente produjo salida".
    - Revisa los artefactos de cada agente por separado antes de evaluar el resultado combinado.
 3. Lee el plan y el execution brief para entender alcance, archivos y criterios de cierre.
-4. Revisa el codigo modificado y su contexto inmediato.
+4. Usa `modified_files` de `result.json` como fuente principal del codigo modificado. Cada entrada tiene el diff completo — no releas los archivos del proyecto si el diff ya esta disponible. Construye `code_diff` del output a partir de estos diffs: suma `lines_added`/`lines_removed` por archivo y marca `unexpected_change: true` en cualquier archivo con `out_of_scope: true`. Solo releas un archivo del proyecto si `modified_files` esta ausente o si necesitas contexto adicional que el diff no cubre.
+5. Revisa los diffs de cada archivo contra el `verification_checklist` de cada paso. Cada condicion del checklist debe poder verificarse como true o false a partir del diff.
 5. Busca primero fallos funcionales, contratos rotos, errores de integracion y regresiones.
 6. Despues revisa validacion, manejo de errores, consistencia de datos, UX y accesibilidad si aplica.
 7. Señala pruebas faltantes solo cuando su ausencia deje un riesgo real sin cubrir.

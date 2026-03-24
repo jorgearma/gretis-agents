@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "action",
-        choices=["approve", "reject", "reset"],
+        choices=["approve", "reject", "reset", "replantear"],
         help="Estado que quieres aplicar al plan.",
     )
     parser.add_argument(
@@ -40,12 +40,14 @@ def build_payload(action: str, approved_by: str, notes: str) -> dict[str, str]:
         status = "approved"
     elif action == "reject":
         status = "rejected"
+    elif action == "replantear":
+        status = "replanning"
     else:
         status = "pending"
 
     return {
         "status": status,
-        "approved_by": approved_by if status != "pending" else "",
+        "approved_by": approved_by if status not in ("pending", "replanning") else "",
         "notes": notes,
     }
 
@@ -76,7 +78,9 @@ def main() -> int:
     args = parse_args()
     payload = build_payload(args.action, args.by, args.notes)
     write_payload(payload)
-    if payload["status"] != "approved":
+    if payload["status"] == "replanning":
+        write_dispatch_reset("Plan enviado a replantear. Invoca el planner con el contexto de plan-review.json.")
+    elif payload["status"] != "approved":
         write_dispatch_reset("Execution requires a newly approved plan.")
 
     print(f"Plan approval status: {payload['status']}")
@@ -84,6 +88,10 @@ def main() -> int:
         print(f"Approved by: {payload['approved_by']}")
     if payload["notes"]:
         print(f"Notes: {payload['notes']}")
+    if payload["status"] == "replanning":
+        print()
+        print("El plan volvera al planner con los warnings del plan-reviewer como contexto.")
+        print("Invoca el agente planner para generar un nuevo plan.json.")
     return 0
 
 
