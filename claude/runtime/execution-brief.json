@@ -1,14 +1,14 @@
 {
   "task": "",
   "approval_status": "pending_operator_review",
-  "target_agents": ["orchestrator"],
+  "target_agents": [],
   "context_summary": "",
   "files_to_open": [],
   "files_to_review": [],
   "implementation_steps": [
     {
       "id": "pending-brief",
-      "owner": "orchestrator",
+      "owner": "frontend",
       "instruction": "Esperando que writer genere el execution brief definitivo."
     }
   ],

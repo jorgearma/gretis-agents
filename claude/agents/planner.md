@@ -21,4 +21,4 @@ Eres el agente responsable de convertir una solicitud en un plan ejecutable.
 
 ## Entrega esperada
 
-Un plan compatible con `.claude/schemas/plan.json`.
+Un plan compatible con `claude/schemas/plan.json`.

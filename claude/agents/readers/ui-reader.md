@@ -8,13 +8,13 @@ Entender la parte visual del proyecto para ayudar a decidir que pantallas, compo
 
 ## Fuente principal
 
-Lee `.claude/maps/UI_MAP.md`.
+Lee `claude/maps/UI_MAP.md`.
 
 ## Entradas
 
 - la peticion original del usuario
 - el contexto detectado por `reader`
-- el contenido de `.claude/maps/UI_MAP.md`
+- el contenido de `claude/maps/UI_MAP.md`
 - cualquier pantalla, componente o flujo visual que el mapa identifique como relevante
 
 ## Responsabilidades

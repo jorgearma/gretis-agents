@@ -8,13 +8,13 @@ Entender la parte de datos del proyecto para ayudar a decidir que archivos deben
 
 ## Fuente principal
 
-Lee `.claude/maps/DB_MAP.md`.
+Lee `claude/maps/DB_MAP.md`.
 
 ## Entradas
 
 - la peticion original del usuario
 - el contexto detectado por `reader`
-- el contenido de `.claude/maps/DB_MAP.md`
+- el contenido de `claude/maps/DB_MAP.md`
 - cualquier archivo de esquema, modelo o migracion que el mapa mencione como relevante
 
 ## Responsabilidades
