@@ -38,6 +38,10 @@ REQUIRED_PATHS = [
     ROOT / "claude" / "runtime" / "operator-approval.json",
     ROOT / "claude" / "hooks" / "approve-plan.py",
     ROOT / "claude" / "hooks" / "execute-plan.py",
+    ROOT / "claude" / "hooks" / "dispatch-reviewer.py",
+    ROOT / "claude" / "hooks" / "recover-cycle.py",
+    ROOT / "claude" / "schemas" / "reviewer-dispatch.json",
+    ROOT / "claude" / "commands" / "start-cycle.md",
     ROOT / "claude" / "commands" / "implement-feature.md",
     ROOT / "claude" / "commands" / "review-change.md",
 ]
@@ -47,6 +51,8 @@ RUNTIME_JSON_FILES = [
     ROOT / "claude" / "runtime" / "execution-brief.json",
     ROOT / "claude" / "runtime" / "plan.json",
     ROOT / "claude" / "runtime" / "execution-dispatch.json",
+    ROOT / "claude" / "runtime" / "reviewer-dispatch.json",
+    ROOT / "claude" / "runtime" / "result.json",
 ]
 
 JSON_FILES = [
@@ -58,6 +64,7 @@ JSON_FILES = [
     ROOT / "claude" / "schemas" / "operator-approval.json",
     ROOT / "claude" / "schemas" / "result.json",
     ROOT / "claude" / "schemas" / "review.json",
+    ROOT / "claude" / "schemas" / "reviewer-dispatch.json",
     ROOT / "claude" / "runtime" / "operator-approval.json",
 ]
 

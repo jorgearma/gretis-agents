@@ -17,7 +17,8 @@ Eres el agente responsable de convertir una solicitud en un plan ejecutable.
 - cada paso debe ser concreto
 - evita planes vagos o redundantes
 - anticipa bloqueos antes de implementar
-- incluye pasos con owner `writer` cuando haga falta generar la guia de ejecucion
+- los owners validos para pasos son solo `frontend`, `backend` y `reviewer`
+- el `writer` se invoca automaticamente despues del planner y no necesita paso en el plan
 
 ## Entrega esperada
 

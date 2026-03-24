@@ -22,13 +22,16 @@
     "reviewer"
   ],
   "commands": [
+    "start-cycle",
     "implement-feature",
     "review-change"
   ],
   "hooks": [
     "pre-commit.py",
     "approve-plan.py",
-    "execute-plan.py"
+    "execute-plan.py",
+    "dispatch-reviewer.py",
+    "recover-cycle.py"
   ],
   "maps": [
     "PROJECT_MAP.md",
