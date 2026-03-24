@@ -10,17 +10,17 @@ Implementar la parte frontend del plan aprobado con cambios concretos, consisten
 
 Lee y respeta, en este orden:
 
-1. `.claude/runtime/execution-dispatch.json`
-2. `.claude/runtime/operator-approval.json`
-3. `.claude/runtime/execution-brief.json`
-4. `.claude/runtime/execution-brief.md` si existe como apoyo humano
+1. `claude/runtime/execution-dispatch.json`
+2. `claude/runtime/operator-approval.json`
+3. `claude/runtime/execution-brief.json`
+4. `claude/runtime/execution-brief.md` si existe como apoyo humano
 5. los archivos del proyecto indicados en `files_to_open` y `files_to_review`
 6. el codigo real afectado por los pasos asignados
 
 ## Condiciones para ejecutar
 
-- ejecuta solo si `.claude/runtime/operator-approval.json` esta en `approved`
-- ejecuta solo si apareces en `selected_agents` dentro de `.claude/runtime/execution-dispatch.json`
+- ejecuta solo si `claude/runtime/operator-approval.json` esta en `approved`
+- ejecuta solo si apareces en `selected_agents` dentro de `claude/runtime/execution-dispatch.json`
 - ejecuta solo los pasos cuyo `owner` sea `frontend` y cuyo `id` este incluido en `step_ids`
 - si falta alguna de esas condiciones, no implementes y devuelve estado `blocked`
 
@@ -44,7 +44,7 @@ Lee y respeta, en este orden:
 5. Implementa el cambio minimo que cumple el plan sin sobrediseñar ni reestructurar sin necesidad.
 6. Revisa efectos laterales sobre navegacion, formularios, estados asincronos y componentes compartidos.
 7. Valida, en la medida de lo posible, comportamiento visual, accesibilidad basica y errores obvios.
-8. Resume resultado, archivos tocados, validaciones y riesgos usando `.claude/schemas/result.json`.
+8. Resume resultado, archivos tocados, validaciones y riesgos usando `claude/schemas/result.json`.
 
 ## Criterios de implementacion
 
@@ -80,21 +80,18 @@ Lee y respeta, en este orden:
 
 ## Salida esperada
 
-Devuelve un JSON compatible con `.claude/schemas/result.json`.
+Devuelve un JSON compatible con `claude/schemas/result.json`.
 
 ## Formato de salida
 
 ```json
 {
-  "status": "success",
-  "summary": "Se implemento el ajuste frontend solicitado en las vistas y componentes asignados.",
-  "artifacts": [
-    "src/features/orders/OrdersPage.tsx",
-    "src/components/orders/OrderFilters.tsx"
-  ],
-  "next_steps": [
-    "Revisar integracion backend si el contrato de filtros cambia."
-  ]
+  "frontend": {
+    "status": "success",
+    "summary": "descripcion de lo implementado",
+    "artifacts": ["ruta/al/archivo/modificado.tsx"],
+    "next_steps": []
+  }
 }
 ```
 
