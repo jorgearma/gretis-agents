@@ -15,11 +15,15 @@
     "db-reader",
     "query-reader",
     "ui-reader",
+    "sense-checker",
+    "map-scanner",
     "planner",
     "writer",
+    "plan-reviewer",
     "frontend",
     "backend",
-    "reviewer"
+    "reviewer",
+    "quick-agent"
   ],
   "commands": [
     "start-cycle",
@@ -28,10 +32,12 @@
   ],
   "hooks": [
     "pre-commit.py",
+    "approve-map-scan.py",
+    "analyze-repo.py",
     "approve-plan.py",
     "execute-plan.py",
-    "dispatch-reviewer.py",
-    "recover-cycle.py"
+    "quick-execute.py",
+    "dispatch-reviewer.py"
   ],
   "maps": [
     "PROJECT_MAP.md",
@@ -39,14 +45,32 @@
     "QUERY_MAP.md",
     "UI_MAP.md"
   ],
-  "reader_output_schema": ".claude/schemas/reader-context.json"
-  ,
-  "writer_output_schema": ".claude/schemas/execution-brief.json",
-  "writer_output_file": ".claude/runtime/execution-brief.json",
-  "writer_human_output_file": ".claude/runtime/execution-brief.md",
-  "operator_approval_schema": ".claude/schemas/operator-approval.json",
-  "operator_approval_file": ".claude/runtime/operator-approval.json",
-  "dispatch_schema": ".claude/schemas/execution-dispatch.json",
-  "dispatch_file": ".claude/runtime/execution-dispatch.json",
-  "runtime_plan_file": ".claude/runtime/plan.json"
+  "schemas": {
+    "reader_context":     ".claude/schemas/reader-context.json",
+    "plan":               ".claude/schemas/plan.json",
+    "files_read":         ".claude/schemas/files-read.json",
+    "sense_check":        ".claude/schemas/sense-check.json",
+    "clarifications":     ".claude/schemas/clarifications.json",
+    "execution_brief":    ".claude/schemas/execution-brief.json",
+    "execution_dispatch": ".claude/schemas/execution-dispatch.json",
+    "operator_approval":  ".claude/schemas/operator-approval.json",
+    "plan_review":        ".claude/schemas/plan-review.json",
+    "result":             ".claude/schemas/result.json",
+    "review":             ".claude/schemas/review.json",
+    "quick_dispatch":     ".claude/schemas/quick-dispatch.json"
+  },
+  "runtime": {
+    "reader_context":     ".claude/runtime/reader-context.json",
+    "plan":               ".claude/runtime/plan.json",
+    "files_read":         ".claude/runtime/files-read.json",
+    "sense_check":        ".claude/runtime/sense-check.json",
+    "clarifications":     ".claude/runtime/clarifications.json",
+    "execution_brief":    ".claude/runtime/execution-brief.json",
+    "execution_dispatch": ".claude/runtime/execution-dispatch.json",
+    "operator_approval":  ".claude/runtime/operator-approval.json",
+    "plan_review":        ".claude/runtime/plan-review.json",
+    "result":             ".claude/runtime/result.json",
+    "review":             ".claude/runtime/review.json",
+    "quick_dispatch":     ".claude/runtime/quick-dispatch.json"
+  }
 }

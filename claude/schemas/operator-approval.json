@@ -7,7 +7,7 @@
   "properties": {
     "status": {
       "type": "string",
-      "enum": ["pending", "approved", "rejected"]
+      "enum": ["pending", "approved", "rejected", "replanning"]
     },
     "approved_by": {
       "type": "string"
