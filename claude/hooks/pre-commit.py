@@ -9,55 +9,56 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+# These files must always exist (versioned)
 REQUIRED_PATHS = [
     ROOT / "CLAUDE.md",
-    ROOT / ".claude" / "plugin.json",
-    ROOT / ".claude" / "agents" / "readers" / "reader.md",
-    ROOT / ".claude" / "agents" / "readers" / "project-reader.md",
-    ROOT / ".claude" / "agents" / "readers" / "db-reader.md",
-    ROOT / ".claude" / "agents" / "readers" / "query-reader.md",
-    ROOT / ".claude" / "agents" / "readers" / "ui-reader.md",
-    ROOT / ".claude" / "agents" / "orchestrator.md",
-    ROOT / ".claude" / "agents" / "planner.md",
-    ROOT / ".claude" / "agents" / "writer.md",
-    ROOT / ".claude" / "agents" / "frontend.md",
-    ROOT / ".claude" / "agents" / "backend.md",
-    ROOT / ".claude" / "agents" / "reviewer.md",
-    ROOT / ".claude" / "maps" / "PROJECT_MAP.md",
-    ROOT / ".claude" / "maps" / "DB_MAP.md",
-    ROOT / ".claude" / "maps" / "QUERY_MAP.md",
-    ROOT / ".claude" / "maps" / "UI_MAP.md",
-    ROOT / ".claude" / "schemas" / "reader-context.json",
-    ROOT / ".claude" / "schemas" / "plan.json",
-    ROOT / ".claude" / "schemas" / "execution-brief.json",
-    ROOT / ".claude" / "schemas" / "execution-dispatch.json",
-    ROOT / ".claude" / "schemas" / "operator-approval.json",
-    ROOT / ".claude" / "schemas" / "result.json",
-    ROOT / ".claude" / "schemas" / "review.json",
-    ROOT / ".claude" / "runtime" / "execution-brief.json",
-    ROOT / ".claude" / "runtime" / "execution-brief.md",
-    ROOT / ".claude" / "runtime" / "plan.json",
-    ROOT / ".claude" / "runtime" / "execution-dispatch.json",
-    ROOT / ".claude" / "runtime" / "operator-approval.json",
-    ROOT / ".claude" / "hooks" / "approve-plan.py",
-    ROOT / ".claude" / "hooks" / "execute-plan.py",
-    ROOT / ".claude" / "commands" / "implement-feature.md",
-    ROOT / ".claude" / "commands" / "review-change.md",
+    ROOT / "claude" / "plugin.json",
+    ROOT / "claude" / "agents" / "readers" / "reader.md",
+    ROOT / "claude" / "agents" / "readers" / "project-reader.md",
+    ROOT / "claude" / "agents" / "readers" / "db-reader.md",
+    ROOT / "claude" / "agents" / "readers" / "query-reader.md",
+    ROOT / "claude" / "agents" / "readers" / "ui-reader.md",
+    ROOT / "claude" / "agents" / "planner.md",
+    ROOT / "claude" / "agents" / "writer.md",
+    ROOT / "claude" / "agents" / "frontend.md",
+    ROOT / "claude" / "agents" / "backend.md",
+    ROOT / "claude" / "agents" / "reviewer.md",
+    ROOT / "claude" / "maps" / "PROJECT_MAP.md",
+    ROOT / "claude" / "maps" / "DB_MAP.md",
+    ROOT / "claude" / "maps" / "QUERY_MAP.md",
+    ROOT / "claude" / "maps" / "UI_MAP.md",
+    ROOT / "claude" / "schemas" / "reader-context.json",
+    ROOT / "claude" / "schemas" / "plan.json",
+    ROOT / "claude" / "schemas" / "execution-brief.json",
+    ROOT / "claude" / "schemas" / "execution-dispatch.json",
+    ROOT / "claude" / "schemas" / "operator-approval.json",
+    ROOT / "claude" / "schemas" / "result.json",
+    ROOT / "claude" / "schemas" / "review.json",
+    ROOT / "claude" / "runtime" / "operator-approval.json",
+    ROOT / "claude" / "hooks" / "approve-plan.py",
+    ROOT / "claude" / "hooks" / "execute-plan.py",
+    ROOT / "claude" / "commands" / "implement-feature.md",
+    ROOT / "claude" / "commands" / "review-change.md",
+]
+
+# Runtime JSON files that exist only after a cycle runs (gitignored — check only if present)
+RUNTIME_JSON_FILES = [
+    ROOT / "claude" / "runtime" / "execution-brief.json",
+    ROOT / "claude" / "runtime" / "plan.json",
+    ROOT / "claude" / "runtime" / "execution-dispatch.json",
 ]
 
 JSON_FILES = [
-    ROOT / ".claude" / "plugin.json",
-    ROOT / ".claude" / "schemas" / "reader-context.json",
-    ROOT / ".claude" / "schemas" / "plan.json",
-    ROOT / ".claude" / "schemas" / "execution-brief.json",
-    ROOT / ".claude" / "schemas" / "execution-dispatch.json",
-    ROOT / ".claude" / "schemas" / "operator-approval.json",
-    ROOT / ".claude" / "schemas" / "result.json",
-    ROOT / ".claude" / "schemas" / "review.json",
-    ROOT / ".claude" / "runtime" / "execution-brief.json",
-    ROOT / ".claude" / "runtime" / "plan.json",
-    ROOT / ".claude" / "runtime" / "execution-dispatch.json",
-    ROOT / ".claude" / "runtime" / "operator-approval.json",
+    ROOT / "claude" / "plugin.json",
+    ROOT / "claude" / "schemas" / "reader-context.json",
+    ROOT / "claude" / "schemas" / "plan.json",
+    ROOT / "claude" / "schemas" / "execution-brief.json",
+    ROOT / "claude" / "schemas" / "execution-dispatch.json",
+    ROOT / "claude" / "schemas" / "operator-approval.json",
+    ROOT / "claude" / "schemas" / "result.json",
+    ROOT / "claude" / "schemas" / "review.json",
+    ROOT / "claude" / "runtime" / "operator-approval.json",
 ]
 
 
@@ -84,6 +85,18 @@ def main() -> int:
     if invalid_json:
         print("Invalid JSON files detected:")
         for error in invalid_json:
+            print(f"- {error}")
+        return 1
+
+    # Validate runtime JSON files only if they exist (gitignored, generated at runtime)
+    runtime_errors = [
+        error
+        for path in RUNTIME_JSON_FILES
+        if path.exists() and (error := validate_json_file(path))
+    ]
+    if runtime_errors:
+        print("Invalid runtime JSON files detected:")
+        for error in runtime_errors:
             print(f"- {error}")
         return 1
 
