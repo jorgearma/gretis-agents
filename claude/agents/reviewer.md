@@ -10,11 +10,12 @@ Revisar el resultado final contra el plan aprobado y detectar bugs, regresiones,
 
 Lee y respeta, en este orden:
 
-1. `.claude/runtime/plan.json`
-2. `.claude/runtime/execution-brief.json`
-3. `.claude/runtime/execution-dispatch.json`
-4. el codigo final y los archivos modificados
-5. `.claude/schemas/review.json`
+1. `claude/runtime/plan.json`
+2. `claude/runtime/execution-brief.json`
+3. `claude/runtime/execution-dispatch.json`
+4. `claude/runtime/result.json`
+5. el codigo final y los archivos modificados
+6. `claude/schemas/review.json`
 
 ## Responsabilidades
 
@@ -26,7 +27,11 @@ Lee y respeta, en este orden:
 
 ## Como revisar
 
-1. Lee el plan y el execution brief para entender alcance, archivos y criterios de cierre.
+1. Lee `claude/runtime/result.json`. El archivo tiene claves opcionales `frontend` y `backend`, una por cada agente que ejecuto.
+   - Si una clave no esta presente, ese agente no ejecuto — no lo marques como error.
+   - Si el archivo esta vacio (`{}`), devuelve `blocked` con reason: "result.json esta vacio — ningun agente produjo salida".
+   - Revisa los artefactos de cada agente por separado antes de evaluar el resultado combinado.
+2. Lee el plan y el execution brief para entender alcance, archivos y criterios de cierre.
 2. Revisa el codigo modificado y su contexto inmediato.
 3. Busca primero fallos funcionales, contratos rotos, errores de integracion y regresiones.
 4. Despues revisa validacion, manejo de errores, consistencia de datos, UX y accesibilidad si aplica.
@@ -50,7 +55,7 @@ Lee y respeta, en este orden:
 
 ## Entrega esperada
 
-Una revision compatible con `.claude/schemas/review.json`.
+Una revision compatible con `claude/schemas/review.json`.
 
 ## Formato de salida
 
