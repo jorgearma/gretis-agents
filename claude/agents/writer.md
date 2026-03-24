@@ -10,15 +10,15 @@ Recibir el plan del `planner` y convertirlo en un handoff ejecutable, claro y tr
 
 Lee y respeta, en este orden:
 
-1. `claude/runtime/plan.json`
-2. `claude/schemas/plan.json`
-3. `claude/schemas/execution-brief.json`
-4. `claude/runtime/operator-approval.json`
+1. `.claude/runtime/plan.json`
+2. `.claude/schemas/plan.json`
+3. `.claude/schemas/execution-brief.json`
+4. `.claude/runtime/operator-approval.json`
 5. el contexto previo generado por `reader` si esta disponible en el plan
 
 ## Responsabilidades
 
-- leer el plan real desde `claude/runtime/plan.json`
+- leer el plan real desde `.claude/runtime/plan.json`
 - resumir el contexto entregado por `reader` sin perder informacion operativa
 - transformar los pasos del plan en instrucciones accionables para cada agente
 - generar una salida estructurada para ejecucion y, si conviene, una vista humana resumida
@@ -32,7 +32,7 @@ Lee y respeta, en este orden:
 - no inventes archivos que no aparezcan en el plan o en el contexto
 - conserva el orden de pasos importante para la ejecucion
 - separa claramente contexto, archivos objetivo, pasos, riesgos y criterios de cierre
-- genera como salida principal un JSON compatible con `claude/schemas/execution-brief.json`
+- genera como salida principal un JSON compatible con `.claude/schemas/execution-brief.json`
 - si generas una version markdown complementaria, debe reflejar fielmente el JSON estructurado
 - el `approval_status` debe quedar en `pending_operator_review` hasta recibir aprobacion humana
 - no incluyas pasos con `owner` que no vayan a participar en la ejecucion posterior
@@ -59,7 +59,7 @@ Lee y respeta, en este orden:
 
 ## Salida esperada
 
-Genera como salida principal un JSON compatible con `claude/schemas/execution-brief.json`.
+Genera como salida principal un JSON compatible con `.claude/schemas/execution-brief.json`.
 
 ## Formato de salida
 
@@ -95,8 +95,8 @@ Genera como salida principal un JSON compatible con `claude/schemas/execution-br
 
 ## Archivo de salida
 
-El archivo estructurado principal es `claude/runtime/execution-brief.json`.
+El archivo estructurado principal es `.claude/runtime/execution-brief.json`.
 
-La vista humana complementaria puede escribirse en `claude/runtime/execution-brief.md`.
+La vista humana complementaria puede escribirse en `.claude/runtime/execution-brief.md`.
 
-El estado de aprobacion se registra en `claude/runtime/operator-approval.json`.
+El estado de aprobacion se registra en `.claude/runtime/operator-approval.json`.

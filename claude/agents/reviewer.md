@@ -10,13 +10,13 @@ Revisar el resultado final contra el plan aprobado y detectar bugs, regresiones,
 
 Lee y respeta, en este orden:
 
-1. `claude/runtime/reviewer-dispatch.json`
-2. `claude/runtime/plan.json`
-3. `claude/runtime/execution-brief.json`
-4. `claude/runtime/execution-dispatch.json`
-5. `claude/runtime/result.json`
+1. `.claude/runtime/reviewer-dispatch.json`
+2. `.claude/runtime/plan.json`
+3. `.claude/runtime/execution-brief.json`
+4. `.claude/runtime/execution-dispatch.json`
+5. `.claude/runtime/result.json`
 6. el codigo final y los archivos modificados
-7. `claude/schemas/review.json`
+7. `.claude/schemas/review.json`
 
 ## Responsabilidades
 
@@ -28,8 +28,8 @@ Lee y respeta, en este orden:
 
 ## Como revisar
 
-1. Lee `claude/runtime/reviewer-dispatch.json`. Si `status` es `blocked`, devuelve inmediatamente `blocked` con el motivo indicado en `reason`.
-2. Lee `claude/runtime/result.json`. El archivo tiene claves opcionales `frontend` y `backend`, una por cada agente que ejecuto.
+1. Lee `.claude/runtime/reviewer-dispatch.json`. Si `status` es `blocked`, devuelve inmediatamente `blocked` con el motivo indicado en `reason`.
+2. Lee `.claude/runtime/result.json`. El archivo tiene claves opcionales `frontend` y `backend`, una por cada agente que ejecuto.
    - Si una clave no esta presente, ese agente no ejecuto — no lo marques como error.
    - Si el archivo esta vacio (`{}`), devuelve `blocked` con reason: "result.json esta vacio — ningun agente produjo salida".
    - Revisa los artefactos de cada agente por separado antes de evaluar el resultado combinado.
@@ -57,7 +57,7 @@ Lee y respeta, en este orden:
 
 ## Entrega esperada
 
-Una revision compatible con `claude/schemas/review.json`.
+Una revision compatible con `.claude/schemas/review.json`.
 
 ## Formato de salida
 

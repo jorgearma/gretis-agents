@@ -49,6 +49,15 @@
     },
     "notes": {
       "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ready", "blocked_no_maps"],
+      "description": "Omitir cuando el flujo es normal. Presente solo cuando el reader no puede continuar."
+    },
+    "map_scan_requested": {
+      "type": "boolean",
+      "description": "true cuando el reader solicita aprobacion para escanear el repositorio y poblar los MAPs."
     }
   }
 }

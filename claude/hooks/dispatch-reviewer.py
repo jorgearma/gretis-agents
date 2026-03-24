@@ -7,10 +7,10 @@ import json
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-RESULT_PATH = ROOT / "claude" / "runtime" / "result.json"
-DISPATCH_PATH = ROOT / "claude" / "runtime" / "execution-dispatch.json"
-REVIEWER_DISPATCH_PATH = ROOT / "claude" / "runtime" / "reviewer-dispatch.json"
+PLUGIN_DIR = Path(__file__).resolve().parents[1]
+RESULT_PATH = PLUGIN_DIR / "runtime" / "result.json"
+DISPATCH_PATH = PLUGIN_DIR / "runtime" / "execution-dispatch.json"
+REVIEWER_DISPATCH_PATH = PLUGIN_DIR / "runtime" / "reviewer-dispatch.json"
 
 
 def load_json(path: Path) -> dict:

@@ -7,11 +7,11 @@ import json
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-PLAN_PATH = ROOT / ".claude" / "runtime" / "plan.json"
-BRIEF_PATH = ROOT / ".claude" / "runtime" / "execution-brief.json"
-APPROVAL_PATH = ROOT / ".claude" / "runtime" / "operator-approval.json"
-DISPATCH_PATH = ROOT / ".claude" / "runtime" / "execution-dispatch.json"
+PLUGIN_DIR = Path(__file__).resolve().parents[1]
+PLAN_PATH = PLUGIN_DIR / "runtime" / "plan.json"
+BRIEF_PATH = PLUGIN_DIR / "runtime" / "execution-brief.json"
+APPROVAL_PATH = PLUGIN_DIR / "runtime" / "operator-approval.json"
+DISPATCH_PATH = PLUGIN_DIR / "runtime" / "execution-dispatch.json"
 ALLOWED_AGENTS = {"frontend", "backend"}
 
 

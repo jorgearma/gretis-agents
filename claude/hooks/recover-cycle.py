@@ -2,8 +2,8 @@
 """Resetea el estado de runtime para iniciar un nuevo ciclo de ejecucion.
 
 Uso:
-    python3 claude/hooks/recover-cycle.py           # reset completo
-    python3 claude/hooks/recover-cycle.py --keep-plan  # conserva plan.json y reader-context.json
+    python3 .claude/hooks/recover-cycle.py           # reset completo
+    python3 .claude/hooks/recover-cycle.py --keep-plan  # conserva plan.json y reader-context.json
 """
 
 from __future__ import annotations
@@ -13,8 +13,8 @@ import sys
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
-RUNTIME = ROOT / "claude" / "runtime"
+PLUGIN_DIR = Path(__file__).resolve().parents[1]
+RUNTIME = PLUGIN_DIR / "runtime"
 
 INITIAL_APPROVAL = {
     "status": "pending",
