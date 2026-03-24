@@ -59,7 +59,7 @@
           },
           "owner": {
             "type": "string",
-            "enum": ["orchestrator", "planner", "writer", "frontend", "backend", "reviewer"]
+            "enum": ["planner", "writer", "frontend", "backend", "reviewer"]
           },
           "notes": {
             "type": "string"

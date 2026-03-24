@@ -26,7 +26,7 @@
       "minItems": 1,
       "items": {
         "type": "string",
-        "enum": ["frontend", "backend", "reviewer", "orchestrator"]
+        "enum": ["frontend", "backend", "reviewer"]
       }
     },
     "context_summary": {
@@ -57,7 +57,7 @@
           },
           "owner": {
             "type": "string",
-            "enum": ["frontend", "backend", "reviewer", "orchestrator"]
+            "enum": ["frontend", "backend", "reviewer"]
           },
           "instruction": {
             "type": "string"
