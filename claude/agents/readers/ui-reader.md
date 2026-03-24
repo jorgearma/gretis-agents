@@ -16,10 +16,12 @@ Lee `.claude/maps/UI_MAP.md`.
 
 ## Entradas
 
-- la peticion original del usuario
-- el contexto detectado por `reader`
+- `improved_prompt` — la peticion del operador refinada y precisada por `reader`
+- `context_summary` — resumen del proyecto construido por `reader` a partir de `PROJECT_MAP.md`
 - el contenido de `.claude/maps/UI_MAP.md`
 - cualquier pantalla, componente o flujo visual que el mapa identifique como relevante
+
+Usa `improved_prompt` como fuente de verdad para entender la tarea. Usa `context_summary` como base arquitectonica: no repitas lo que ya describe, focaliza en pantallas, componentes y flujos visuales concretos que la peticion requiere.
 
 ## Responsabilidades
 

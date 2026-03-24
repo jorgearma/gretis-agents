@@ -4,6 +4,9 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "improved_prompt",
+    "tech_stack",
+    "context_summary",
     "primary_reader",
     "selected_readers",
     "maps_used",
@@ -12,6 +15,21 @@
     "reason"
   ],
   "properties": {
+    "improved_prompt": {
+      "type": "string",
+      "description": "Version mejorada y tecnicamente precisa del prompt original del operador."
+    },
+    "tech_stack": {
+      "type": "array",
+      "description": "Tecnologias y frameworks detectados en README.md y PROJECT_MAP.md. Nombres normalizados y breves. Usado para enrutar a agentes ejecutores especializados en el futuro.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "context_summary": {
+      "type": "string",
+      "description": "Resumen del contexto del proyecto relevante para esta peticion, construido a partir de README.md, PROJECT_MAP.md y el improved_prompt. Se pasa a todos los subagentes activos."
+    },
     "primary_reader": {
       "type": "string",
       "enum": ["project-reader", "db-reader", "query-reader", "ui-reader"]

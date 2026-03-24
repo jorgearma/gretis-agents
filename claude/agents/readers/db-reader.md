@@ -16,10 +16,12 @@ Lee `.claude/maps/DB_MAP.md`.
 
 ## Entradas
 
-- la peticion original del usuario
-- el contexto detectado por `reader`
+- `improved_prompt` — la peticion del operador refinada y precisada por `reader`
+- `context_summary` — resumen del proyecto construido por `reader` a partir de `PROJECT_MAP.md`
 - el contenido de `.claude/maps/DB_MAP.md`
 - cualquier archivo de esquema, modelo o migracion que el mapa mencione como relevante
+
+Usa `improved_prompt` como fuente de verdad para entender la tarea. Usa `context_summary` como base arquitectonica: no repitas lo que ya describe, focaliza en modelos, esquemas y migraciones concretas que la peticion requiere.
 
 ## Responsabilidades
 

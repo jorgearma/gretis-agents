@@ -100,3 +100,11 @@ El archivo estructurado principal es `.claude/runtime/execution-brief.json`.
 La vista humana complementaria puede escribirse en `.claude/runtime/execution-brief.md`.
 
 El estado de aprobacion se registra en `.claude/runtime/operator-approval.json`.
+
+## Paso final obligatorio — invocar plan-reviewer
+
+Una vez escrito `execution-brief.json`, invoca el agente `plan-reviewer`.
+
+El `plan-reviewer` lee `reader-context.json`, `plan.json` y `execution-brief.json`, audita el plan en busca de errores silenciosos y escribe `.claude/runtime/plan-review.json`.
+
+El operador debe revisar **tanto** `execution-brief.json` como `plan-review.json` antes de aprobar. Si el veredicto del reviewer es `blocked`, comunicalo claramente al operador antes de que tome su decision.

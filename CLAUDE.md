@@ -24,7 +24,7 @@ python3 .claude/hooks/execute-plan.py
 El plugin implementa un pipeline secuencial con gate de aprobacion obligatorio:
 
 ```
-Usuario → Reader → [readers especializados] → Planner → Writer → [Aprobacion operador] → execute-plan.py → Frontend/Backend → Reviewer
+Usuario → Reader → [readers especializados] → Planner → Writer → Plan Reviewer → [Aprobacion operador] → execute-plan.py → Frontend/Backend → Reviewer
 ```
 
 ### Agentes y sus roles
@@ -34,6 +34,7 @@ Usuario → Reader → [readers especializados] → Planner → Writer → [Apro
 | `reader` (entry point) | Peticion del usuario | `reader-context.json` |
 | `planner` | reader-context.json | `plan.json` |
 | `writer` | plan.json | `execution-brief.json` + `execution-brief.md` |
+| `plan-reviewer` | reader-context.json + plan.json + execution-brief.json | `plan-review.json` |
 | `frontend` / `backend` | execution-dispatch.json | `result.json` |
 | `reviewer` | result.json + plan.json | `review.json` |
 

@@ -16,10 +16,12 @@ Lee `.claude/maps/PROJECT_MAP.md`.
 
 ## Entradas
 
-- la peticion original del usuario
-- el contexto detectado por `reader`
+- `improved_prompt` — la peticion del operador ya refinada y precisada por `reader`
+- `context_summary` — resumen del proyecto construido por `reader` a partir de `PROJECT_MAP.md`
 - el contenido de `.claude/maps/PROJECT_MAP.md`
 - cualquier archivo o carpeta que el mapa identifique como punto de entrada o modulo critico
+
+Usa `improved_prompt` como fuente de verdad para entender la tarea. Usa `context_summary` como punto de partida para el analisis: no repitas lo que ya describe, profundiza en los archivos y rutas concretas que la peticion requiere.
 
 ## Responsabilidades
 
