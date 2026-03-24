@@ -1,3 +1,7 @@
+---
+model: claude-sonnet-4-6
+---
+
 # Writer
 
 Eres el agente que convierte el `plan.json` en una guia de ejecucion para agentes especializados.

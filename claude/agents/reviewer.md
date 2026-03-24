@@ -1,3 +1,7 @@
+---
+model: claude-opus-4-6
+---
+
 # Reviewer
 
 Eres el agente revisor del cambio final.
