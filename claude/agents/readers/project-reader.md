@@ -61,14 +61,34 @@ Usa tambien `related_to` para expandir: si un modulo relevante apunta a otros me
 
 ## Formato de salida
 
-Devuelve un JSON parcial, sin markdown ni texto adicional:
+Devuelve un JSON parcial, sin markdown ni texto adicional.
+
+Para cada archivo en `files_to_open` y `files_to_review`, incluye un objeto con:
+- `path`: ruta del archivo
+- `hint`: rol del archivo en el contexto de **esta tarea concreta** (no una descripcion generica)
+- `key_symbols`: funciones, clases o constantes que el planner debe grep-ear en este archivo (extrae de `search_keywords` del MAP + infiere de `purpose`)
+- `estimated_relevance`: `"high"` si el cambio ocurre aqui, `"medium"` si es referencia directa, `"low"` si es solo contexto
 
 ```json
 {
   "reader": "project-reader",
   "needed": true,
-  "files_to_open": ["blueprints/webhook.py"],
-  "files_to_review": ["controllers/mensajes_registrados.py", "managers/gestor_pedidos.py"],
+  "files_to_open": [
+    {
+      "path": "blueprints/webhook.py",
+      "hint": "Entry point del flujo de entrada de mensajes, donde se registra la ruta y se delega al controller",
+      "key_symbols": ["register_webhook", "handle_incoming"],
+      "estimated_relevance": "high"
+    }
+  ],
+  "files_to_review": [
+    {
+      "path": "controllers/mensajes_registrados.py",
+      "hint": "Controller que procesa el mensaje recibido y llama al manager correspondiente",
+      "key_symbols": ["procesar_mensaje", "MensajeController"],
+      "estimated_relevance": "medium"
+    }
+  ],
   "reason": "La peticion afecta el flujo de entrada de mensajes y su procesamiento en la capa de controllers.",
   "notes": "managers/gestor_dashboard.py tiene un problema conocido: God Object. Evitar tocar si no es necesario."
 }

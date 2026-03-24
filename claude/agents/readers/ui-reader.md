@@ -54,14 +54,30 @@ Si la peticion menciona una pantalla o componente (ej: "dashboard", "formulario 
 
 ## Formato de salida
 
-Devuelve un JSON parcial, sin markdown ni texto adicional:
+Devuelve un JSON parcial, sin markdown ni texto adicional.
+
+Para cada archivo incluye `path`, `hint` (que renderiza en esta tarea), `key_symbols` (ids de bloque, nombres de macro, variables de contexto relevantes) y `estimated_relevance`.
 
 ```json
 {
   "reader": "ui-reader",
   "needed": true,
-  "files_to_open": ["templates/dashboard/"],
-  "files_to_review": ["templates/dashboard/index.html", "templates/macros/"],
+  "files_to_open": [
+    {
+      "path": "templates/dashboard/pedidos.html",
+      "hint": "Template principal del panel de pedidos activos donde se agrega la nueva seccion de filtros",
+      "key_symbols": ["bloque_filtros", "tabla_pedidos", "pedidos_activos"],
+      "estimated_relevance": "high"
+    }
+  ],
+  "files_to_review": [
+    {
+      "path": "templates/macros/forms.html",
+      "hint": "Define macros de formulario compartidas — el nuevo filtro probablemente reutiliza input_field o select_field",
+      "key_symbols": ["input_field", "select_field"],
+      "estimated_relevance": "medium"
+    }
+  ],
   "reason": "La peticion modifica el panel de pedidos activos en el dashboard.",
   "notes": "Revisar macros compartidas antes de modificar el template principal para evitar romper otras vistas que las usen."
 }

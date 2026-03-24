@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClaudeClarifications",
+  "description": "Preguntas de aclaracion generadas por el reader cuando la solicitud tiene ambiguedades que afectan el plan. El operador responde y el reader continua con las respuestas incorporadas.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "need_clarification"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["pending", "answered", "skipped"],
+      "description": "pending = esperando respuesta del operador. answered = operador respondio, reader puede continuar. skipped = operador eligio continuar sin responder."
+    },
+    "need_clarification": {
+      "type": "boolean",
+      "description": "true si el reader detecto ambiguedades que requieren respuesta antes de continuar."
+    },
+    "questions": {
+      "type": "array",
+      "description": "Preguntas ordenadas por severidad descendente. Solo presentes si need_clarification es true.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "question", "context", "consequence", "options"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador unico. Ej: q1, q2."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["blocking", "clarifying"],
+            "description": "blocking = sin respuesta el plan puede ser incorrecto o peligroso. clarifying = mejora la precision del plan pero tiene un default razonable."
+          },
+          "question": {
+            "type": "string",
+            "description": "Pregunta concreta y accionable para el operador. Sin ambiguedad."
+          },
+          "context": {
+            "type": "string",
+            "description": "Por que esta pregunta importa en este proyecto concreto. Referencia archivos o modulos reales."
+          },
+          "consequence": {
+            "type": "string",
+            "description": "Que decision se toma segun cada opcion. Ej: 'Si versionar: crearemos /api/v2/. Si breaking change: modificamos directamente.'"
+          },
+          "options": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 4,
+            "items": { "type": "string" },
+            "description": "Opciones concretas para el operador. La primera es el default mas seguro si el operador hace skip."
+          },
+          "default_if_skipped": {
+            "type": "string",
+            "description": "Opcion que el reader asumira si el operador hace skip. Debe ser la mas conservadora."
+          }
+        }
+      }
+    },
+    "answers": {
+      "type": "object",
+      "description": "Respuestas del operador. Clave: id de la pregunta. Valor: respuesta elegida o texto libre.",
+      "additionalProperties": { "type": "string" }
+    },
+    "resolved_prompt": {
+      "type": "string",
+      "description": "Version del improved_prompt reescrita por el reader incorporando las respuestas del operador. Solo presente despues de answered o skipped."
+    }
+  }
+}

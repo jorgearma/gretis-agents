@@ -56,14 +56,30 @@ Si la peticion menciona un concepto (ej: "usuario", "pedido", "estado", "cancela
 
 ## Formato de salida
 
-Devuelve un JSON parcial, sin markdown ni texto adicional:
+Devuelve un JSON parcial, sin markdown ni texto adicional.
+
+Para cada archivo incluye `path`, `hint` (rol en esta tarea), `key_symbols` (modelos, campos o metodos relevantes) y `estimated_relevance`.
 
 ```json
 {
   "reader": "db-reader",
   "needed": true,
-  "files_to_open": ["models.py"],
-  "files_to_review": ["scripts/migrate_capacidades.py"],
+  "files_to_open": [
+    {
+      "path": "models.py",
+      "hint": "Define el modelo Pedido con los campos y relaciones que esta tarea modifica",
+      "key_symbols": ["Pedido", "prioridad", "picking_pedido"],
+      "estimated_relevance": "high"
+    }
+  ],
+  "files_to_review": [
+    {
+      "path": "scripts/migrate_capacidades.py",
+      "hint": "Migracion existente que altera la tabla pedidos — referencia para el formato de la nueva migracion",
+      "key_symbols": ["add_column", "alter_table"],
+      "estimated_relevance": "medium"
+    }
+  ],
   "reason": "La peticion modifica el modelo Pedido: agrega campo 'prioridad' y afecta la relacion con PickingPedido.",
   "notes": "Cambio de esquema requiere nueva migracion. Revisar integridad de la relacion pedido → picking_pedido antes de modificar."
 }

@@ -52,14 +52,30 @@ Si la peticion menciona una operacion (ej: "filtrar", "buscar", "paginar", "canc
 
 ## Formato de salida
 
-Devuelve un JSON parcial, sin markdown ni texto adicional:
+Devuelve un JSON parcial, sin markdown ni texto adicional.
+
+Para cada archivo incluye `path`, `hint` (que hace en esta tarea), `key_symbols` (funciones concretas a grep-ear) y `estimated_relevance`.
 
 ```json
 {
   "reader": "query-reader",
   "needed": true,
-  "files_to_open": ["managers/gestor_pedidos.py"],
-  "files_to_review": ["managers/gestor_dashboard.py"],
+  "files_to_open": [
+    {
+      "path": "managers/gestor_pedidos.py",
+      "hint": "Implementa las queries del listado de pedidos activos donde se agrega el nuevo filtro",
+      "key_symbols": ["get_pedidos_activos", "filtrar_por_estado"],
+      "estimated_relevance": "high"
+    }
+  ],
+  "files_to_review": [
+    {
+      "path": "managers/gestor_dashboard.py",
+      "hint": "Comparte funcion de agregacion con gestor_pedidos — cambio en filtros podria afectar metricas",
+      "key_symbols": ["get_metricas_pedidos"],
+      "estimated_relevance": "medium"
+    }
+  ],
   "reason": "La peticion agrega un filtro nuevo al listado de pedidos activos, implementado en gestor_pedidos.",
   "notes": "gestor_dashboard.py es un God Object conocido. El nuevo filtro podria afectar las queries de metricas si comparten la misma funcion de agregacion."
 }

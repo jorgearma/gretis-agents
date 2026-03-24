@@ -1,5 +1,5 @@
 {
-  "status": "pending",
-  "approved_by": "",
-  "notes": ""
+  "status": "approved",
+  "approved_by": "quick-execute (auto)",
+  "notes": "Auto-aprobado en modo quick. Complejidad: 0/10."
 }

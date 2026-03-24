@@ -21,14 +21,10 @@
     },
     "tech_stack": {
       "type": "array",
-      "description": "Tecnologias y frameworks detectados en README.md y PROJECT_MAP.md. Nombres normalizados y breves. Usado para enrutar a agentes ejecutores especializados en el futuro.",
-      "items": {
-        "type": "string"
-      }
+      "items": { "type": "string" }
     },
     "context_summary": {
-      "type": "string",
-      "description": "Resumen del contexto del proyecto relevante para esta peticion, construido a partir de README.md, PROJECT_MAP.md y el improved_prompt. Se pasa a todos los subagentes activos."
+      "type": "string"
     },
     "primary_reader": {
       "type": "string",
@@ -52,15 +48,13 @@
     },
     "files_to_open": {
       "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "description": "Archivos principales donde ocurre el cambio, con hints para el planner.",
+      "items": { "$ref": "#/$defs/file_hint" }
     },
     "files_to_review": {
       "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "description": "Archivos de soporte, dependencias o referencias, con hints para el planner.",
+      "items": { "$ref": "#/$defs/file_hint" }
     },
     "reason": {
       "type": "string"
@@ -70,12 +64,37 @@
     },
     "status": {
       "type": "string",
-      "enum": ["ready", "blocked_no_maps"],
-      "description": "Omitir cuando el flujo es normal. Presente solo cuando el reader no puede continuar."
+      "enum": ["ready", "blocked_no_maps", "blocked_pending_clarification"]
     },
     "map_scan_requested": {
-      "type": "boolean",
-      "description": "true cuando el reader solicita aprobacion para escanear el repositorio y poblar los MAPs."
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "file_hint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Ruta relativa al archivo."
+        },
+        "hint": {
+          "type": "string",
+          "description": "Descripcion breve del rol del archivo en el contexto de esta tarea."
+        },
+        "key_symbols": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Funciones, clases o constantes que el planner debe buscar en este archivo."
+        },
+        "estimated_relevance": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "high = el cambio ocurre aqui. medium = referencia directa. low = contexto de fondo."
+        }
+      }
     }
   }
 }

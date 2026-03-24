@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClaudeSenseCheck",
+  "description": "Validacion de coherencia de la solicitud antes de que el planner invierta tokens. El operador revisa este output y aprueba o rechaza antes de continuar.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "summary", "reasoning", "operator_action"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["valid", "warning", "invalid"],
+      "description": "valid = coherente y ejecutable. warning = ejecutable con riesgos reales. invalid = la solicitud no puede ejecutarse como esta descrita."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Una o dos frases que resumen el veredicto para el operador."
+    },
+    "reasoning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["what_will_change", "why_makes_sense", "risks_identified", "estimated_effort", "estimated_impact"],
+      "properties": {
+        "what_will_change": {
+          "type": "string",
+          "description": "Descripcion concreta de lo que se modificara en el proyecto si se aprueba la solicitud."
+        },
+        "why_makes_sense": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Razones por las que la solicitud es coherente con el proyecto actual. Cada item debe referenciar algo concreto del contexto (modulo existente, endpoint real, patron ya usado)."
+        },
+        "why_does_not_make_sense": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Razones por las que la solicitud es problematica o incoherente. Solo si status es warning o invalid."
+        },
+        "risks_identified": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Riesgos concretos detectados en esta fase temprana. Pueden ser tecnicos, de alcance o de compatibilidad."
+        },
+        "estimated_effort": {
+          "type": "string",
+          "enum": ["bajo", "medio", "alto", "muy_alto"],
+          "description": "Estimacion del esfuerzo relativo al proyecto. bajo = 1-2 archivos. medio = 3-6. alto = 7+. muy_alto = requiere refactor o migracion."
+        },
+        "estimated_impact": {
+          "type": "string",
+          "enum": ["bajo", "medio", "alto", "critico"],
+          "description": "Impacto en usuarios o sistemas existentes. critico = breaking change o downtime posible."
+        },
+        "questions_for_operator": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Preguntas concretas que el operador deberia responder antes de aprobar, si aplica."
+        },
+        "alternative_interpretation": {
+          "type": "string",
+          "description": "Si la solicitud es ambigua, una interpretacion alternativa que podria ser la intencion real del operador."
+        }
+      }
+    },
+    "operator_action": {
+      "type": "string",
+      "description": "Instruccion clara para el operador: que debe revisar, aprobar o corregir."
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClaudeQuickDispatch",
+  "description": "Despacho directo para tareas simples. Omite planner, writer y plan-reviewer. El quick-agent ejecuta directamente con esta informacion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "status", "task", "target_agent", "scope_constraint"],
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["quick"],
+      "description": "Siempre 'quick' para distinguirlo del flujo normal."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ready", "blocked", "done"]
+    },
+    "task": {
+      "type": "string",
+      "description": "Descripcion de la tarea tal como la proceso quick-execute.py."
+    },
+    "target_agent": {
+      "type": "string",
+      "enum": ["frontend", "backend", "both"],
+      "description": "Agente inferido automaticamente por quick-execute.py segun las palabras clave de la tarea."
+    },
+    "stack_hint": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Stack del proyecto leido desde PROJECT_MAP.json si estaba disponible."
+    },
+    "files_hint": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Archivos sugeridos leidos desde PROJECT_MAP.json modules. Orientativos, no obligatorios."
+    },
+    "scope_constraint": {
+      "type": "string",
+      "description": "Restriccion de alcance obligatoria para el quick-agent."
+    },
+    "complexity_score": {
+      "type": "integer",
+      "description": "Puntuacion de complejidad calculada por quick-execute.py (0-10). Informativa."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo del estado si es blocked."
+    }
+  }
+}

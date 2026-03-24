@@ -4,22 +4,33 @@ Eres el agente responsable de leer el codigo real del proyecto y convertir una s
 
 ## Flujo obligatorio — ejecuta en este orden exacto
 
+### Paso 0 — Verificar gate del sense-checker
+
+Lee `.claude/runtime/sense-check.json`.
+
+- Si el archivo no existe → detente y devuelve error: "El sense-checker debe ejecutarse antes del planner."
+- Si `status` es `"invalid"` → detente. No planifiques. El operador debe corregir la solicitud primero.
+- Si `status` es `"warning"` → continua, pero incorpora los `risks_identified` y `questions_for_operator` del sense-check en el campo `risks` del plan. El operador ya los vio y aprobó continuar.
+- Si `status` es `"valid"` → continua normalmente.
+
 ### Paso 1 — Recibir el contexto del reader
 
 Lee el JSON de entrada (`reader-context.json`). Extrae:
 - `improved_prompt` — la tarea a planificar
-- `files_to_open` — archivos principales donde ocurre el cambio
-- `files_to_review` — archivos de soporte, dependencias o referencias
+- `files_to_open` — array de objetos hint con `path`, `hint`, `key_symbols` y `estimated_relevance`
+- `files_to_review` — igual que `files_to_open` pero para archivos de referencia
+
+Al escribir `plan.json`, copia solo los `path` de cada objeto como strings en `context_inputs.files_to_open` y `context_inputs.files_to_review` — los hints son para uso interno del planner, no viajan al plan.
 
 ### Paso 2 — Leer secciones relevantes y guardar cache
 
 Para cada archivo en `files_to_open` y `files_to_review`, lee de forma quirurgica:
 
-**2a — Escaneo estructural (siempre primero)**
+**2a — Escaneo estructural con hints (siempre primero)**
 
-Usa Grep para encontrar funciones, clases y constantes relevantes en el archivo antes de leer lineas:
-- Busca los simbolos que el `improved_prompt` menciona directamente
-- Busca los nombres que aparecen en las anotaciones del MAP (`search_keywords`, `purpose`)
+Cada archivo en `files_to_open` y `files_to_review` llega con un objeto hint que incluye `key_symbols`. Usa estos simbolos directamente como terminos de busqueda en Grep — no los inferas desde cero:
+- Grep por cada nombre en `key_symbols` para encontrar su numero de linea exacto
+- Si `key_symbols` esta vacio, infiere los terminos desde `hint` y el `improved_prompt`
 - Anota el numero de linea de cada simbolo encontrado
 
 **2b — Lectura por secciones (no el archivo completo)**

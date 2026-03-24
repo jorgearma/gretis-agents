@@ -1,0 +1,9 @@
+{
+  "mode": "quick",
+  "status": "blocked",
+  "task": "Implementar autenticacion OAuth con permisos y roles",
+  "target_agent": "backend",
+  "scope_constraint": "",
+  "complexity_score": 9,
+  "reason": "Complejidad 9/10 supera el umbral. Razones: keyword compleja: 'implementar'; keyword compleja: 'autenticacion'; keyword compleja: 'oauth'"
+}

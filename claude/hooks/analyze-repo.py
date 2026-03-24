@@ -209,11 +209,25 @@ class FileInfo:
     has_db_access: bool = False
     docstring: str = ""          # module-level docstring o JSDoc @description
     query_examples: list[str] = field(default_factory=list)  # patrones ORM/SQL reales
+    symbols_with_lines: dict[str, int] = field(default_factory=dict)  # nombre → línea
+    function_infos: list = field(default_factory=list)                 # list[FunctionInfo]
 
 @dataclass
 class ModelField:
     name: str
     col_type: str = ""
+
+@dataclass
+class FunctionInfo:
+    name: str
+    start_line: int
+    end_line: int
+    params: list[str] = field(default_factory=list)
+    return_type: str = ""
+    decorators: list[str] = field(default_factory=list)
+    complexity: int = 0   # lines of code (end_line - start_line + 1)
+    is_async: bool = False
+
 
 @dataclass
 class ModelInfo:
@@ -236,6 +250,9 @@ class ProjectSummary:
     models: list[ModelInfo] = field(default_factory=list)
     git_hotspots: list[tuple[str, int]] = field(default_factory=list)
     git_cochange: dict[str, list[str]] = field(default_factory=dict)
+    git_recent_changes: dict[str, int] = field(default_factory=dict)   # file → commits last 30d
+    git_ownership: dict[str, str] = field(default_factory=dict)        # file → primary author email
+    git_pending: list[str] = field(default_factory=list)               # uncommitted files
     readme_summary: str = ""
 
 # ─── Gate de aprobación ───────────────────────────────────────────────────────
@@ -454,6 +471,7 @@ def extract_python(path: Path, project_root: Path) -> FileInfo:
     imports_int: list[str] = []
     imports_ext: list[str] = []
     models: list[ModelInfo] = []
+    symbols_with_lines: dict[str, int] = {}
     has_db = bool(RE_DB_PY.search(source))
 
     # Docstring de módulo (primer statement si es una cadena literal)
@@ -468,13 +486,45 @@ def extract_python(path: Path, project_root: Path) -> FileInfo:
 
     project_pkg = project_root.name  # heuristic: imports starting with project name are internal
 
+    fn_infos: list[FunctionInfo] = []
+
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            # Solo top-level (parent es Module)
             functions.append(node.name)
+            if node.name not in symbols_with_lines:
+                symbols_with_lines[node.name] = node.lineno
+            # Params
+            params = [a.arg for a in node.args.args if a.arg != "self"]
+            # Return type
+            ret = ""
+            if node.returns:
+                try:
+                    ret = ast.unparse(node.returns) if hasattr(ast, "unparse") else ""
+                except Exception:
+                    ret = ""
+            # Decorators
+            decs = []
+            for d in node.decorator_list:
+                try:
+                    decs.append(ast.unparse(d) if hasattr(ast, "unparse") else "")
+                except Exception:
+                    pass
+            end_ln = getattr(node, "end_lineno", node.lineno)
+            fn_infos.append(FunctionInfo(
+                name=node.name,
+                start_line=node.lineno,
+                end_line=end_ln,
+                params=params[:8],
+                return_type=ret[:60],
+                decorators=[d for d in decs if d][:4],
+                complexity=max(1, end_ln - node.lineno + 1),
+                is_async=isinstance(node, ast.AsyncFunctionDef),
+            ))
 
         elif isinstance(node, ast.ClassDef):
             classes.append(node.name)
+            if node.name not in symbols_with_lines:
+                symbols_with_lines[node.name] = node.lineno
             bases = [_ast_name(b) for b in node.bases]
 
             # Detectar modelos SQLAlchemy / Django ORM
@@ -551,6 +601,8 @@ def extract_python(path: Path, project_root: Path) -> FileInfo:
         has_db_access=has_db,
         docstring=module_docstring,
         query_examples=extract_query_examples(source) if has_db else [],
+        symbols_with_lines=symbols_with_lines,
+        function_infos=fn_infos,
     )
     fi.__dict__["_models"] = models  # transporte temporal
     return fi
@@ -567,6 +619,11 @@ RE_JSDOC_TAG  = re.compile(r'@(\w+)\s+(.*)')
 RE_ENTITY_TS  = re.compile(r'@Entity\(')
 RE_SCHEMA_MG  = re.compile(r'new\s+Schema\s*\(')
 RE_PRISMA_MDL = re.compile(r'^model\s+(\w+)\s*\{', re.MULTILINE)
+
+def _line_of(source: str, pos: int) -> int:
+    """Retorna el número de línea (1-based) para una posición en el texto."""
+    return source[:pos].count("\n") + 1
+
 
 def extract_js_ts(path: Path, project_root: Path) -> FileInfo:
     rel = str(path.relative_to(project_root))
@@ -621,8 +678,49 @@ def extract_js_ts(path: Path, project_root: Path) -> FileInfo:
             top = spec.split("/")[0].lstrip("@")
             imports_ext.append(top)
 
+    symbols_with_lines: dict[str, int] = {}
     classes = list(dict.fromkeys(m.group(1) for m in RE_CLASS.finditer(source)))
+    for m in RE_CLASS.finditer(source):
+        name = m.group(1)
+        if name not in symbols_with_lines:
+            symbols_with_lines[name] = _line_of(source, m.start())
     functions = list(dict.fromkeys(m.group(1) for m in RE_FUNCTION.finditer(source) if not m.group(1).startswith("_")))
+    for m in RE_FUNCTION.finditer(source):
+        name = m.group(1)
+        if not name.startswith("_") and name not in symbols_with_lines:
+            symbols_with_lines[name] = _line_of(source, m.start())
+    for m in RE_EXPORT.finditer(source):
+        name = m.group(1)
+        if name not in symbols_with_lines:
+            symbols_with_lines[name] = _line_of(source, m.start())
+
+    # FunctionInfo para JS/TS (limitado: sin tipos completos vía regex)
+    fn_infos_js: list[FunctionInfo] = []
+    RE_FN_PARAMS = re.compile(
+        r'(?:async\s+)?function\s+(\w+)\s*\(([^)]{0,200})\)'
+        r'|(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?\(([^)]{0,200})\)\s*(?::\s*\w[\w<>[\], ]*?)?\s*=>'
+    )
+    RE_DEC = re.compile(r'@(\w[\w.]*)\s*(?:\([^)]*\))?\s*\n\s*(?:export\s+)?(?:async\s+)?(?:function|class)\s+(\w+)')
+    decorators_by_name: dict[str, list[str]] = defaultdict(list)
+    for m in RE_DEC.finditer(source):
+        decorators_by_name[m.group(2)].append(m.group(1))
+
+    for m in RE_FN_PARAMS.finditer(source):
+        fname = m.group(1) or m.group(3)
+        raw_params = m.group(2) or m.group(4) or ""
+        if not fname or fname.startswith("_"):
+            continue
+        params = [p.strip().split(":")[0].strip() for p in raw_params.split(",") if p.strip()]
+        line = _line_of(source, m.start())
+        fn_infos_js.append(FunctionInfo(
+            name=fname,
+            start_line=line,
+            end_line=line,   # end_line no fiable con regex
+            params=params[:8],
+            decorators=decorators_by_name.get(fname, [])[:4],
+            complexity=1,
+            is_async="async" in (source[max(0, m.start()-10):m.start()] + m.group(0))[:20],
+        ))
 
     has_db = bool(RE_DB_JS.search(source))
 
@@ -645,6 +743,8 @@ def extract_js_ts(path: Path, project_root: Path) -> FileInfo:
         jsdoc=jsdoc, has_db_access=has_db,
         docstring=module_docstring,
         query_examples=extract_query_examples(source) if has_db else [],
+        symbols_with_lines=symbols_with_lines,
+        function_infos=fn_infos_js,
     )
     fi.__dict__["_models"] = models
     return fi
@@ -740,6 +840,82 @@ def analyze_git(root: Path, max_commits: int = 200) -> tuple[list[tuple[str, int
 
     return hotspots, result_cochange
 
+def analyze_git_extended(root: Path) -> tuple[dict[str, int], dict[str, str], list[str]]:
+    """
+    Returns:
+        recent_changes: {file: commits in last 30 days}
+        ownership:      {file: primary author email (most commits)}
+        pending:        list of files with uncommitted changes
+    """
+    recent_changes: dict[str, int] = defaultdict(int)
+    ownership_raw: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    pending: list[str] = []
+
+    # Recent changes: last 30 days
+    try:
+        r = subprocess.run(
+            ["git", "log", "--since=30 days ago", "--name-only", "--format=%ae"],
+            cwd=root, capture_output=True, text=True, timeout=15,
+        )
+        if r.returncode == 0:
+            current_author = ""
+            for line in r.stdout.splitlines():
+                line = line.strip()
+                if not line:
+                    current_author = ""
+                    continue
+                if "@" in line or "." in line and "/" not in line:
+                    current_author = line
+                else:
+                    recent_changes[line] += 1
+                    if current_author:
+                        ownership_raw[line][current_author] += 1
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+
+    # Full ownership from all history (merge with recent)
+    try:
+        r = subprocess.run(
+            ["git", "log", "--name-only", "--format=%ae", "--max-count=500"],
+            cwd=root, capture_output=True, text=True, timeout=20,
+        )
+        if r.returncode == 0:
+            current_author = ""
+            for line in r.stdout.splitlines():
+                line = line.strip()
+                if not line:
+                    current_author = ""
+                    continue
+                if "@" in line or ("." in line and "/" not in line and len(line) < 80):
+                    current_author = line
+                else:
+                    if current_author:
+                        ownership_raw[line][current_author] += 1
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+
+    # Resolve ownership: primary author per file
+    ownership: dict[str, str] = {}
+    for fpath, authors in ownership_raw.items():
+        if authors:
+            ownership[fpath] = max(authors, key=lambda a: authors[a])
+
+    # Pending uncommitted changes
+    try:
+        r = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=root, capture_output=True, text=True, timeout=10,
+        )
+        if r.returncode == 0:
+            for line in r.stdout.splitlines():
+                if len(line) > 3:
+                    pending.append(line[3:].strip())
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass
+
+    return dict(recent_changes), ownership, pending
+
+
 # ─── Construcción del modelo del proyecto ─────────────────────────────────────
 
 def build_project(root: Path, stack: dict[str, str]) -> ProjectSummary:
@@ -787,6 +963,7 @@ def build_project(root: Path, stack: dict[str, str]) -> ProjectSummary:
     folder_structure = scan_structure(root)
 
     hotspots, cochange = analyze_git(root)
+    recent_changes, ownership, pending = analyze_git_extended(root)
 
     return ProjectSummary(
         name=name, root=root, description=description,
@@ -795,6 +972,9 @@ def build_project(root: Path, stack: dict[str, str]) -> ProjectSummary:
         folder_structure=folder_structure,
         files=all_files, models=unique_models,
         git_hotspots=hotspots, git_cochange=cochange,
+        git_recent_changes=recent_changes,
+        git_ownership=ownership,
+        git_pending=pending,
         readme_summary=description,
     )
 
@@ -889,23 +1069,44 @@ _ROLE_VERBS: dict[str, str] = {
 }
 
 def extract_keywords(fi: FileInfo) -> list[str]:
-    """Extrae términos de búsqueda del nombre del archivo + clases + funciones."""
-    stem = Path(fi.rel_path).stem
-    parts: list[str] = re.split(r"[_\-\.]", stem)
-    # CamelCase de clases
-    for cls in fi.classes[:3]:
-        parts += re.findall(r"[A-Z][a-z]+|[a-z]+", cls)
-    # snake_case de funciones públicas
-    for fn in fi.functions[:5]:
-        parts += re.split(r"_", fn)
+    """
+    Extrae términos de búsqueda semánticos (para que los readers encuentren el archivo)
+    y nombres completos de símbolos (para que el planner pueda hacer grep directo).
+    """
     seen: set[str] = set()
     result: list[str] = []
-    for p in parts:
-        p_low = p.lower()
-        if len(p_low) > 2 and p_low not in _STOP_WORDS and p_low not in seen:
-            seen.add(p_low)
-            result.append(p_low)
-    return result[:8]
+
+    def add(token: str) -> None:
+        t = token.strip()
+        if len(t) > 2 and t.lower() not in _STOP_WORDS and t not in seen:
+            seen.add(t)
+            result.append(t)
+
+    # 1. Fragmentos del nombre del archivo (búsqueda semántica)
+    stem = Path(fi.rel_path).stem
+    for part in re.split(r"[_\-\.]", stem):
+        add(part.lower())
+
+    # 2. Nombres completos de clases (greppables) + sus fragmentos CamelCase
+    for cls in fi.classes[:5]:
+        add(cls)  # nombre completo, ej: "AuthController"
+        for part in re.findall(r"[A-Z][a-z]+|[a-z]+", cls):
+            add(part.lower())
+
+    # 3. Nombres completos de funciones públicas (greppables)
+    for fn in (fi.functions or fi.exports)[:8]:
+        add(fn)  # nombre completo, ej: "authenticate"
+        for part in re.split(r"_", fn):
+            add(part.lower())
+
+    # 4. Palabras clave del docstring (máx 3 sustantivos relevantes)
+    if fi.docstring:
+        doc_words = re.findall(r"[a-zA-Z]{4,}", fi.docstring)
+        for w in doc_words[:6]:
+            if w.lower() not in _STOP_WORDS:
+                add(w.lower())
+
+    return result[:15]
 
 def infer_purpose(fi: FileInfo) -> str:
     """Infiere el propósito del módulo en este orden: docstring → JSDoc → heurística."""
@@ -948,6 +1149,30 @@ def find_related(
 
     return related[:5]
 
+def build_symbols(fi: FileInfo) -> list[dict]:
+    """Devuelve lista de {name, line, end_line, kind, params, return_type, decorators, complexity} para los símbolos."""
+    # Index FunctionInfo by name for fast lookup
+    fn_by_name: dict[str, FunctionInfo] = {f.name: f for f in fi.function_infos}
+    result = []
+    for name, line in sorted(fi.symbols_with_lines.items(), key=lambda x: x[1]):
+        kind = "class" if name in fi.classes else "function"
+        entry: dict = {"name": name, "line": line, "kind": kind}
+        if name in fn_by_name:
+            fn = fn_by_name[name]
+            entry["end_line"] = fn.end_line
+            entry["complexity"] = fn.complexity
+            if fn.params:
+                entry["params"] = fn.params
+            if fn.return_type:
+                entry["return_type"] = fn.return_type
+            if fn.decorators:
+                entry["decorators"] = fn.decorators
+            if fn.is_async:
+                entry["is_async"] = True
+        result.append(entry)
+    return result[:15]
+
+
 def build_module_entry(
     fi: FileInfo,
     all_files: list[FileInfo],
@@ -959,6 +1184,7 @@ def build_module_entry(
         "purpose":         infer_purpose(fi),
         "search_keywords": extract_keywords(fi),
         "related_to":      find_related(fi, all_files, cochange),
+        "symbols":         build_symbols(fi),
     }
 
 def build_query_entry(
@@ -974,8 +1200,40 @@ def build_query_entry(
         "search_keywords": extract_keywords(fi),
         "related_to":      find_related(fi, all_files, cochange),
         "functions":       (fi.functions or fi.exports)[:8],
+        "symbols":         build_symbols(fi),
         "query_examples":  fi.query_examples,
     }
+
+
+def resolve_dependencies(files: list[FileInfo]) -> dict[str, list[str]]:
+    """
+    Construye grafo de dependencias: {ruta_archivo: [rutas_que_importa]}.
+    Resuelve imports internos a rutas reales usando stem matching.
+    """
+    by_stem: dict[str, str] = {}
+    for f in files:
+        stem = Path(f.rel_path).stem.lower()
+        if stem not in by_stem:
+            by_stem[stem] = f.rel_path
+
+    result: dict[str, list[str]] = {}
+    for f in files:
+        deps: list[str] = []
+        for imp in f.imports_internal:
+            # Normaliza el import a stem: ".auth" → "auth", "./controllers/auth" → "auth"
+            clean = imp.strip().lstrip("./").replace("\\", "/")
+            parts = [p for p in clean.replace(".", "/").split("/") if p]
+            # Intenta desde el segmento más específico al más general
+            for candidate in reversed(parts):
+                candidate_low = candidate.lower()
+                if candidate_low and candidate_low in by_stem:
+                    dep_path = by_stem[candidate_low]
+                    if dep_path != f.rel_path and dep_path not in deps:
+                        deps.append(dep_path)
+                    break
+        if deps:
+            result[f.rel_path] = deps
+    return result
 
 # ─── Constructores de MAP (producen dicts → serializados a JSON) ──────────────
 
@@ -996,6 +1254,11 @@ def build_project_map(proj: ProjectSummary) -> dict:
         desc = parts[1] if len(parts) > 1 else ""
         problems.append({"file": file_part, "issue": desc})
 
+    dependencies = resolve_dependencies(proj.files)
+
+    # Recent hotspots: top 10 files changed in last 30 days
+    recent_top = sorted(proj.git_recent_changes.items(), key=lambda x: x[1], reverse=True)[:10]
+
     return {
         "name": proj.name,
         "description": proj.description,
@@ -1006,7 +1269,11 @@ def build_project_map(proj: ProjectSummary) -> dict:
         "entry_points": proj.entry_points,
         "modules": dict(modules),
         "hotspots": [{"file": f, "commits": c} for f, c in proj.git_hotspots[:10]],
+        "recent_changes": [{"file": f, "commits_30d": c} for f, c in recent_top],
+        "ownership": proj.git_ownership,
+        "pending_changes": proj.git_pending,
         "cochange": {f: p for f, p in list(proj.git_cochange.items())[:20]},
+        "dependencies": dependencies,
         "problems": problems,
     }
 
@@ -1109,6 +1376,105 @@ def build_ui_map(proj: ProjectSummary) -> dict:
     }
 
 
+# ─── Validación de calidad del análisis ───────────────────────────────────────
+
+def detect_dependency_cycles(deps: dict[str, list[str]]) -> list[list[str]]:
+    """Detecta ciclos en el grafo de dependencias mediante DFS."""
+    visited: set[str] = set()
+    in_stack: set[str] = set()
+    cycles: list[list[str]] = []
+
+    def dfs(node: str, path: list[str]) -> None:
+        visited.add(node)
+        in_stack.add(node)
+        for neighbor in deps.get(node, []):
+            if neighbor not in visited:
+                dfs(neighbor, path + [neighbor])
+            elif neighbor in in_stack and len(cycles) < 5:
+                try:
+                    idx = path.index(neighbor)
+                    cycles.append(path[idx:] + [neighbor])
+                except ValueError:
+                    cycles.append([neighbor])
+        in_stack.discard(node)
+
+    for node in list(deps.keys()):
+        if node not in visited:
+            dfs(node, [node])
+
+    return cycles
+
+
+def validate_maps(proj: ProjectSummary, project_map: dict) -> list[dict]:
+    """
+    Valida coherencia del análisis. Retorna lista de issues con tipo, path y descripción.
+    """
+    issues: list[dict] = []
+
+    # 1. Archivos referenciados en modules que no existen en disco
+    for role, module_list in project_map.get("modules", {}).items():
+        for module in module_list:
+            fpath = proj.root / module["path"]
+            if not fpath.exists():
+                issues.append({
+                    "type": "missing_file",
+                    "path": module["path"],
+                    "detail": f"En modules.{role} pero no existe en disco",
+                })
+
+    # 2. Módulos sin símbolos en archivos de código no triviales (> 500 bytes)
+    for fi in proj.files:
+        if (fi.role not in ("other", "test", "template", "migration", "config")
+                and fi.language in ("python", "typescript", "javascript")
+                and not fi.functions and not fi.classes
+                and fi.size > 500):
+            issues.append({
+                "type": "empty_module",
+                "path": fi.rel_path,
+                "detail": f"Archivo de {fi.size} bytes sin funciones ni clases detectadas",
+            })
+
+    # 3. Ciclos de dependencia
+    deps = project_map.get("dependencies", {})
+    cycles = detect_dependency_cycles(deps)
+    for cycle in cycles:
+        issues.append({
+            "type": "dependency_cycle",
+            "path": cycle[0],
+            "detail": f"Ciclo: {' → '.join(cycle)}",
+        })
+
+    # 4. Imports internos que no resuelven a ningún archivo conocido
+    known_paths = {f.rel_path for f in proj.files}
+    for fi in proj.files:
+        for imp in fi.imports_internal:
+            clean = imp.strip().lstrip("./").replace("\\", "/")
+            parts = [p for p in clean.replace(".", "/").split("/") if p]
+            if not parts:
+                continue
+            resolved = any(
+                Path(f).stem.lower() == parts[-1].lower()
+                for f in known_paths
+            )
+            if not resolved and len(parts) > 0 and len(parts[-1]) > 3:
+                issues.append({
+                    "type": "broken_import",
+                    "path": fi.rel_path,
+                    "detail": f"Import interno '{imp}' no resuelve a ningún archivo del proyecto",
+                })
+
+    # Deduplica broken_import (mismo archivo puede tener muchos)
+    seen_broken: set[str] = set()
+    deduped: list[dict] = []
+    for issue in issues:
+        key = f"{issue['type']}:{issue['path']}"
+        if key not in seen_broken:
+            seen_broken.add(key)
+            deduped.append(issue)
+
+    return deduped
+
+
 # ─── Main ──────────────────────────────────────────────────────────────────────
 
 def parse_args() -> argparse.Namespace:
@@ -1153,9 +1519,11 @@ def main() -> int:
     MAPS_DIR.mkdir(parents=True, exist_ok=True)
     written: list[str] = []
 
+    project_map_data: Optional[dict] = None
     if "project" in maps_to_gen:
         path = MAPS_DIR / "PROJECT_MAP.json"
-        write_json(path, build_project_map(proj))
+        project_map_data = build_project_map(proj)
+        write_json(path, project_map_data)
         written.append("PROJECT_MAP.json")
         print(f"  ✓ {path.relative_to(PLUGIN_DIR.parent)}")
 
@@ -1187,6 +1555,20 @@ def main() -> int:
             encoding="utf-8",
         )
         print("  Aprobación reseteada.")
+
+    # Validación de calidad
+    if project_map_data:
+        print()
+        print("  Validando coherencia del análisis...")
+        issues = validate_maps(proj, project_map_data)
+        if issues:
+            print(f"  ⚠ {len(issues)} issue(s) detectados:")
+            for iss in issues[:10]:
+                print(f"    [{iss['type']}] {iss['path']}: {iss['detail']}")
+            if len(issues) > 10:
+                print(f"    ... y {len(issues) - 10} más.")
+        else:
+            print("  ✓ Análisis coherente — sin issues detectados.")
 
     print()
     print(f"MAPs generados: {', '.join(written)}")

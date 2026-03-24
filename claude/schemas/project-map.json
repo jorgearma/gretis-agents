@@ -36,8 +36,21 @@
           "properties": {
             "path":            { "type": "string", "description": "Ruta relativa al archivo." },
             "purpose":         { "type": "string", "description": "Descripción del propósito del módulo. Extraída del docstring o inferida por heurística." },
-            "search_keywords": { "type": "array", "items": { "type": "string" }, "description": "Términos para buscar este módulo. Del nombre del archivo + clases + funciones." },
-            "related_to":      { "type": "array", "items": { "type": "string" }, "description": "Stems de módulos relacionados. De imports internos + git co-change." }
+            "search_keywords": { "type": "array", "items": { "type": "string" }, "description": "Términos para buscar este módulo: fragmentos semánticos + nombres completos de funciones y clases (greppables)." },
+            "related_to":      { "type": "array", "items": { "type": "string" }, "description": "Stems de módulos relacionados. De imports internos + git co-change." },
+            "symbols": {
+              "type": "array",
+              "description": "Funciones y clases del archivo con su número de línea. El planner los usa para saltar directamente a la sección relevante.",
+              "items": {
+                "type": "object",
+                "required": ["name", "line", "kind"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "line": { "type": "integer" },
+                  "kind": { "type": "string", "enum": ["function", "class"] }
+                }
+              }
+            }
           }
         }
       }
@@ -57,6 +70,11 @@
     "cochange": {
       "type": "object",
       "description": "Archivos que siempre cambian juntos. Clave: archivo. Valor: lista de archivos co-cambiados.",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Grafo de dependencias resuelto. Clave: ruta del archivo. Valor: rutas de los archivos que importa.",
       "additionalProperties": { "type": "array", "items": { "type": "string" } }
     },
     "problems": {
