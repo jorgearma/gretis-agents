@@ -69,3 +69,47 @@ def test_build_query_entry_returns_required_keys(tmp_path):
     assert "role" in entry
     assert "functions" in entry
     assert "query_examples" in entry
+
+
+def _make_fi(rel_path: str) -> "FileInfo":
+    from analyzers.core import FileInfo
+    return FileInfo(rel_path=rel_path, language="python", role="controller", size=100)
+
+def test_find_test_file_pytest_convention():
+    from analyzers.core import find_test_file
+    all_files = [
+        _make_fi("controllers/auth.py"),
+        _make_fi("tests/test_auth.py"),
+    ]
+    result = find_test_file("controllers/auth.py", all_files)
+    assert result == "tests/test_auth.py"
+
+def test_find_test_file_suffix_convention():
+    from analyzers.core import find_test_file
+    all_files = [
+        _make_fi("services/stripe.py"),
+        _make_fi("tests/stripe_test.py"),
+    ]
+    result = find_test_file("services/stripe.py", all_files)
+    assert result == "tests/stripe_test.py"
+
+def test_find_test_file_sibling_dir():
+    from analyzers.core import find_test_file
+    all_files = [
+        _make_fi("blueprints/auth.py"),
+        _make_fi("blueprints/tests/test_auth.py"),
+    ]
+    result = find_test_file("blueprints/auth.py", all_files)
+    assert result == "blueprints/tests/test_auth.py"
+
+def test_find_test_file_returns_none_when_missing():
+    from analyzers.core import find_test_file
+    all_files = [_make_fi("controllers/auth.py")]
+    result = find_test_file("controllers/auth.py", all_files)
+    assert result is None
+
+def test_find_test_file_never_returns_self():
+    from analyzers.core import find_test_file
+    all_files = [_make_fi("tests/test_auth.py")]
+    result = find_test_file("tests/test_auth.py", all_files)
+    assert result is None

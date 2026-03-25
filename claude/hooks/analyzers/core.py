@@ -1075,6 +1075,37 @@ def find_related(
 
     return related[:5]
 
+def find_test_file(rel_path: str, all_files: list[FileInfo]) -> str | None:
+    """
+    Busca el archivo de test asociado a rel_path dentro de all_files.
+    Heurística en cascada — nunca inventa rutas, solo devuelve paths que existen en all_files.
+    """
+    stem = Path(rel_path).stem
+    dir_ = str(Path(rel_path).parent)
+    all_paths = {f.rel_path for f in all_files}
+
+    # Excluir el propio archivo (evita que test files se apunten a sí mismos)
+    if stem.startswith("test_") or stem.endswith("_test"):
+        return None
+
+    candidates = [
+        f"tests/test_{stem}.py",
+        f"tests/{stem}_test.py",
+        f"{dir_}/tests/test_{stem}.py",
+        f"{dir_}/tests/{stem}_test.py",
+    ]
+    for c in candidates:
+        if c in all_paths:
+            return c
+
+    # Fallback: cualquier archivo cuyo stem contiene "test" + stem del archivo
+    for f in all_files:
+        f_stem = Path(f.rel_path).stem
+        if ("test" in f_stem.lower()) and (stem.lower() in f_stem.lower()):
+            return f.rel_path
+
+    return None
+
 def build_symbols(fi: FileInfo) -> list[dict]:
     """Devuelve lista de {name, line, kind} — mínimo para que el reader grep-ee el símbolo."""
     result = []
