@@ -1164,7 +1164,7 @@ def build_symbols(fi: FileInfo) -> list[dict]:
     for name, line in sorted(fi.symbols_with_lines.items(), key=lambda x: x[1]):
         kind = "class" if name in fi.classes else "function"
         result.append({"name": name, "line": line, "kind": kind})
-    return result[:8]
+    return result[:10]
 
 
 def build_module_entry(
@@ -1179,6 +1179,7 @@ def build_module_entry(
         "search_keywords": extract_keywords(fi),
         "related_to":      find_related(fi, all_files, cochange),
         "symbols":         build_symbols(fi),
+        "test_file":       find_test_file(fi.rel_path, all_files),
     }
 
 def build_query_entry(
@@ -1186,12 +1187,13 @@ def build_query_entry(
     all_files: list[FileInfo],
     cochange: dict[str, list[str]],
 ) -> dict:
-    """Objeto mínimo para query-reader: path, role, functions (greppables), query_examples."""
+    """Objeto mínimo para query-reader: path, role, functions, query_examples, test_file."""
     return {
         "path":           fi.rel_path,
         "role":           fi.role,
         "functions":      (fi.functions or fi.exports)[:10],
         "query_examples": fi.query_examples[:3],
+        "test_file":      find_test_file(fi.rel_path, all_files),
     }
 
 

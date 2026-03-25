@@ -167,3 +167,58 @@ def test_detect_problems_no_test_only_for_logic_roles():
     problems = detect_problems([util])
     no_test_probs = [p for p in problems if p["type"] == "no_tests"]
     assert no_test_probs == []
+
+
+def test_build_module_entry_includes_test_file():
+    from analyzers.core import build_module_entry, FileInfo
+    fi = FileInfo(
+        rel_path="controllers/auth.py",
+        language="python", role="controller", size=200,
+        classes=["AuthController"], functions=["login"],
+        symbols_with_lines={"AuthController": 5, "login": 20},
+        docstring="Gestiona autenticacion de usuarios.",
+    )
+    test_fi = FileInfo(
+        rel_path="tests/test_auth.py",
+        language="python", role="test", size=100,
+    )
+    entry = build_module_entry(fi, [fi, test_fi], {})
+    assert "test_file" in entry
+    assert entry["test_file"] == "tests/test_auth.py"
+
+def test_build_module_entry_test_file_null_when_missing():
+    from analyzers.core import build_module_entry, FileInfo
+    fi = FileInfo(
+        rel_path="controllers/auth.py",
+        language="python", role="controller", size=200,
+    )
+    entry = build_module_entry(fi, [fi], {})
+    assert entry["test_file"] is None
+
+def test_build_query_entry_includes_test_file():
+    from analyzers.core import build_query_entry, FileInfo
+    fi = FileInfo(
+        rel_path="managers/user_manager.py",
+        language="python", role="data_access", size=300,
+        functions=["get_user", "create_user"],
+    )
+    test_fi = FileInfo(
+        rel_path="tests/test_user_manager.py",
+        language="python", role="test", size=100,
+    )
+    entry = build_query_entry(fi, [fi, test_fi], {})
+    assert "test_file" in entry
+    assert entry["test_file"] == "tests/test_user_manager.py"
+
+def test_build_symbols_cap_is_10():
+    from analyzers.core import build_symbols, FileInfo
+    # 12 symbols — should cap at 10
+    syms = {f"fn_{i}": i * 10 for i in range(12)}
+    fi = FileInfo(
+        rel_path="controllers/big.py",
+        language="python", role="controller", size=500,
+        functions=[f"fn_{i}" for i in range(12)],
+        symbols_with_lines=syms,
+    )
+    result = build_symbols(fi)
+    assert len(result) <= 10
