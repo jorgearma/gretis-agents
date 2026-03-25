@@ -28,14 +28,7 @@ AUTH_DECORATORS = frozenset({
     "require_auth", "permission_required", "auth_required",
 })
 
-# Frameworks por stack key
-FRAMEWORK_KEYS = {
-    "Flask": "Flask",
-    "FastAPI": "FastAPI",
-    "Express": "Express",
-    "Fastify": "Fastify",
-    "NestJS": "NestJS",
-}
+KNOWN_FRAMEWORKS = frozenset({"Flask", "FastAPI", "Express", "Fastify", "NestJS"})
 
 RE_BLUEPRINT = re.compile(
     r'(\w+)\s*=\s*Blueprint\s*\(\s*["\']([^"\']+)["\']'
@@ -59,6 +52,8 @@ def _is_webhook(route: str, func_name: str) -> bool:
 
 def _analyze_flask_file_regex(source: str, rel: str, bp_vars: dict) -> dict:
     """Fallback regex para archivos con SyntaxError."""
+    if not bp_vars:
+        return bp_vars
     for m in RE_ROUTE.finditer(source):
         bp_var = m.group(1)
         route_path = m.group(2)
@@ -172,7 +167,7 @@ def _analyze_flask_file(path: Path, root: Path) -> dict | None:
 def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
     """Genera API_MAP.json. Escribe en .claude/maps/. Devuelve el dict."""
     framework = next(
-        (FRAMEWORK_KEYS[k] for k in FRAMEWORK_KEYS if k in stack),
+        (k for k in KNOWN_FRAMEWORKS if k in stack),
         None
     )
 
@@ -224,7 +219,7 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
         "framework": framework,
         "blueprints": blueprints_result,
         "webhooks": webhooks_result,
-        "middleware_files": middleware_files[:10],
+        "middleware_files": middleware_files[:10],  # cap to avoid noise in large projects
     }
 
     maps_dir = root / ".claude" / "maps"

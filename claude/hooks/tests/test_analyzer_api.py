@@ -166,7 +166,7 @@ def test_auth_decorators_jwt_and_token_required(tmp_path):
     all_endpoints = [ep for bp in result["blueprints"] for ep in bp["endpoints"]]
     jwt_ep = next((ep for ep in all_endpoints if ep["function"] == "jwt_endpoint"), None)
     token_ep = next((ep for ep in all_endpoints if ep["function"] == "token_endpoint"), None)
-    if jwt_ep:
-        assert jwt_ep["auth_required"] == True
-    if token_ep:
-        assert token_ep["auth_required"] == True
+    assert jwt_ep is not None, "jwt_endpoint not found in blueprints"
+    assert token_ep is not None, "token_endpoint not found in blueprints"
+    assert jwt_ep["auth_required"] == True
+    assert token_ep["auth_required"] == True
