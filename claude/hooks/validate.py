@@ -93,8 +93,14 @@ class ValidationResult:
 
 def _load_schema(schema_filename: str) -> dict:
     schema_path = SCHEMA_DIR / schema_filename
-    with schema_path.open("r", encoding="utf-8") as fh:
-        return json.load(fh)
+    try:
+        with schema_path.open("r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"Schema file '{schema_filename}' no encontrado en {SCHEMA_DIR}. "
+            f"Verifica que claude/schemas/{schema_filename} existe."
+        )
 
 
 def _is_critical(error: ValidationError) -> bool:
@@ -102,9 +108,10 @@ def _is_critical(error: ValidationError) -> bool:
     if error.validator in _CRITICAL_VALIDATORS:
         return True
     if error.validator == "type":
-        # Crítico solo si el campo está en `required` del schema padre
+        # Crítico solo si el campo (string) está en `required` del schema padre.
+        # Si path[-1] es un int (índice de array), no es un campo requerido → warning.
         field_name = error.path[-1] if error.path else None
-        if error.parent is not None:
+        if isinstance(field_name, str) and error.parent is not None:
             parent_required = error.parent.schema.get("required", [])
             return field_name in parent_required
     return False
@@ -135,6 +142,11 @@ def validate_artifact(name: str, data: dict) -> ValidationResult:
         raise KeyError(
             f"Artifact desconocido: '{name}'. "
             f"Artifacts válidos: {sorted(SCHEMA_MAP)}"
+        )
+
+    if not isinstance(data, dict):
+        raise TypeError(
+            f"validate_artifact espera un dict, recibió {type(data).__name__}"
         )
 
     schema = _load_schema(SCHEMA_MAP[name])
