@@ -140,6 +140,15 @@ Crear `.claude/hooks/analyzers/core.py`. Mover EXACTAMENTE las siguientes seccio
 8. **Arquitectura e smells** (líneas 997-1054): `infer_architecture`, `detect_code_smells`
 9. **Validación** (líneas 1490-1588): `detect_dependency_cycles`, `validate_maps`
 
+Añadir al inicio de `core.py`, justo después de los imports, las **constantes de rutas** que todos los analyzers necesitan:
+
+```python
+# ─── Rutas del plugin ────────────────────────────────────────────────────────
+# Usadas por los analyzers para saber dónde escribir los MAPs.
+PLUGIN_DIR = Path(__file__).resolve().parents[2]  # .claude/
+MAPS_DIR   = PLUGIN_DIR / "maps"
+```
+
 Añadir al final de `core.py` las **funciones públicas de alto nivel** que los analyzers usarán:
 
 ```python
@@ -286,7 +295,9 @@ def test_result_has_no_modules_key(tmp_path):
     assert "structure" not in result, "PROJECT_MAP no debe tener 'structure'"
 
 
-def test_all_7_domains_present(tmp_path):
+def test_all_6_domains_present(tmp_path):
+    # PROJECT_MAP tiene 7 MAPs en total, pero solo 6 dominios en la sección `domains`
+    # (project no es un dominio — es el propio índice).
     root, _ = _make_project(tmp_path)
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
@@ -1434,7 +1445,7 @@ SDK_MAP: dict[str, tuple[str, str]] = {
     "sinch":         ("Sinch", "sms"),
     "sendgrid":      ("SendGrid", "email"),
     "mailgun":       ("Mailgun", "email"),
-    "boto3":         ("AWS SES/S3", "email"),   # puede ser email o storage
+    "boto3":         ("AWS S3", "storage"),   # boto3 es storage; ses tiene su propio import
     "stripe":        ("Stripe", "payments"),
     "monei":         ("Monei", "payments"),
     "paypalrestsdk": ("PayPal", "payments"),
@@ -2693,7 +2704,8 @@ import json
 d = json.loads(open('.claude/maps/PROJECT_MAP.json').read())
 assert 'domains' in d, 'Falta domains'
 assert 'modules' not in d, 'No debe tener modules'
-assert len(d['domains']) == 6, f'Esperados 6 dominios, hay {len(d[\"domains\"])}'
+# 7 MAPs en total, pero solo 6 dominios en la seccion domains (project no es un dominio)
+assert len(d["domains"]) == 6, f"Esperados 6 dominios en domains, hay {len(d["domains"])}"
 for name, info in d['domains'].items():
     assert 'trigger_keywords' in info, f'{name} sin trigger_keywords'
     assert len(info['trigger_keywords']) > 0
