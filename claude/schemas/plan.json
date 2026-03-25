@@ -3,7 +3,7 @@
   "title": "ClaudePlan",
   "type": "object",
   "additionalProperties": false,
-  "required": ["task", "steps", "risks", "done_criteria", "context_inputs"],
+  "required": ["task", "steps", "risks", "done_criteria", "context_inputs", "rollback_plan"],
   "properties": {
     "task": {
       "type": "string"
@@ -65,6 +65,11 @@
           "owner": {
             "type": "string",
             "enum": ["frontend", "backend", "reviewer", "test-runner"]
+          },
+          "depends_on": {
+            "type": "array",
+            "description": "IDs de pasos que deben completarse antes de ejecutar este. Vacio significa sin dependencias.",
+            "items": { "type": "string" }
           },
           "notes": {
             "type": "string"

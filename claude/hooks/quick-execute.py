@@ -118,11 +118,28 @@ def compute_complexity(task: str) -> tuple[int, list[str]]:
         score += 2
         reasons.append(f"{unique_tech} conceptos tecnicos distintos")
 
+    # Scope masivo: "all/every/todos N+ entidades" indica impacto amplio
+    scope_mass = re.search(
+        r'\b(all|every|todos|todas|cada)\s+(component|archivo|file|route|ruta|model|tabla|table|endpoint|view|vista)\w*',
+        task_low,
+    )
+    if scope_mass:
+        score += 5
+        reasons.append(f"scope masivo ({scope_mass.group(0)!r})")
+    elif re.search(r'\b\d{2,}\s+(component|archivo|file|route|ruta|model|tabla|table|endpoint|view|vista)\w*', task_low):
+        m = re.search(r'\b\d{2,}\s+\w+', task_low)
+        score += 5
+        reasons.append(f"scope masivo ({m.group(0)!r})" if m else "scope masivo (N+ entidades)")
+
     # Keywords simples (reducen score — max -2)
-    simple_hits = sum(1 for kw in SIMPLE_KEYWORDS if kw in task_low)
-    if simple_hits > 0:
-        reduction = min(simple_hits, 2)
-        score = max(0, score - reduction)
+    # No aplican si ya se detecto scope masivo: N+ entidades invalida cualquier simpleza
+    if not scope_mass and not re.search(
+        r'\b\d{2,}\s+(component|archivo|file|route|ruta|model|tabla|table|endpoint|view|vista)\w*', task_low
+    ):
+        simple_hits = sum(1 for kw in SIMPLE_KEYWORDS if kw in task_low)
+        if simple_hits > 0:
+            reduction = min(simple_hits, 2)
+            score = max(0, score - reduction)
 
     return score, reasons
 
@@ -217,6 +234,8 @@ Ejemplos:
                         help="Forzar agente objetivo. Si no se indica, se infiere de la tarea.")
     parser.add_argument("--force", action="store_true",
                         help="Ejecutar en modo quick aunque la tarea parezca compleja.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Muestra el score y las razones sin escribir el dispatch ni el approval.")
     parser.add_argument("--status", action="store_true",
                         help="Ver estado del ultimo quick-dispatch.")
     args = parser.parse_args()
@@ -245,6 +264,24 @@ Ejemplos:
 
     THRESHOLD_WARN  = 5   # advertir pero dejar ejecutar con confirmacion
     THRESHOLD_BLOCK = 8   # bloquear — muy probablemente necesita flujo completo
+
+    if args.dry_run:
+        print(f"Score:   {score}/10")
+        if reasons:
+            print("Razones:")
+            for r in reasons:
+                print(f"  - {r}")
+        else:
+            print("Razones: ninguna (tarea simple)")
+        inferred = args.agent or detect_agent(task)
+        print(f"Agente:  {inferred}")
+        if score >= THRESHOLD_BLOCK:
+            print("Resultado: BLOQUEADO — necesita flujo completo (o --force para ignorar)")
+        elif score >= THRESHOLD_WARN:
+            print("Resultado: ADVERTENCIA — ejecutable en quick con posible friccion")
+        else:
+            print("Resultado: OK para fast track")
+        return 0
 
     if score >= THRESHOLD_BLOCK and not args.force:
         print("=" * 60)

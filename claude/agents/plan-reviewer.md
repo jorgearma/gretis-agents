@@ -60,17 +60,27 @@ Revisa cada categoria. Si no hay problema, omitela del output. Si lo hay, regist
 - Un paso implica una tecnologia, libreria o patron que no esta en `tech_stack`
 - Se asume una integracion externa o un servicio que no fue mencionado en el contexto
 
-### 10. Efectos secundarios sin mencionar
+### 10. Orden de ejecucion sin dependencias declaradas
+- El paso B requiere datos o contratos producidos por el paso A, pero el paso B no lista al paso A en `depends_on`
+- Un agente frontend consume un endpoint que un paso backend crea en el mismo plan, pero no hay `depends_on` entre ellos — ejecutarlos en paralelo romperia el frontend
+- Pasos de migracion de schema deben preceder a pasos que usen la nueva estructura; si no hay `depends_on`, la ejecucion puede reordenarse incorrectamente
+
+### 11. Efectos secundarios sin mencionar
 - Un paso modificara codigo, datos o configuracion fuera del scope declarado en `files_to_review`
 - Una migracion o cambio de esquema afectara queries o endpoints que no aparecen en el plan
 - Un cambio de interfaz rompe o altera un flujo no descrito en el plan
 
-### 11. Breaking changes sin estrategia de compatibilidad
+### 12. Breaking changes sin estrategia de compatibilidad
 - `impact_analysis.breaking_changes` lista cambios pero no hay ningun paso ni nota que describa como mantener compatibilidad hacia atras o versionar el cambio
 - Un endpoint publico, firma de funcion o contrato de datos cambia sin plan de migracion para clientes existentes
 - El plan asume que todos los consumidores se actualizan atomicamente sin evaluar clientes desactualizados
 
 Para issues de esta categoria, rellena siempre `breaking_change: true`, `affected_clients` con los clientes que se rompen segun el contexto disponible, y `migration_path` con la ruta de migracion sugerida.
+
+### 13. Rollback ausente en plan de alto riesgo
+- El plan tiene 3 o mas pasos, o `impact_analysis.breaking_changes` contiene al menos un elemento, pero `rollback_plan` esta ausente o `rollback_plan.enabled == false` sin ninguna nota explicativa
+- El operador puede aprobar igualmente, pero debe quedar visible que no hay estrategia de rollback
+- Severidad: `warning` (no bloquea, pero agrega friccion visible)
 
 ## Severidades
 

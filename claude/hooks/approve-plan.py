@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import sys
 from pathlib import Path
@@ -15,6 +16,7 @@ from validate import validate_artifact
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
 APPROVAL_PATH = PLUGIN_DIR / "runtime" / "operator-approval.json"
 DISPATCH_PATH = PLUGIN_DIR / "runtime" / "execution-dispatch.json"
+LOG_PATH = PLUGIN_DIR / "runtime" / "approval-log.jsonl"
 
 
 def parse_args() -> argparse.Namespace:
@@ -63,6 +65,17 @@ def write_payload(payload: dict[str, str]) -> None:
     )
 
 
+def append_log(action: str, by: str, notes: str) -> None:
+    entry = {
+        "ts": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),
+        "action": action,
+        "by": by,
+        "notes": notes,
+    }
+    with LOG_PATH.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(entry, ensure_ascii=True) + "\n")
+
+
 def write_dispatch_reset(reason: str) -> None:
     payload = {
         "status": "blocked",
@@ -86,6 +99,7 @@ def main() -> int:
         print(vr.format())
         return 1
     write_payload(payload)
+    append_log(payload["status"], args.by, args.notes)
     if payload["status"] == "replanning":
         write_dispatch_reset("Plan enviado a replantear. Invoca el planner con el contexto de plan-review.json.")
     elif payload["status"] != "approved":

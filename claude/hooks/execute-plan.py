@@ -31,6 +31,38 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
 
 
+def compute_execution_order(steps: list) -> list[list[str]]:
+    """
+    Ordena los steps en waves de ejecucion paralela respetando depends_on.
+    Retorna lista de listas: cada sublista contiene step_ids que pueden
+    ejecutarse en paralelo; las sublistas deben ejecutarse en orden.
+    Si hay un ciclo, devuelve todos los IDs en una sola wave.
+    """
+    valid_ids = {s["id"] for s in steps if s.get("id")}
+    dep_map: dict[str, set[str]] = {}
+    for s in steps:
+        sid = s.get("id")
+        if not sid:
+            continue
+        dep_map[sid] = {d for d in s.get("depends_on", []) if d in valid_ids}
+
+    remaining = set(dep_map)
+    completed: set[str] = set()
+    waves: list[list[str]] = []
+
+    while remaining:
+        wave = sorted(sid for sid in remaining if dep_map[sid].issubset(completed))
+        if not wave:
+            # Ciclo detectado — vuelca el resto en una wave y termina
+            waves.append(sorted(remaining))
+            break
+        waves.append(wave)
+        completed.update(wave)
+        remaining -= set(wave)
+
+    return waves
+
+
 def _block(task: str, reason: str, *, approved: bool = False) -> dict:
     return {
         "status": "blocked",
@@ -181,12 +213,15 @@ def main() -> int:
         print("Execution blocked: no frontend/backend steps found.")
         return 1
 
+    execution_order = compute_execution_order(plan.get("steps", []))
+
     payload = {
         "status": "ready",
         "approved": True,
         "task": plan.get("task", ""),
         "selected_agents": selected_agents,
         "step_ids": step_ids,
+        "execution_order": execution_order,
         "reason": "Execution can proceed for the selected specialized agents.",
     }
     if "rollback_plan" in plan:

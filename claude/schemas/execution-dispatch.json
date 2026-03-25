@@ -49,6 +49,14 @@
         "type": "string"
       }
     },
+    "execution_order": {
+      "type": "array",
+      "description": "Grupos de pasos ordenados por dependencias. Cada grupo puede ejecutarse en paralelo; los grupos deben ejecutarse en orden.",
+      "items": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
     "reason": {
       "type": "string"
     }
