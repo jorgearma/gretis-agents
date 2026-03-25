@@ -113,3 +113,57 @@ def test_find_test_file_never_returns_self():
     all_files = [_make_fi("tests/test_auth.py")]
     result = find_test_file("tests/test_auth.py", all_files)
     assert result is None
+
+
+def test_detect_problems_god_object():
+    from analyzers.core import detect_problems, FileInfo
+    big_file = FileInfo(
+        rel_path="managers/dashboard.py",
+        language="python", role="data_access", size=450 * 80,  # ~450 lines
+        functions=["fn_" + str(i) for i in range(20)],  # 20 functions
+    )
+    problems = detect_problems([big_file])
+    types = [p["type"] for p in problems]
+    assert "god_object" in types
+
+def test_detect_problems_no_tests():
+    from analyzers.core import detect_problems, FileInfo
+    ctrl = FileInfo(
+        rel_path="controllers/auth.py",
+        language="python", role="controller", size=200,
+        functions=["login"],
+    )
+    problems = detect_problems([ctrl])
+    types = [p["type"] for p in problems]
+    assert "no_tests" in types
+
+def test_detect_problems_skips_test_files():
+    from analyzers.core import detect_problems, FileInfo
+    test_file = FileInfo(
+        rel_path="tests/test_auth.py",
+        language="python", role="test", size=100,
+        functions=["test_login"] * 20,
+    )
+    problems = detect_problems([test_file])
+    assert problems == []
+
+def test_detect_problems_skips_migrations():
+    from analyzers.core import detect_problems, FileInfo
+    mig = FileInfo(
+        rel_path="migrations/001_init.py",
+        language="python", role="migration", size=10000,
+    )
+    problems = detect_problems([mig])
+    assert problems == []
+
+def test_detect_problems_no_test_only_for_logic_roles():
+    from analyzers.core import detect_problems, FileInfo
+    util = FileInfo(
+        rel_path="utils/helpers.py",
+        language="python", role="utility", size=50,
+        functions=["format_date"],
+    )
+    # Utilities don't trigger no_tests
+    problems = detect_problems([util])
+    no_test_probs = [p for p in problems if p["type"] == "no_tests"]
+    assert no_test_probs == []

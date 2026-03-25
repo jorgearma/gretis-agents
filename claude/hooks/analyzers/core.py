@@ -1106,6 +1106,58 @@ def find_test_file(rel_path: str, all_files: list[FileInfo]) -> str | None:
 
     return None
 
+# Roles que deben tener tests (si no los tienen, se reporta no_tests)
+_LOGIC_ROLES = frozenset({"controller", "service", "data_access"})
+# Roles que se excluyen de problemas
+_SKIP_ROLES = frozenset({"test", "migration", "seed", "template", "component"})
+
+def detect_problems(files: list[FileInfo]) -> list[dict]:
+    """
+    Detecta señales de riesgo en el conjunto de archivos.
+    Solo evalúa archivos de lógica (excluye tests, migrations, templates).
+    """
+    # Construir set de stems de archivos de test para detectar no_tests
+    test_stems: set[str] = set()
+    for fi in files:
+        if fi.role == "test" or "test" in Path(fi.rel_path).stem.lower():
+            test_stems.add(Path(fi.rel_path).stem.lower())
+
+    problems: list[dict] = []
+    for fi in files:
+        if fi.role in _SKIP_ROLES:
+            continue
+        if "test" in Path(fi.rel_path).parts[0].lower() if Path(fi.rel_path).parts else False:
+            continue
+
+        # god_object: >400 líneas aproximadas (size / 80) O >15 funciones
+        approx_lines = fi.size // 80 if fi.size > 0 else 0
+        fn_count = len(fi.functions or [])
+        if approx_lines > 400 or fn_count > 15:
+            problems.append({
+                "file": fi.rel_path,
+                "type": "god_object",
+                "description": f"{approx_lines} líneas aprox, {fn_count} funciones",
+            })
+            continue  # no acumular no_tests sobre el mismo archivo
+
+        # no_tests: roles de lógica sin test file asociado
+        if fi.role in _LOGIC_ROLES:
+            stem = Path(fi.rel_path).stem.lower()
+            has_test = (
+                f"test_{stem}" in test_stems
+                or f"{stem}_test" in test_stems
+                or any(stem in ts for ts in test_stems)
+            )
+            if not has_test:
+                problems.append({
+                    "file": fi.rel_path,
+                    "type": "no_tests",
+                    "description": "sin archivo de test asociado",
+                })
+
+    return problems
+
+
 def build_symbols(fi: FileInfo) -> list[dict]:
     """Devuelve lista de {name, line, kind} — mínimo para que el reader grep-ee el símbolo."""
     result = []
