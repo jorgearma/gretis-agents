@@ -73,38 +73,30 @@ Devuelve un JSON de salida con `status: "blocked_pending_clarification"` y una n
 
 Lee `.claude/maps/PROJECT_MAP.json`.
 
-El MAP esta **vacio o es invalido** si:
-- El archivo no existe.
-- `modules` esta vacio (`{}`).
-- `structure` esta vacio (`{}`).
-- `name` es el nombre del plugin y no de un proyecto real.
+El MAP es **válido** si `domains` existe y tiene al menos una clave. Si el archivo no existe, `domains` está ausente, o `domains` es `{}`, detente y devuelve JSON con `status: "blocked_no_maps"` y `map_scan_requested: true`.
 
-Si el MAP esta vacio, detente y devuelve JSON con `status: "blocked_no_maps"` y `map_scan_requested: true`. No actives ningun subagente.
-
-Si el MAP tiene contenido real, extrae directamente:
-- `tech_stack` desde `project_map.stack` — las claves del objeto son los nombres normalizados de las tecnologias.
-- `context_summary` usando `project_map.description`, `project_map.architecture`, `project_map.modules` y `project_map.structure`.
-
-No necesitas leer el README para el stack: el script ya lo extrajo y lo puso en `stack`.
+Si el MAP es válido, extrae:
+- `tech_stack` desde `project_map.stack`
+- `architecture` desde `project_map.architecture`
+- `entry_points` desde `project_map.entry_points`
+- `domains` completo — lo usarás en el paso 4 para routing
 
 ### Paso 3 — Construir context_summary
 
-Con `improved_prompt` y los datos de `PROJECT_MAP.json`, construye un `context_summary`: parrafo conciso (3-6 lineas) que describe:
+Con `improved_prompt` y los datos de `PROJECT_MAP.json`, construye `context_summary`: párrafo conciso (3-6 líneas) que describe:
 
-- tipo de proyecto, proposito y stack principal (desde `description` + `stack`)
-- capa o modulos que afecta la peticion (desde `modules` + `architecture`)
-- dependencias tecnicas relevantes
-- cualquier restriccion arquitectonica importante (desde `architecture` + `problems`)
+- tipo de proyecto, propósito y stack principal (desde `description` + `stack`)
+- capa o flujo arquitectónico general (desde `architecture`)
+- dominios activos en el proyecto (desde las claves de `domains`)
+- cualquier restricción arquitectónica importante que pueda inferirse del stack
 
-### Paso 4 — Decidir MAPs adicionales
+### Paso 4 — Decidir MAPs adicionales (routing dinámico)
 
-Segun el dominio de la peticion y los datos de `PROJECT_MAP.json`:
+Para cada dominio en `PROJECT_MAP.domains`, extrae sus `trigger_keywords`. Haz match **case-insensitive** (substring match) contra los tokens del `improved_prompt`. Si al menos **1 keyword** de un dominio tiene coincidencia, incluye ese dominio en `selected_readers`.
 
-- Si la peticion afecta persistencia, modelos o migraciones → lee `.claude/maps/DB_MAP.json`
-- Si la peticion afecta consultas, repositorios o acceso a datos → lee `.claude/maps/QUERY_MAP.json`
-- Si la peticion afecta vistas, componentes o rutas UI → lee `.claude/maps/UI_MAP.json`
+Si ningún dominio hace match, activa solo `project-reader` como fallback.
 
-Para cada JSON adicional: si existe y tiene contenido real en sus arrays principales (`models`, `files`, `views`), usalo. Si esta vacio, continua sin el.
+Para cada dominio seleccionado, lee el archivo indicado en `domains[nombre].map`. Si el archivo existe y no está vacío en sus arrays principales, úsalo. Si está vacío o no existe, continúa sin él.
 
 **Nunca explores el repositorio directamente como sustituto de los MAPs.**
 
@@ -134,6 +126,18 @@ Antes de invocar cada reader, filtra el MAP para eliminar el ruido que no aporta
 - Conserva en `views` solo las carpetas cuyo nombre o contenido coincide con la pantalla o componente de la peticion.
 - Conserva siempre: `framework`, `template_engine`, `routers`.
 
+**Para API_MAP.json:**
+- Conserva en `blueprints` solo los que tienen endpoints cuya `route` o `function` coincide con los conceptos de la petición.
+- Conserva siempre: `framework`, `middleware_files`.
+- Incluye `webhooks` solo si la petición menciona webhooks o integraciones entrantes.
+
+**Para SERVICES_MAP.json:**
+- Conserva en `integrations` solo las que coinciden con el servicio o `type` mencionado en la petición.
+
+**Para JOBS_MAP.json:**
+- Conserva en `jobs` solo los que coinciden con la función o trigger mencionado.
+- Conserva siempre: `scheduler`.
+
 Regla: si tras filtrar un MAP queda mas del 60% de su contenido original, es probable que el filtro sea demasiado permisivo — revisa los criterios de coincidencia.
 
 1. Pasa a cada reader activo: `improved_prompt`, `context_summary`, y el **MAP filtrado** (no el completo).
@@ -148,6 +152,9 @@ Regla: si tras filtrar un MAP queda mas del 60% de su contenido original, es pro
 - `db-reader` → tablas, relaciones, modelos, migraciones, persistencia
 - `query-reader` → consultas, filtros, joins, rendimiento, acceso a datos
 - `ui-reader` → pantallas, componentes, estados visuales, experiencia de usuario
+- `api-reader`      → endpoints HTTP, rutas, blueprints, webhooks, contratos de API
+- `services-reader` → integraciones externas, SDKs de terceros, env vars de credenciales
+- `jobs-reader`     → tareas programadas, queues, workers, crons
 - si la peticion mezcla dominios, elige un `primary_reader` segun donde ocurre el primer cambio real
 - no actives readers que no aporten contexto real para esta peticion
 
