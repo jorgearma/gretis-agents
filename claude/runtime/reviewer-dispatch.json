@@ -1,0 +1,6 @@
+{
+  "status": "blocked",
+  "result_available": false,
+  "agents_completed": [],
+  "reason": "result.json no existe. Los agentes ejecutores no han terminado."
+}
