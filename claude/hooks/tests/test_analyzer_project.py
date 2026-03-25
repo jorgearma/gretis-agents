@@ -49,12 +49,11 @@ def test_domains_section_has_required_keys(tmp_path):
         assert len(domain_data["trigger_keywords"]) > 0
 
 
-def test_result_has_no_modules_key(tmp_path):
+def test_result_has_no_structure_key(tmp_path):
     root, _ = _make_project(tmp_path)
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
     result = run(root, files, stack)
-    assert "modules" not in result, "PROJECT_MAP no debe tener 'modules'"
     assert "structure" not in result, "PROJECT_MAP no debe tener 'structure'"
 
 
@@ -83,3 +82,42 @@ def test_summary_graceful_when_map_missing(tmp_path):
         assert "MAP" in summary or "map" in summary or "analyze" in summary, (
             f"{domain_name}: summary debería mencionar que el MAP no fue generado, got: {summary!r}"
         )
+
+
+def test_project_map_has_modules_and_problems(tmp_path):
+    """PROJECT_MAP debe tener modules (dict por rol) y problems (lista)."""
+    from analyzers.core import walk_repo, detect_stack
+    from analyzers.project import run
+
+    # Crear estructura mínima
+    (tmp_path / "app.py").write_text('"""Entry point."""\nfrom flask import Flask\napp = Flask(__name__)\n')
+    (tmp_path / "controllers").mkdir()
+    (tmp_path / "controllers" / "auth.py").write_text('"""Auth controller."""\ndef login():\n    pass\n')
+    (tmp_path / ".git").mkdir()  # simular repo
+
+    files = walk_repo(tmp_path)
+    stack = detect_stack(tmp_path)
+    result = run(tmp_path, files, stack)
+
+    assert "modules" in result, "PROJECT_MAP debe tener campo modules"
+    assert isinstance(result["modules"], dict), "modules debe ser un dict"
+    assert "problems" in result, "PROJECT_MAP debe tener campo problems"
+    assert isinstance(result["problems"], list), "problems debe ser una lista"
+
+def test_project_map_modules_have_required_fields(tmp_path):
+    """Cada módulo en modules debe tener path, purpose, search_keywords, symbols, test_file, related_to."""
+    from analyzers.core import walk_repo, detect_stack
+    from analyzers.project import run
+
+    (tmp_path / "controllers").mkdir()
+    (tmp_path / "controllers" / "auth.py").write_text('"""Auth handler."""\ndef login(): pass\n')
+    (tmp_path / ".git").mkdir()
+
+    files = walk_repo(tmp_path)
+    stack = detect_stack(tmp_path)
+    result = run(tmp_path, files, stack)
+
+    for role, entries in result["modules"].items():
+        for entry in entries:
+            for field in ("path", "purpose", "search_keywords", "symbols", "test_file", "related_to"):
+                assert field in entry, f"modules[{role}][].{field} ausente"

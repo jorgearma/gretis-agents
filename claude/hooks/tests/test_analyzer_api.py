@@ -170,3 +170,44 @@ def test_auth_decorators_jwt_and_token_required(tmp_path):
     assert token_ep is not None, "token_endpoint not found in blueprints"
     assert jwt_ep["auth_required"] == True
     assert token_ep["auth_required"] == True
+
+
+def test_api_map_has_schema_files(tmp_path):
+    from analyzers.core import walk_repo, detect_stack
+    from analyzers.api import run
+
+    (tmp_path / "schemas").mkdir()
+    (tmp_path / "schemas" / "auth.py").write_text("from pydantic import BaseModel\nclass LoginRequest(BaseModel):\n    email: str\n")
+    (tmp_path / "blueprints").mkdir()
+    (tmp_path / "blueprints" / "auth.py").write_text(
+        "from flask import Blueprint\nauth = Blueprint('auth', __name__)\n@auth.route('/login', methods=['POST'])\ndef login(): pass\n"
+    )
+    (tmp_path / ".git").mkdir()
+
+    files = walk_repo(tmp_path)
+    stack = detect_stack(tmp_path)
+    result = run(tmp_path, files, stack)
+
+    assert "schema_files" in result
+    assert any("schemas/auth.py" in s for s in result["schema_files"])
+
+def test_api_blueprint_has_test_file(tmp_path):
+    from analyzers.core import walk_repo, detect_stack
+    from analyzers.api import run
+
+    (tmp_path / "blueprints").mkdir()
+    (tmp_path / "blueprints" / "auth.py").write_text(
+        "from flask import Blueprint\nauth = Blueprint('auth', __name__)\n@auth.route('/login', methods=['POST'])\ndef login(): pass\n"
+    )
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_auth.py").write_text("def test_login(): pass\n")
+    (tmp_path / ".git").mkdir()
+
+    files = walk_repo(tmp_path)
+    stack = detect_stack(tmp_path)
+    result = run(tmp_path, files, stack)
+
+    assert result["blueprints"], "debe haber al menos un blueprint"
+    bp = result["blueprints"][0]
+    assert "test_file" in bp
+    assert bp["test_file"] == "tests/test_auth.py"
