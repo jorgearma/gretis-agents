@@ -1,0 +1,172 @@
+{
+  "name": "losgretis",
+  "description": "",
+  "languages": [
+    "python"
+  ],
+  "architecture": "Arquitectura no inferida — revisar estructura de carpetas",
+  "stack": {},
+  "entry_points": [],
+  "domains": {
+    "db": {
+      "map": "DB_MAP.json",
+      "reader": "db-reader",
+      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps db",
+      "trigger_keywords": [
+        "modelo",
+        "tabla",
+        "migración",
+        "campo",
+        "relación",
+        "ORM",
+        "schema",
+        "base de datos",
+        "database",
+        "migration",
+        "model",
+        "table",
+        "field",
+        "relationship",
+        "SQLAlchemy",
+        "Prisma",
+        "TypeORM"
+      ]
+    },
+    "query": {
+      "map": "QUERY_MAP.json",
+      "reader": "query-reader",
+      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps query",
+      "trigger_keywords": [
+        "consulta",
+        "query",
+        "filtro",
+        "join",
+        "rendimiento",
+        "índice",
+        "filter",
+        "performance",
+        "index",
+        "select",
+        "aggregate",
+        "repository",
+        "manager",
+        "acceso a datos",
+        "data access"
+      ]
+    },
+    "ui": {
+      "map": "UI_MAP.json",
+      "reader": "ui-reader",
+      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps ui",
+      "trigger_keywords": [
+        "vista",
+        "componente",
+        "pantalla",
+        "formulario",
+        "plantilla",
+        "frontend",
+        "view",
+        "component",
+        "template",
+        "page",
+        "layout",
+        "UI",
+        "interfaz",
+        "interface",
+        "render",
+        "HTML",
+        "CSS"
+      ]
+    },
+    "api": {
+      "map": "API_MAP.json",
+      "reader": "api-reader",
+      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps api",
+      "trigger_keywords": [
+        "endpoint",
+        "ruta",
+        "blueprint",
+        "HTTP",
+        "request",
+        "response",
+        "webhook",
+        "API",
+        "route",
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "REST",
+        "controller",
+        "handler",
+        "middleware"
+      ]
+    },
+    "services": {
+      "map": "SERVICES_MAP.json",
+      "reader": "services-reader",
+      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps services",
+      "trigger_keywords": [
+        "servicio",
+        "integración",
+        "externo",
+        "Twilio",
+        "Stripe",
+        "Redis",
+        "Monei",
+        "SMS",
+        "email",
+        "pago",
+        "payment",
+        "service",
+        "integration",
+        "external",
+        "SDK",
+        "API externa",
+        "tercero",
+        "third-party"
+      ]
+    },
+    "jobs": {
+      "map": "JOBS_MAP.json",
+      "reader": "jobs-reader",
+      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps jobs",
+      "trigger_keywords": [
+        "tarea",
+        "job",
+        "celery",
+        "queue",
+        "cola",
+        "cron",
+        "programado",
+        "worker",
+        "scheduled",
+        "task",
+        "background",
+        "async task",
+        "periodic",
+        "interval"
+      ]
+    }
+  },
+  "cochange": {
+    "claude/hooks/tests/test_core.py": [],
+    "claude/hooks/analyzers/__init__.py": [],
+    "claude/hooks/analyzers/core.py": [],
+    "claude/hooks/analyze-repo.py": [],
+    "claude/hooks/approve-plan.py": [],
+    "claude/hooks/execute-plan.py": [],
+    "claude/hooks/quick-execute.py": []
+  },
+  "hotspots": [
+    {
+      "file": "claude/hooks/execute-plan.py",
+      "commits": 6
+    },
+    {
+      "file": "claude/hooks/pre-commit.py",
+      "commits": 6
+    }
+  ]
+}
