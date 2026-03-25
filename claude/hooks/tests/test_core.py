@@ -6,6 +6,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from analyzers.core import (
     FileInfo, FunctionInfo, ModelInfo, ProjectSummary,
     walk_repo, detect_stack, git_hotspots, git_cochange,
+    build_query_entry,
     IGNORE_DIRS, SOURCE_EXTS, ROLE_PATTERNS,
 )
 
@@ -53,3 +54,18 @@ def test_git_hotspots_returns_empty_without_git(tmp_path):
 def test_git_cochange_returns_empty_without_git(tmp_path):
     result = git_cochange(tmp_path)
     assert result == {}
+
+
+def test_build_query_entry_returns_required_keys(tmp_path):
+    (tmp_path / "manager.py").write_text(
+        "from database import db\n"
+        "def get_pedido(id):\n"
+        "    return db.session.query(Pedido).filter_by(id=id).first()\n"
+    )
+    files = walk_repo(tmp_path)
+    mgr = next(f for f in files if "manager.py" in f.rel_path)
+    entry = build_query_entry(mgr, files, {})
+    assert "path" in entry
+    assert "role" in entry
+    assert "functions" in entry
+    assert "query_examples" in entry
