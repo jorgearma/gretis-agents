@@ -16,7 +16,6 @@ from analyzers.core import (
     FileInfo, detect_stack, git_hotspots, git_cochange,
     walk_repo, detect_project_name, detect_readme_summary,
     infer_architecture, scan_structure,
-    PLUGIN_DIR, MAPS_DIR,
 )
 
 # Dominios fijos — siempre se incluyen todos en el PROJECT_MAP.
@@ -111,7 +110,7 @@ def _build_domain_summary(domain: str, root: Path) -> str:
         jobs = data.get("jobs", [])
         scheduler = data.get("scheduler") or "ninguno"
         return f"Scheduler: {scheduler}, {len(jobs)} jobs"
-    return ""
+    raise ValueError(f"No summary handler for domain: {domain}")
 
 
 def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
