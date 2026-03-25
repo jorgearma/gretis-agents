@@ -1,63 +1,40 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ProjectMap",
-  "description": "Mapa generado por analyze-repo.py con la estructura y arquitectura del proyecto. Consumido por project-reader.",
+  "description": "Routing index generado por analyzers/project.py. Consumido por reader.md para activar sub-readers.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["name", "languages", "stack", "structure", "architecture", "modules"],
+  "required": ["name", "architecture", "stack", "entry_points", "domains"],
   "properties": {
-    "name":        { "type": "string" },
-    "description": { "type": "string" },
-    "languages":   { "type": "array", "items": { "type": "string" } },
+    "name":         { "type": "string" },
+    "description":  { "type": "string" },
+    "languages":    { "type": "array", "items": { "type": "string" } },
     "stack": {
       "type": "object",
-      "description": "Frameworks y librerías clave. Clave: nombre display. Valor: versión.",
-      "additionalProperties": { "type": "string" }
-    },
-    "structure": {
-      "type": "object",
-      "description": "Carpetas y archivos raíz con su rol. Clave: path relativo. Valor: descripción del rol.",
       "additionalProperties": { "type": "string" }
     },
     "architecture": {
       "type": "string",
-      "description": "Cadena de capas inferida. Ej: BLUEPRINTS → CONTROLLERS → MANAGERS → [DB | Redis]"
+      "description": "Cadena de capas. Ej: BLUEPRINTS → CONTROLLERS → MANAGERS → [DB | Redis]"
     },
     "entry_points": { "type": "array", "items": { "type": "string" } },
-    "modules": {
+    "domains": {
       "type": "object",
-      "description": "Archivos agrupados por rol. Claves posibles: entry_point, controller, service, data_access, model, schema, middleware, utility, config, state_machine, db_connection, migration. Cada elemento es un objeto enriquecido.",
+      "description": "Dominios disponibles. El reader hace match de trigger_keywords contra el prompt para decidir qué sub-readers activar.",
       "additionalProperties": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "required": ["path", "purpose", "search_keywords", "related_to"],
-          "additionalProperties": false,
-          "properties": {
-            "path":            { "type": "string", "description": "Ruta relativa al archivo." },
-            "purpose":         { "type": "string", "description": "Descripción del propósito del módulo. Extraída del docstring o inferida por heurística." },
-            "search_keywords": { "type": "array", "items": { "type": "string" }, "description": "Términos para buscar este módulo: fragmentos semánticos + nombres completos de funciones y clases (greppables)." },
-            "related_to":      { "type": "array", "items": { "type": "string" }, "description": "Stems de módulos relacionados. De imports internos + git co-change." },
-            "symbols": {
-              "type": "array",
-              "description": "Funciones y clases del archivo con su número de línea. El planner los usa para saltar directamente a la sección relevante.",
-              "items": {
-                "type": "object",
-                "required": ["name", "line", "kind"],
-                "properties": {
-                  "name": { "type": "string" },
-                  "line": { "type": "integer" },
-                  "kind": { "type": "string", "enum": ["function", "class"] }
-                }
-              }
-            }
-          }
+        "type": "object",
+        "required": ["map", "reader", "summary", "trigger_keywords"],
+        "additionalProperties": false,
+        "properties": {
+          "map":              { "type": "string" },
+          "reader":           { "type": "string" },
+          "summary":          { "type": "string" },
+          "trigger_keywords": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
         }
       }
     },
     "hotspots": {
       "type": "array",
-      "description": "Archivos más modificados según git log.",
       "items": {
         "type": "object",
         "required": ["file", "commits"],
@@ -69,20 +46,7 @@
     },
     "cochange": {
       "type": "object",
-      "description": "Archivos que siempre cambian juntos. Clave: archivo. Valor: lista de archivos co-cambiados.",
       "additionalProperties": { "type": "array", "items": { "type": "string" } }
-    },
-    "problems": {
-      "type": "array",
-      "description": "Code smells y problemas detectados estáticamente.",
-      "items": {
-        "type": "object",
-        "required": ["file", "issue"],
-        "properties": {
-          "file":  { "type": "string" },
-          "issue": { "type": "string" }
-        }
-      }
     }
   }
 }

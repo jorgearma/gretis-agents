@@ -50,6 +50,9 @@ SCHEMA_MAP: dict[str, str] = {
     "DB_MAP.json":             "db-map.json",
     "QUERY_MAP.json":          "query-map.json",
     "UI_MAP.json":             "ui-map.json",
+    "API_MAP.json":            "api-map.json",
+    "SERVICES_MAP.json":       "services-map.json",
+    "JOBS_MAP.json":           "jobs-map.json",
 }
 
 # Validators que son críticos en campos requeridos

@@ -136,9 +136,9 @@ def test_operator_approval_invalid_status():
 
 # ── Cobertura de SCHEMA_MAP ───────────────────────────────────────────────────
 
-def test_schema_map_covers_all_17_schemas():
-    """SCHEMA_MAP debe cubrir exactamente 17 artifacts."""
-    assert len(SCHEMA_MAP) == 17, f"Esperado 17, encontrado {len(SCHEMA_MAP)}"
+def test_schema_map_covers_all_20_schemas():
+    """SCHEMA_MAP debe cubrir exactamente 20 artifacts."""
+    assert len(SCHEMA_MAP) == 20, f"Esperado 20, encontrado {len(SCHEMA_MAP)}"
 
 
 def test_all_schema_files_exist_on_disk():
