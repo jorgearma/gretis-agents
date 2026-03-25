@@ -49,7 +49,7 @@ DISPLAY_TO_SDK: dict[str, tuple[str, str]] = {
 
 # Patrones de env vars de credenciales
 RE_ENV_VAR = re.compile(
-    r'(?:os\.environ|os\.getenv)\s*[\[\(]\s*["\']([A-Z][A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_URL|_SID|_API|_PASSWORD|_PASS|_AUTH)["\'])',
+    r'(?:os\.environ\.get|os\.environ|os\.getenv)\s*[\[\(]\s*["\']([A-Z][A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_URL|_SID|_API|_PASSWORD|_PASS|_AUTH)["\'])',
 )
 
 
@@ -97,6 +97,9 @@ def _detect_integrations(
                 assigned = False
                 for sdk_name, int_data in integrations.items():
                     sdk_prefix = sdk_name.upper().replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_")
+                    # 4-char prefix heuristic — pragmatic but imprecise for short prefixes
+                    # (e.g. "SEND" matches both SendGrid and custom SEND_* vars).
+                    # Env vars are assigned to the first matching integration.
                     if env_name.startswith(sdk_prefix[:4]):
                         if env_name not in int_data["env_vars"]:
                             int_data["env_vars"].append(env_name)
