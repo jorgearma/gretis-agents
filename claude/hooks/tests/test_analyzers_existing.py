@@ -81,3 +81,56 @@ def test_ui_run_returns_required_keys(tmp_path):
     assert "framework" in result
     assert "views" in result
     assert "routers" in result
+
+
+def test_db_empty_project_writes_file(tmp_path):
+    """Si no hay modelos, DB_MAP.json debe escribirse con arrays vacíos."""
+    maps_dir = tmp_path / ".claude" / "maps"
+    maps_dir.mkdir(parents=True)
+    # Proyecto sin modelos ni DB
+    (tmp_path / "main.py").write_text("print('hello')")
+    files = core.walk_repo(tmp_path)
+    stack = core.detect_stack(tmp_path)
+    result = run_db(tmp_path, files, stack)
+    assert (maps_dir / "DB_MAP.json").exists()
+    assert isinstance(result["models"], list)
+    assert isinstance(result["migrations"], list)
+    assert isinstance(result["connection_files"], list)
+
+
+def test_query_empty_project_writes_file(tmp_path):
+    """Si no hay archivos con acceso a DB, QUERY_MAP.json debe escribirse."""
+    maps_dir = tmp_path / ".claude" / "maps"
+    maps_dir.mkdir(parents=True)
+    (tmp_path / "main.py").write_text("print('hello')")
+    files = core.walk_repo(tmp_path)
+    stack = core.detect_stack(tmp_path)
+    result = run_query(tmp_path, files, stack)
+    assert (maps_dir / "QUERY_MAP.json").exists()
+    assert isinstance(result["files"], list)
+    assert isinstance(result["cochange_with_models"], list)
+
+
+def test_ui_empty_project_writes_file(tmp_path):
+    """Si no hay templates/componentes, UI_MAP.json debe escribirse."""
+    maps_dir = tmp_path / ".claude" / "maps"
+    maps_dir.mkdir(parents=True)
+    (tmp_path / "main.py").write_text("print('hello')")
+    files = core.walk_repo(tmp_path)
+    stack = core.detect_stack(tmp_path)
+    result = run_ui(tmp_path, files, stack)
+    assert (maps_dir / "UI_MAP.json").exists()
+    assert isinstance(result["views"], dict)
+    assert isinstance(result["routers"], list)
+
+
+def test_db_model_entry_has_required_subkeys(tmp_path):
+    """Cada entrada en models debe tener name, table, file, fields, relationships."""
+    root, _ = _make_flask_project(tmp_path)
+    files = core.walk_repo(root)
+    stack = core.detect_stack(root)
+    result = run_db(root, files, stack)
+    assert len(result["models"]) > 0, "Debe haber al menos un modelo detectado"
+    for model_entry in result["models"]:
+        for key in ("name", "table", "file", "fields", "relationships"):
+            assert key in model_entry, f"model entry missing '{key}': {model_entry}"
