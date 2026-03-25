@@ -22,9 +22,9 @@
 
 ## Sección 1: Helpers nuevos en `core.py`
 
-### `extract_symbols(path: Path, root: Path) -> list[dict]`
+### `extract_symbols(fi: FileInfo) -> list[dict]`
 
-Parsea con AST (Python) o regex (JS/TS). Devuelve máx 10 símbolos ordenados por línea:
+Wrapper slim sobre el `FileInfo` ya parseado. Devuelve máx 10 símbolos ordenados por línea:
 
 ```json
 [
@@ -33,8 +33,11 @@ Parsea con AST (Python) o regex (JS/TS). Devuelve máx 10 símbolos ordenados po
 ]
 ```
 
-- Solo clases y funciones públicas (excluye `_privadas` y `__dunder__`)
+- Usa `fi.symbols_with_lines` (ya disponible en FileInfo) para extraer nombre y línea
+- `kind`: `"class"` si el nombre está en `fi.classes`, `"function"` si está en `fi.functions`
+- Solo nombres públicos (excluye `_privados` y `__dunder__`)
 - Cap en 10 para no inflar el MAP
+- Nota: `core.py` ya tiene `build_symbols(fi)` con lógica similar — `extract_symbols` reemplaza o unifica esa función con la interfaz aquí definida
 
 ### `find_test_file(rel_path: str, all_files: list[FileInfo]) -> str | None`
 
@@ -71,6 +74,8 @@ Tipos detectados:
 ### Campo `modules`
 
 Índice de archivos por rol. Generado por `project.py` usando los tres helpers de `core.py`.
+
+Claves de `modules` son un **enum fijo**: `controller`, `service`, `data_access`, `model`, `middleware`, `utility`, `entry_point`. Un archivo solo aparece en un rol (el asignado por `FileInfo.role` del walker).
 
 ```json
 "modules": {
@@ -264,12 +269,13 @@ agentes especializados (frontend/backend)
 
 | Schema | Cambio |
 |---|---|
-| `project-map.json` | Agregar `modules` (object por rol) y `problems` (array) a `properties` |
-| `api-map.json` | Agregar `schema_files` al raíz, `test_file` en blueprint items |
-| `db-map.json` | Agregar `test_file` en model items |
-| `services-map.json` | Agregar `test_file` y `env_vars` en integration items |
-| `jobs-map.json` | Agregar `test_file` en job items |
-| `query-map.json` | Agregar `test_file` en file items |
+| `project-map.json` | Agregar `modules` (object con claves enum fijo de rol) y `problems` (array) a `properties` |
+| `api-map.json` | Agregar `schema_files` (array, raíz), `test_file` (string, nullable) en blueprint items |
+| `db-map.json` | Agregar `test_file` (string, nullable) en model items |
+| `services-map.json` | Agregar `test_file` (string, nullable) y `env_vars` (array) en integration items |
+| `jobs-map.json` | Agregar `test_file` (string, nullable) en job items |
+| `query-map.json` | Agregar `test_file` (string, nullable) en file items |
+| `reader-context.json` | Agregar `test_file` en `files_to_open[]` items; agregar campos raíz `problems_in_scope`, `env_vars_needed`, `schema_files` |
 
 ---
 
