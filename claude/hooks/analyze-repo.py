@@ -31,6 +31,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+try:
+    import pathspec as _pathspec
+    _PATHSPEC_AVAILABLE = True
+except ImportError:
+    _PATHSPEC_AVAILABLE = False
+
 # ─── Rutas ────────────────────────────────────────────────────────────────────
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
@@ -379,6 +385,16 @@ def should_ignore(path: Path) -> bool:
             return True
     return path.suffix in IGNORE_EXTS
 
+def load_gitignore_spec(root: Path):
+    """Carga .gitignore del root y retorna pathspec.PathSpec, o None si no disponible."""
+    if not _PATHSPEC_AVAILABLE:
+        return None
+    gitignore = root / ".gitignore"
+    if not gitignore.exists():
+        return None
+    lines = gitignore.read_text(encoding="utf-8", errors="replace").splitlines()
+    return _pathspec.PathSpec.from_lines("gitwildmatch", lines)
+
 def scan_structure(root: Path) -> dict[str, str]:
     """Retorna {carpeta_relativa: rol} para carpetas de primer y segundo nivel."""
     result: dict[str, str] = {}
@@ -399,11 +415,10 @@ def scan_structure(root: Path) -> dict[str, str]:
         pass
     return result
 
-def walk_source_files(root: Path) -> list[Path]:
-    """Devuelve todos los archivos de código fuente, respetando IGNORE_DIRS."""
+def walk_source_files(root: Path, gitignore_spec=None) -> list[Path]:
+    """Devuelve todos los archivos de código fuente, respetando IGNORE_DIRS y .gitignore."""
     result = []
     for dirpath, dirnames, filenames in os.walk(root):
-        # Modifica en-lugar para que os.walk no entre en carpetas ignoradas
         dirnames[:] = sorted(
             d for d in dirnames
             if d not in IGNORE_DIRS and not d.startswith(".")
@@ -411,8 +426,12 @@ def walk_source_files(root: Path) -> list[Path]:
         )
         for fname in filenames:
             fpath = Path(dirpath) / fname
-            if fpath.suffix in SOURCE_EXTS and not should_ignore(fpath):
-                result.append(fpath)
+            if fpath.suffix not in SOURCE_EXTS or should_ignore(fpath):
+                continue
+            rel = str(fpath.relative_to(root))
+            if gitignore_spec and gitignore_spec.match_file(rel):
+                continue
+            result.append(fpath)
     return result
 
 # ─── Extracción de query examples ────────────────────────────────────────────
@@ -927,7 +946,8 @@ def build_project(root: Path, stack: dict[str, str]) -> ProjectSummary:
     all_files: list[FileInfo] = []
     all_models: list[ModelInfo] = []
 
-    source_files = walk_source_files(root)
+    gitignore_spec = load_gitignore_spec(root)
+    source_files = walk_source_files(root, gitignore_spec)
     print(f"  Escaneando {len(source_files)} archivos fuente...")
 
     for fpath in source_files:
@@ -963,7 +983,6 @@ def build_project(root: Path, stack: dict[str, str]) -> ProjectSummary:
     folder_structure = scan_structure(root)
 
     hotspots, cochange = analyze_git(root)
-    recent_changes, ownership, pending = analyze_git_extended(root)
 
     return ProjectSummary(
         name=name, root=root, description=description,
@@ -972,9 +991,6 @@ def build_project(root: Path, stack: dict[str, str]) -> ProjectSummary:
         folder_structure=folder_structure,
         files=all_files, models=unique_models,
         git_hotspots=hotspots, git_cochange=cochange,
-        git_recent_changes=recent_changes,
-        git_ownership=ownership,
-        git_pending=pending,
         readme_summary=description,
     )
 
@@ -1070,8 +1086,8 @@ _ROLE_VERBS: dict[str, str] = {
 
 def extract_keywords(fi: FileInfo) -> list[str]:
     """
-    Extrae términos de búsqueda semánticos (para que los readers encuentren el archivo)
-    y nombres completos de símbolos (para que el planner pueda hacer grep directo).
+    Extrae términos de búsqueda greppables para que los readers encuentren el archivo.
+    Solo nombres completos — sin fragmentos de snake_case ni CamelCase splits.
     """
     seen: set[str] = set()
     result: list[str] = []
@@ -1082,31 +1098,31 @@ def extract_keywords(fi: FileInfo) -> list[str]:
             seen.add(t)
             result.append(t)
 
-    # 1. Fragmentos del nombre del archivo (búsqueda semántica)
+    # 1. Fragmentos del stem del archivo (dominio: "pedidos" de "gestor_pedidos.py")
     stem = Path(fi.rel_path).stem
     for part in re.split(r"[_\-\.]", stem):
         add(part.lower())
 
-    # 2. Nombres completos de clases (greppables) + sus fragmentos CamelCase
-    for cls in fi.classes[:5]:
-        add(cls)  # nombre completo, ej: "AuthController"
-        for part in re.findall(r"[A-Z][a-z]+|[a-z]+", cls):
-            add(part.lower())
+    # 2. Nombres completos de clases (greppables directamente)
+    for cls in fi.classes[:4]:
+        add(cls)
 
-    # 3. Nombres completos de funciones públicas (greppables)
-    for fn in (fi.functions or fi.exports)[:8]:
-        add(fn)  # nombre completo, ej: "authenticate"
-        for part in re.split(r"_", fn):
-            add(part.lower())
+    # 3. Nombres completos de funciones públicas (greppables directamente)
+    for fn in (fi.functions or fi.exports)[:6]:
+        add(fn)
 
-    # 4. Palabras clave del docstring (máx 3 sustantivos relevantes)
+    # 4. Palabras clave del docstring (conceptos del dominio, máx 3)
     if fi.docstring:
         doc_words = re.findall(r"[a-zA-Z]{4,}", fi.docstring)
-        for w in doc_words[:6]:
+        count = 0
+        for w in doc_words:
             if w.lower() not in _STOP_WORDS:
                 add(w.lower())
+                count += 1
+                if count >= 3:
+                    break
 
-    return result[:15]
+    return result[:8]
 
 def infer_purpose(fi: FileInfo) -> str:
     """Infiere el propósito del módulo en este orden: docstring → JSDoc → heurística."""
@@ -1150,27 +1166,12 @@ def find_related(
     return related[:5]
 
 def build_symbols(fi: FileInfo) -> list[dict]:
-    """Devuelve lista de {name, line, end_line, kind, params, return_type, decorators, complexity} para los símbolos."""
-    # Index FunctionInfo by name for fast lookup
-    fn_by_name: dict[str, FunctionInfo] = {f.name: f for f in fi.function_infos}
+    """Devuelve lista de {name, line, kind} — mínimo para que el reader grep-ee el símbolo."""
     result = []
     for name, line in sorted(fi.symbols_with_lines.items(), key=lambda x: x[1]):
         kind = "class" if name in fi.classes else "function"
-        entry: dict = {"name": name, "line": line, "kind": kind}
-        if name in fn_by_name:
-            fn = fn_by_name[name]
-            entry["end_line"] = fn.end_line
-            entry["complexity"] = fn.complexity
-            if fn.params:
-                entry["params"] = fn.params
-            if fn.return_type:
-                entry["return_type"] = fn.return_type
-            if fn.decorators:
-                entry["decorators"] = fn.decorators
-            if fn.is_async:
-                entry["is_async"] = True
-        result.append(entry)
-    return result[:15]
+        result.append({"name": name, "line": line, "kind": kind})
+    return result[:8]
 
 
 def build_module_entry(
@@ -1192,16 +1193,12 @@ def build_query_entry(
     all_files: list[FileInfo],
     cochange: dict[str, list[str]],
 ) -> dict:
-    """Construye el objeto enriquecido para un archivo en QUERY_MAP.json."""
+    """Objeto mínimo para query-reader: path, role, functions (greppables), query_examples."""
     return {
-        "path":            fi.rel_path,
-        "role":            fi.role,
-        "purpose":         infer_purpose(fi),
-        "search_keywords": extract_keywords(fi),
-        "related_to":      find_related(fi, all_files, cochange),
-        "functions":       (fi.functions or fi.exports)[:8],
-        "symbols":         build_symbols(fi),
-        "query_examples":  fi.query_examples,
+        "path":           fi.rel_path,
+        "role":           fi.role,
+        "functions":      (fi.functions or fi.exports)[:10],
+        "query_examples": fi.query_examples[:3],
     }
 
 
@@ -1366,10 +1363,8 @@ def build_project_map(proj: ProjectSummary) -> dict:
         desc = parts[1] if len(parts) > 1 else ""
         problems.append({"file": file_part, "issue": desc})
 
-    dependencies = resolve_dependencies(proj.files)
-
-    # Recent hotspots: top 10 files changed in last 30 days
-    recent_top = sorted(proj.git_recent_changes.items(), key=lambda x: x[1], reverse=True)[:10]
+    # Solo rutas que existen en los archivos escaneados (evita rutas históricas de venv, etc.)
+    known_paths: set[str] = {f.rel_path for f in proj.files}
 
     return {
         "name": proj.name,
@@ -1380,12 +1375,16 @@ def build_project_map(proj: ProjectSummary) -> dict:
         "architecture": infer_architecture(proj),
         "entry_points": proj.entry_points,
         "modules": dict(modules),
-        "hotspots": [{"file": f, "commits": c} for f, c in proj.git_hotspots[:10]],
-        "recent_changes": [{"file": f, "commits_30d": c} for f, c in recent_top],
-        "ownership": proj.git_ownership,
-        "pending_changes": proj.git_pending,
-        "cochange": {f: p for f, p in list(proj.git_cochange.items())[:20]},
-        "dependencies": dependencies,
+        "hotspots": [
+            {"file": f, "commits": c}
+            for f, c in proj.git_hotspots[:10]
+            if f in known_paths
+        ],
+        "cochange": {
+            f: [p for p in partners if p in known_paths]
+            for f, partners in list(proj.git_cochange.items())[:20]
+            if f in known_paths
+        },
         "problems": problems,
     }
 

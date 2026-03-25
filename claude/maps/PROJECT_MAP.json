@@ -1,238 +1,1503 @@
 {
-  "name": "losgretis",
-  "description": "",
+  "name": "panchi-bot",
+  "description": "Bot de WhatsApp para gestión de pedidos de un restaurante en Tarancón (España). Los clientes interactúan por WhatsApp, seleccionan productos desde un menú web y pagan con Monei.",
   "languages": [
-    "python"
+    "python",
+    "javascript"
   ],
-  "stack": {},
-  "structure": {
-    "claude": "",
-    "claude/commands": "comandos CQRS",
-    "claude/hooks": "hooks del sistema",
-    "claude/schemas": "validación de entrada",
-    "docs": "documentación"
+  "stack": {
+    "Sentry": "2.54.0",
+    "SQLAlchemy": "2.0.38",
+    "Tenacity": "9.1.4",
+    "aiohttp": "3.11.13",
+    "Flask": "3.1.0",
+    "httpx": "0.28.1",
+    "Pydantic": "2.10.6",
+    "Redis": "5.2.1",
+    "requests": "2.32.3",
+    "Twilio": "9.4.6"
   },
-  "architecture": "Arquitectura no inferida — revisar estructura de carpetas",
-  "entry_points": [],
+  "structure": {
+    "blueprints": "routing HTTP",
+    "controllers": "lógica de negocio",
+    "docs": "documentación",
+    "managers": "acceso a datos (DB + caché)",
+    "migrations": "migraciones DB",
+    "schemas": "validación de entrada",
+    "scripts": "scripts de utilidad",
+    "services": "adaptadores externos / lógica de servicio",
+    "static": "assets estáticos",
+    "templates": "plantillas HTML",
+    "tests": "tests",
+    "utils": "helpers sin estado"
+  },
+  "architecture": "CONTROLLERS → SERVICES → MANAGERS → [DB | Redis | APIs externas]",
+  "entry_points": [
+    "main.py"
+  ],
   "modules": {
-    "controller": [
+    "entry_point": [
       {
-        "path": "claude/hooks/dispatch-reviewer.py",
-        "purpose": "Genera reviewer-dispatch",
+        "path": "main.py",
+        "purpose": "Punto de entrada de la aplicación main",
         "search_keywords": [
-          "dispatch",
-          "reviewer",
-          "load_json",
-          "load",
-          "json",
-          "write_json",
-          "write",
           "main",
-          "genera",
-          "tras",
-          "ejecucion"
+          "create_app",
+          "health",
+          "manejar_errores_globales"
         ],
         "related_to": [
-          "planner",
-          "db-reader",
-          "project-reader"
+          "gestor_dashboard"
         ],
         "symbols": [
           {
-            "name": "load_json",
-            "line": 16,
-            "kind": "function",
-            "end_line": 18,
-            "complexity": 3,
-            "params": [
-              "path"
-            ],
-            "return_type": "dict"
+            "name": "create_app",
+            "line": 17,
+            "kind": "function"
           },
           {
-            "name": "write_json",
-            "line": 21,
-            "kind": "function",
-            "end_line": 22,
-            "complexity": 2,
-            "params": [
-              "path",
-              "payload"
-            ],
-            "return_type": "None"
+            "name": "health",
+            "line": 92,
+            "kind": "function"
           },
           {
-            "name": "main",
+            "name": "manejar_errores_globales",
+            "line": 116,
+            "kind": "function"
+          }
+        ]
+      }
+    ],
+    "config": [
+      {
+        "path": "config.py",
+        "purpose": "Configuración de config",
+        "search_keywords": [
+          "config"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": []
+      }
+    ],
+    "db_connection": [
+      {
+        "path": "database.py",
+        "purpose": "Gestiona la conexión a la base de datos database",
+        "search_keywords": [
+          "database",
+          "get_db",
+          "close_db",
+          "conectar_bd1"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "get_db",
+            "line": 34,
+            "kind": "function"
+          },
+          {
+            "name": "close_db",
+            "line": 42,
+            "kind": "function"
+          },
+          {
+            "name": "conectar_bd1",
+            "line": 50,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_database.py",
+        "purpose": "Tests for database initialization and ORM models",
+        "search_keywords": [
+          "database",
+          "test_conectar_bd1_incluye_audit_log",
+          "test_conectar_bd1_fuente_incluye_audit_log",
+          "test_empleado_tiene_estado_operativo",
+          "test_modelo_turno_existe",
+          "initialization",
+          "models"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "test_conectar_bd1_incluye_audit_log",
+            "line": 7,
+            "kind": "function"
+          },
+          {
+            "name": "test_conectar_bd1_fuente_incluye_audit_log",
+            "line": 12,
+            "kind": "function"
+          },
+          {
+            "name": "test_empleado_tiene_estado_operativo",
             "line": 25,
-            "kind": "function",
-            "end_line": 76,
-            "complexity": 52,
-            "return_type": "int"
+            "kind": "function"
+          },
+          {
+            "name": "test_modelo_turno_existe",
+            "line": 33,
+            "kind": "function"
+          }
+        ]
+      }
+    ],
+    "model": [
+      {
+        "path": "models.py",
+        "purpose": "Define los modelos ORM de models",
+        "search_keywords": [
+          "models",
+          "Usuario",
+          "Categoria",
+          "Producto",
+          "Pedido"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "Usuario",
+            "line": 12,
+            "kind": "class"
+          },
+          {
+            "name": "Categoria",
+            "line": 27,
+            "kind": "class"
+          },
+          {
+            "name": "Producto",
+            "line": 38,
+            "kind": "class"
+          },
+          {
+            "name": "Pedido",
+            "line": 64,
+            "kind": "class"
+          },
+          {
+            "name": "PedidoDetalle",
+            "line": 96,
+            "kind": "class"
+          },
+          {
+            "name": "Pago",
+            "line": 116,
+            "kind": "class"
+          },
+          {
+            "name": "AuditLog",
+            "line": 135,
+            "kind": "class"
+          },
+          {
+            "name": "HistorialEstadoPedido",
+            "line": 150,
+            "kind": "class"
+          }
+        ]
+      }
+    ],
+    "state_machine": [
+      {
+        "path": "states.py",
+        "purpose": "Define la máquina de estados de states",
+        "search_keywords": [
+          "states",
+          "EstadoRegistro",
+          "EstadoPedido",
+          "EstadoPicking",
+          "EstadoReparto",
+          "transicion_valida_pedido",
+          "transicion_valida_registro"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "EstadoRegistro",
+            "line": 4,
+            "kind": "class"
+          },
+          {
+            "name": "__str__",
+            "line": 11,
+            "kind": "function"
+          },
+          {
+            "name": "EstadoPedido",
+            "line": 15,
+            "kind": "class"
+          },
+          {
+            "name": "EstadoPicking",
+            "line": 44,
+            "kind": "class"
+          },
+          {
+            "name": "EstadoReparto",
+            "line": 55,
+            "kind": "class"
+          },
+          {
+            "name": "transicion_valida_pedido",
+            "line": 97,
+            "kind": "function"
+          },
+          {
+            "name": "transicion_valida_registro",
+            "line": 106,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_states.py",
+        "purpose": "Tests de la máquina de estados: funciones puras, sin dependencias externas",
+        "search_keywords": [
+          "states",
+          "TestEstadoPedidoEnum",
+          "TestEstadoRegistroEnum",
+          "TestTransicionValidaPedidoHappyPath",
+          "TestTransicionValidaPedidoInvalidas",
+          "test_valores_string",
+          "test_comparacion_con_string_plano",
+          "test_serializable_json"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "TestEstadoPedidoEnum",
+            "line": 20,
+            "kind": "class"
+          },
+          {
+            "name": "test_valores_string",
+            "line": 21,
+            "kind": "function"
+          },
+          {
+            "name": "test_comparacion_con_string_plano",
+            "line": 28,
+            "kind": "function"
+          },
+          {
+            "name": "test_serializable_json",
+            "line": 33,
+            "kind": "function"
+          },
+          {
+            "name": "test_construccion_desde_string",
+            "line": 38,
+            "kind": "function"
+          },
+          {
+            "name": "test_construccion_desde_string_invalido",
+            "line": 42,
+            "kind": "function"
+          },
+          {
+            "name": "TestEstadoRegistroEnum",
+            "line": 51,
+            "kind": "class"
+          },
+          {
+            "name": "TestTransicionValidaPedidoHappyPath",
+            "line": 72,
+            "kind": "class"
           }
         ]
       }
     ],
     "data_access": [
       {
-        "path": "claude/hooks/analyze-repo.py",
-        "purpose": "analyze-repo",
+        "path": "managers/gestor_dashboard.py",
+        "purpose": "GestorDashboard — Public API",
         "search_keywords": [
-          "analyze",
-          "repo",
-          "FileInfo",
-          "file",
-          "info",
-          "ModelField",
-          "model",
-          "field",
-          "FunctionInfo",
-          "function",
-          "ModelInfo",
-          "ProjectSummary",
-          "project",
-          "summary",
-          "check_approval"
+          "gestor",
+          "dashboard",
+          "GestorDashboard",
+          "gestordashboard",
+          "public"
+        ],
+        "related_to": [],
+        "symbols": [
+          {
+            "name": "GestorDashboard",
+            "line": 15,
+            "kind": "class"
+          }
+        ]
+      },
+      {
+        "path": "managers/gestor_pedidos.py",
+        "purpose": "Gestiona acceso a datos de pedidos",
+        "search_keywords": [
+          "gestor",
+          "pedidos",
+          "GestorPedidos",
+          "session",
+          "iniciar_pedido",
+          "guardar_enlace",
+          "hay_pedido_pendiente",
+          "obtener_pedido_mas_reciente"
         ],
         "related_to": [
-          "planner",
-          "db-reader",
-          "project-reader"
+          "gestor_dashboard"
         ],
         "symbols": [
           {
-            "name": "FileInfo",
-            "line": 198,
+            "name": "GestorPedidos",
+            "line": 18,
             "kind": "class"
           },
           {
-            "name": "ModelField",
-            "line": 216,
+            "name": "session",
+            "line": 21,
+            "kind": "function"
+          },
+          {
+            "name": "iniciar_pedido",
+            "line": 27,
+            "kind": "function"
+          },
+          {
+            "name": "guardar_enlace",
+            "line": 40,
+            "kind": "function"
+          },
+          {
+            "name": "hay_pedido_pendiente",
+            "line": 57,
+            "kind": "function"
+          },
+          {
+            "name": "obtener_pedido_mas_reciente",
+            "line": 71,
+            "kind": "function"
+          },
+          {
+            "name": "agregar_productos_a_pedido",
+            "line": 91,
+            "kind": "function"
+          },
+          {
+            "name": "actualizar_estado",
+            "line": 136,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/gestor_usuarios.py",
+        "purpose": "Gestiona acceso a datos de usuarios",
+        "search_keywords": [
+          "gestor",
+          "usuarios",
+          "GestorUsuarios",
+          "session",
+          "obtener_usuario",
+          "guardar_usuario",
+          "obtener_usuario_completo",
+          "verificar_usuario"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorUsuarios",
+            "line": 8,
             "kind": "class"
           },
           {
-            "name": "FunctionInfo",
-            "line": 221,
+            "name": "session",
+            "line": 11,
+            "kind": "function"
+          },
+          {
+            "name": "obtener_usuario",
+            "line": 16,
+            "kind": "function"
+          },
+          {
+            "name": "guardar_usuario",
+            "line": 31,
+            "kind": "function"
+          },
+          {
+            "name": "obtener_usuario_completo",
+            "line": 43,
+            "kind": "function"
+          },
+          {
+            "name": "verificar_usuario",
+            "line": 56,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/gestor_redis.py",
+        "purpose": "Gestiona acceso a datos de redis",
+        "search_keywords": [
+          "gestor",
+          "redis",
+          "RedisManager",
+          "delete",
+          "esta_bloqueado",
+          "bloquear_usuario",
+          "desbloquear_usuario"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "RedisManager",
+            "line": 8,
             "kind": "class"
           },
           {
-            "name": "ModelInfo",
-            "line": 233,
+            "name": "__init__",
+            "line": 9,
+            "kind": "function"
+          },
+          {
+            "name": "get",
+            "line": 26,
+            "kind": "function"
+          },
+          {
+            "name": "set",
+            "line": 34,
+            "kind": "function"
+          },
+          {
+            "name": "delete",
+            "line": 49,
+            "kind": "function"
+          },
+          {
+            "name": "esta_bloqueado",
+            "line": 63,
+            "kind": "function"
+          },
+          {
+            "name": "bloquear_usuario",
+            "line": 68,
+            "kind": "function"
+          },
+          {
+            "name": "desbloquear_usuario",
+            "line": 77,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/gestor_productos.py",
+        "purpose": "Gestiona acceso a datos de productos",
+        "search_keywords": [
+          "gestor",
+          "productos",
+          "ProductoManager",
+          "session",
+          "obtener_productos",
+          "obtener_producto_por_codigo",
+          "productos_admin",
+          "actualizar_stock"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "ProductoManager",
+            "line": 9,
             "kind": "class"
           },
           {
-            "name": "ProjectSummary",
-            "line": 241,
+            "name": "session",
+            "line": 12,
+            "kind": "function"
+          },
+          {
+            "name": "obtener_productos",
+            "line": 16,
+            "kind": "function"
+          },
+          {
+            "name": "obtener_producto_por_codigo",
+            "line": 37,
+            "kind": "function"
+          },
+          {
+            "name": "productos_admin",
+            "line": 56,
+            "kind": "function"
+          },
+          {
+            "name": "actualizar_stock",
+            "line": 83,
+            "kind": "function"
+          },
+          {
+            "name": "ajustar_stock",
+            "line": 104,
+            "kind": "function"
+          },
+          {
+            "name": "toggle_disponible",
+            "line": 124,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/gestor_empleado.py",
+        "purpose": "Gestiona acceso a datos de empleado",
+        "search_keywords": [
+          "gestor",
+          "empleado",
+          "GestorEmpleado",
+          "session",
+          "perfil",
+          "cambiar_estado",
+          "turno_hoy",
+          "turnos_proximos"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorEmpleado",
+            "line": 14,
             "kind": "class"
           },
           {
-            "name": "check_approval",
-            "line": 260,
-            "kind": "function",
-            "end_line": 273,
-            "complexity": 14,
-            "params": [
-              "force"
-            ],
-            "return_type": "None"
+            "name": "session",
+            "line": 17,
+            "kind": "function"
           },
           {
-            "name": "detect_stack",
-            "line": 277,
-            "kind": "function",
-            "end_line": 321,
-            "complexity": 45,
-            "params": [
-              "root"
-            ],
-            "return_type": "dict[str, str]"
+            "name": "perfil",
+            "line": 23,
+            "kind": "function"
           },
           {
-            "name": "detect_project_name",
-            "line": 323,
-            "kind": "function",
-            "end_line": 351,
-            "complexity": 29,
-            "params": [
-              "root"
-            ],
-            "return_type": "tuple[str, str]"
+            "name": "cambiar_estado",
+            "line": 39,
+            "kind": "function"
           },
           {
-            "name": "detect_readme_summary",
-            "line": 353,
-            "kind": "function",
-            "end_line": 365,
-            "complexity": 13,
-            "params": [
-              "root"
-            ],
-            "return_type": "str"
+            "name": "turno_hoy",
+            "line": 69,
+            "kind": "function"
           },
           {
-            "name": "classify_role",
-            "line": 369,
-            "kind": "function",
-            "end_line": 374,
-            "complexity": 6,
-            "params": [
-              "rel_path"
-            ],
-            "return_type": "str"
+            "name": "turnos_proximos",
+            "line": 84,
+            "kind": "function"
           },
           {
-            "name": "should_ignore",
-            "line": 376,
-            "kind": "function",
-            "end_line": 380,
-            "complexity": 5,
-            "params": [
-              "path"
-            ],
-            "return_type": "bool"
+            "name": "capacidades",
+            "line": 113,
+            "kind": "function"
           },
           {
-            "name": "scan_structure",
-            "line": 382,
-            "kind": "function",
-            "end_line": 400,
-            "complexity": 19,
-            "params": [
-              "root"
-            ],
-            "return_type": "dict[str, str]"
+            "name": "es_polivalente",
+            "line": 122,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/gestor_metricas.py",
+        "purpose": "Gestiona acceso a datos de metricas",
+        "search_keywords": [
+          "gestor",
+          "metricas",
+          "GestorMetricas",
+          "session",
+          "resumen_operacion",
+          "asistencia_hoy",
+          "colas_detalle",
+          "pedidos_por_estado"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorMetricas",
+            "line": 13,
+            "kind": "class"
           },
           {
-            "name": "walk_source_files",
-            "line": 402,
-            "kind": "function",
-            "end_line": 416,
-            "complexity": 15,
-            "params": [
-              "root"
-            ],
-            "return_type": "list[Path]"
+            "name": "session",
+            "line": 16,
+            "kind": "function"
           },
           {
-            "name": "extract_query_examples",
-            "line": 429,
-            "kind": "function",
-            "end_line": 439,
-            "complexity": 11,
-            "params": [
-              "source"
-            ],
-            "return_type": "list[str]"
+            "name": "resumen_operacion",
+            "line": 24,
+            "kind": "function"
           },
           {
-            "name": "_ast_name",
-            "line": 443,
-            "kind": "function",
-            "end_line": 448,
-            "complexity": 6,
-            "params": [
-              "node"
-            ],
-            "return_type": "str"
+            "name": "_tiempo_medio_ciclo_hoy",
+            "line": 94,
+            "kind": "function"
+          },
+          {
+            "name": "asistencia_hoy",
+            "line": 116,
+            "kind": "function"
+          },
+          {
+            "name": "colas_detalle",
+            "line": 145,
+            "kind": "function"
+          },
+          {
+            "name": "pedidos_por_estado",
+            "line": 213,
+            "kind": "function"
+          },
+          {
+            "name": "alertas_tiempo_real",
+            "line": 225,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/dashboard/gestor_estadisticas_mixin.py",
+        "purpose": "Mixin: analítica histórica de ventas y operaciones",
+        "search_keywords": [
+          "gestor",
+          "estadisticas",
+          "mixin",
+          "GestorEstadisticasMixin",
+          "anal",
+          "tica"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorEstadisticasMixin",
+            "line": 8,
+            "kind": "class"
+          },
+          {
+            "name": "estadisticas",
+            "line": 10,
+            "kind": "function"
+          },
+          {
+            "name": "_gen_keys",
+            "line": 136,
+            "kind": "function"
+          },
+          {
+            "name": "_dias_in_key",
+            "line": 151,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/dashboard/gestor_empleados_mixin.py",
+        "purpose": "Mixin: monitorización de empleados y rendimiento individual/colectivo",
+        "search_keywords": [
+          "gestor",
+          "empleados",
+          "mixin",
+          "GestorEmpleadosMixin",
+          "empleados_disponibles",
+          "monitor_empleados",
+          "rendimiento_resumen",
+          "rendimiento_empleado"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorEmpleadosMixin",
+            "line": 17,
+            "kind": "class"
+          },
+          {
+            "name": "empleados_disponibles",
+            "line": 19,
+            "kind": "function"
+          },
+          {
+            "name": "monitor_empleados",
+            "line": 33,
+            "kind": "function"
+          },
+          {
+            "name": "rendimiento_resumen",
+            "line": 361,
+            "kind": "function"
+          },
+          {
+            "name": "rendimiento_empleado",
+            "line": 463,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/dashboard/gestor_picking_mixin.py",
+        "purpose": "Mixin: operaciones de picking — asignación, reclamación, completado",
+        "search_keywords": [
+          "gestor",
+          "picking",
+          "mixin",
+          "GestorPickingMixin",
+          "picking_activo",
+          "buscar_productos",
+          "asignar_picker",
+          "reasignar_picker"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorPickingMixin",
+            "line": 24,
+            "kind": "class"
+          },
+          {
+            "name": "picking_activo",
+            "line": 26,
+            "kind": "function"
+          },
+          {
+            "name": "buscar_productos",
+            "line": 179,
+            "kind": "function"
+          },
+          {
+            "name": "asignar_picker",
+            "line": 194,
+            "kind": "function"
+          },
+          {
+            "name": "reasignar_picker",
+            "line": 246,
+            "kind": "function"
+          },
+          {
+            "name": "completar_picking",
+            "line": 311,
+            "kind": "function"
+          },
+          {
+            "name": "_descontar",
+            "line": 370,
+            "kind": "function"
+          },
+          {
+            "name": "_actualizar_disponibilidad_picker",
+            "line": 399,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/dashboard/gestor_reparto_mixin.py",
+        "purpose": "Mixin: operaciones de reparto — asignación, entrega, cobro, cierre de caja",
+        "search_keywords": [
+          "gestor",
+          "reparto",
+          "mixin",
+          "GestorRepartoMixin",
+          "repartidores",
+          "mapa",
+          "asignar_repartidor",
+          "marcar_salida_reparto"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorRepartoMixin",
+            "line": 27,
+            "kind": "class"
+          },
+          {
+            "name": "repartidores",
+            "line": 29,
+            "kind": "function"
+          },
+          {
+            "name": "mapa",
+            "line": 100,
+            "kind": "function"
+          },
+          {
+            "name": "asignar_repartidor",
+            "line": 125,
+            "kind": "function"
+          },
+          {
+            "name": "marcar_salida_reparto",
+            "line": 157,
+            "kind": "function"
+          },
+          {
+            "name": "marcar_no_entregado",
+            "line": 187,
+            "kind": "function"
+          },
+          {
+            "name": "marcar_entregado",
+            "line": 210,
+            "kind": "function"
+          },
+          {
+            "name": "_actualizar_disponibilidad",
+            "line": 242,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/dashboard/gestor_turnos_mixin.py",
+        "purpose": "Mixin: gestión de turnos y asistencia — consultas, creación, edición, cancelación",
+        "search_keywords": [
+          "gestor",
+          "turnos",
+          "mixin",
+          "GestorTurnosMixin",
+          "turnos_hoy",
+          "turnos_historial",
+          "turnos_planificacion",
+          "crear_turno"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorTurnosMixin",
+            "line": 13,
+            "kind": "class"
+          },
+          {
+            "name": "turnos_hoy",
+            "line": 15,
+            "kind": "function"
+          },
+          {
+            "name": "turnos_historial",
+            "line": 124,
+            "kind": "function"
+          },
+          {
+            "name": "turnos_planificacion",
+            "line": 212,
+            "kind": "function"
+          },
+          {
+            "name": "crear_turno",
+            "line": 268,
+            "kind": "function"
+          },
+          {
+            "name": "editar_turno",
+            "line": 314,
+            "kind": "function"
+          },
+          {
+            "name": "cancelar_turno",
+            "line": 350,
+            "kind": "function"
+          },
+          {
+            "name": "eliminar_turno",
+            "line": 371,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "managers/dashboard/gestor_pedidos_mixin.py",
+        "purpose": "Mixin: consultas de pedidos activos, métricas diarias, alertas e historial",
+        "search_keywords": [
+          "gestor",
+          "pedidos",
+          "mixin",
+          "GestorPedidosMixin",
+          "metricas",
+          "pedidos_activos",
+          "alertas",
+          "eventos"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "GestorPedidosMixin",
+            "line": 20,
+            "kind": "class"
+          },
+          {
+            "name": "metricas",
+            "line": 22,
+            "kind": "function"
+          },
+          {
+            "name": "pedidos_activos",
+            "line": 105,
+            "kind": "function"
+          },
+          {
+            "name": "alertas",
+            "line": 184,
+            "kind": "function"
+          },
+          {
+            "name": "eventos",
+            "line": 235,
+            "kind": "function"
+          },
+          {
+            "name": "historial_pedidos",
+            "line": 254,
+            "kind": "function"
+          },
+          {
+            "name": "detalle_pedido",
+            "line": 342,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_gestor_dashboard.py",
+        "purpose": "Gestiona acceso a datos de gestor dashboard",
+        "search_keywords": [
+          "gestor",
+          "dashboard",
+          "test_metricas_keys_existentes_presentes",
+          "test_metricas_incluye_cancelaciones_e_ingresos_por_metodo",
+          "test_monitor_datos_devuelve_claves_principales"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "test_metricas_keys_existentes_presentes",
+            "line": 5,
+            "kind": "function"
+          },
+          {
+            "name": "test_metricas_incluye_cancelaciones_e_ingresos_por_metodo",
+            "line": 25,
+            "kind": "function"
+          },
+          {
+            "name": "test_monitor_datos_devuelve_claves_principales",
+            "line": 42,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_gestor_usuarios.py",
+        "purpose": "Tests for managers/gestor_usuarios",
+        "search_keywords": [
+          "gestor",
+          "usuarios",
+          "TestVerificarUsuario",
+          "TestObtenerUsuarioCompleto",
+          "TestGuardarUsuario",
+          "make_usuario",
+          "make_gestor_with_session",
+          "test_usuario_existente_retorna_objeto"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "make_usuario",
+            "line": 17,
+            "kind": "function"
+          },
+          {
+            "name": "make_gestor_with_session",
+            "line": 26,
+            "kind": "function"
+          },
+          {
+            "name": "TestVerificarUsuario",
+            "line": 34,
+            "kind": "class"
+          },
+          {
+            "name": "test_usuario_existente_retorna_objeto",
+            "line": 36,
+            "kind": "function"
+          },
+          {
+            "name": "test_usuario_no_existente_retorna_none",
+            "line": 46,
+            "kind": "function"
+          },
+          {
+            "name": "test_error_bd_relanza_excepcion",
+            "line": 55,
+            "kind": "function"
+          },
+          {
+            "name": "TestObtenerUsuarioCompleto",
+            "line": 66,
+            "kind": "class"
+          },
+          {
+            "name": "test_usuario_existente_retorna_dict",
+            "line": 68,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_gestor_metricas.py",
+        "purpose": "Gestiona acceso a datos de gestor metricas",
+        "search_keywords": [
+          "gestor",
+          "metricas",
+          "TestResumenOperacion",
+          "TestAsistenciaHoy",
+          "TestColasDetalle",
+          "TestPedidosPorEstado",
+          "test_devuelve_claves_esperadas",
+          "test_valores_son_numericos"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "_make_gestor",
+            "line": 6,
+            "kind": "function"
+          },
+          {
+            "name": "TestResumenOperacion",
+            "line": 11,
+            "kind": "class"
+          },
+          {
+            "name": "test_devuelve_claves_esperadas",
+            "line": 12,
+            "kind": "function"
+          },
+          {
+            "name": "test_valores_son_numericos",
+            "line": 27,
+            "kind": "function"
+          },
+          {
+            "name": "TestAsistenciaHoy",
+            "line": 38,
+            "kind": "class"
+          },
+          {
+            "name": "test_devuelve_lista",
+            "line": 39,
+            "kind": "function"
+          },
+          {
+            "name": "test_sin_checkin_es_ausente",
+            "line": 65,
+            "kind": "function"
+          },
+          {
+            "name": "TestColasDetalle",
+            "line": 84,
+            "kind": "class"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_gestor_pedidos.py",
+        "purpose": "Tests de GestorPedidos",
+        "search_keywords": [
+          "gestor",
+          "pedidos",
+          "TestActualizarEstadoValido",
+          "TestActualizarEstadoInvalido",
+          "TestActualizarEstadoPedidoNoEncontrado",
+          "make_pedido",
+          "test_pendiente_a_enlace",
+          "test_enlace_a_enlace2"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "make_pedido",
+            "line": 15,
+            "kind": "function"
+          },
+          {
+            "name": "gestor",
+            "line": 23,
+            "kind": "function"
+          },
+          {
+            "name": "TestActualizarEstadoValido",
+            "line": 34,
+            "kind": "class"
+          },
+          {
+            "name": "test_pendiente_a_enlace",
+            "line": 35,
+            "kind": "function"
+          },
+          {
+            "name": "test_enlace_a_enlace2",
+            "line": 42,
+            "kind": "function"
+          },
+          {
+            "name": "test_enlace2_a_confirmando_pago",
+            "line": 49,
+            "kind": "function"
+          },
+          {
+            "name": "test_confirmando_pago_a_pagado",
+            "line": 55,
+            "kind": "function"
+          },
+          {
+            "name": "test_confirmando_pago_a_pagado_crea_picking_pendiente",
+            "line": 61,
+            "kind": "function"
+          }
+        ]
+      }
+    ],
+    "utility": [
+      {
+        "path": "managers/dashboard/_helpers.py",
+        "purpose": "Constantes y helpers de módulo compartidos por todos los mixins del dashboard",
+        "search_keywords": [
+          "helpers",
+          "constantes",
+          "dulo"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "_iso",
+            "line": 6,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "utils/text_utils.py",
+        "purpose": "Utilidades para utils",
+        "search_keywords": [
+          "text",
+          "utils",
+          "limpiar_texto"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "limpiar_texto",
+            "line": 5,
+            "kind": "function"
+          }
+        ]
+      }
+    ],
+    "migration": [
+      {
+        "path": "scripts/migrate_capacidades.py",
+        "purpose": "Migración: poblar empleado_capacidades desde rol_id actual",
+        "search_keywords": [
+          "migrate",
+          "capacidades",
+          "main",
+          "migraci",
+          "poblar",
+          "empleado"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "main",
+            "line": 21,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "scripts/run_migrations.py",
+        "purpose": "Ejecuta todas las migraciones SQL en orden desde el directorio migrations/",
+        "search_keywords": [
+          "migrations",
+          "ejecuta",
+          "todas",
+          "migraciones"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": []
+      }
+    ],
+    "service": [
+      {
+        "path": "services/token_service.py",
+        "purpose": "Adapta el servicio externo de service",
+        "search_keywords": [
+          "token",
+          "service",
+          "generar_token_temporal",
+          "generar_enlace"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "generar_token_temporal",
+            "line": 12,
+            "kind": "function"
+          },
+          {
+            "name": "generar_enlace",
+            "line": 32,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "services/whatsapp_service.py",
+        "purpose": "Adapta el servicio externo de service",
+        "search_keywords": [
+          "whatsapp",
+          "service",
+          "enviar_mensaje_whatsapp"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "_get_client",
+            "line": 14,
+            "kind": "function"
+          },
+          {
+            "name": "_enviar_twilio",
+            "line": 27,
+            "kind": "function"
+          },
+          {
+            "name": "_enviar_meta",
+            "line": 42,
+            "kind": "function"
+          },
+          {
+            "name": "enviar_mensaje_whatsapp",
+            "line": 63,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "services/maps_service.py",
+        "purpose": "Adapta el servicio externo de service",
+        "search_keywords": [
+          "maps",
+          "service",
+          "limpiar_direccion",
+          "construir_url",
+          "validar_coordenadas",
+          "geocodificar_direccion",
+          "validar_direccion"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "limpiar_direccion",
+            "line": 20,
+            "kind": "function"
+          },
+          {
+            "name": "construir_url",
+            "line": 27,
+            "kind": "function"
+          },
+          {
+            "name": "validar_coordenadas",
+            "line": 51,
+            "kind": "function"
+          },
+          {
+            "name": "geocodificar_direccion",
+            "line": 58,
+            "kind": "function"
+          },
+          {
+            "name": "validar_direccion",
+            "line": 79,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_whatsapp_service.py",
+        "purpose": "Adapta el servicio externo de whatsapp service",
+        "search_keywords": [
+          "whatsapp",
+          "service",
+          "TestEnviarMensajeTwilio",
+          "TestEnviarMensajeMeta",
+          "test_twilio_es_proveedor_por_defecto",
+          "test_twilio_pasa_numero_con_prefijo",
+          "test_meta_normaliza_numero",
+          "test_meta_envia_mensaje_correcto"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "TestEnviarMensajeTwilio",
+            "line": 6,
+            "kind": "class"
+          },
+          {
+            "name": "test_twilio_es_proveedor_por_defecto",
+            "line": 8,
+            "kind": "function"
+          },
+          {
+            "name": "test_twilio_pasa_numero_con_prefijo",
+            "line": 18,
+            "kind": "function"
+          },
+          {
+            "name": "TestEnviarMensajeMeta",
+            "line": 30,
+            "kind": "class"
+          },
+          {
+            "name": "test_meta_normaliza_numero",
+            "line": 32,
+            "kind": "function"
+          },
+          {
+            "name": "test_meta_envia_mensaje_correcto",
+            "line": 45,
+            "kind": "function"
+          },
+          {
+            "name": "test_meta_llama_raise_for_status",
+            "line": 61,
+            "kind": "function"
+          }
+        ]
+      },
+      {
+        "path": "tests/test_token_service.py",
+        "purpose": "Tests for services/token_service",
+        "search_keywords": [
+          "token",
+          "service",
+          "TestGenerarTokenTemporal",
+          "TestGenerarEnlace",
+          "test_datos_validos_retorna_string",
+          "test_token_se_almacena_en_redis",
+          "test_datos_invalidos_lanza_value_error",
+          "test_datos_invalidos_no_escribe_redis"
+        ],
+        "related_to": [
+          "gestor_dashboard"
+        ],
+        "symbols": [
+          {
+            "name": "TestGenerarTokenTemporal",
+            "line": 26,
+            "kind": "class"
+          },
+          {
+            "name": "test_datos_validos_retorna_string",
+            "line": 28,
+            "kind": "function"
+          },
+          {
+            "name": "test_token_se_almacena_en_redis",
+            "line": 38,
+            "kind": "function"
+          },
+          {
+            "name": "test_datos_invalidos_lanza_value_error",
+            "line": 52,
+            "kind": "function"
+          },
+          {
+            "name": "test_datos_invalidos_no_escribe_redis",
+            "line": 58,
+            "kind": "function"
+          },
+          {
+            "name": "TestGenerarEnlace",
+            "line": 68,
+            "kind": "class"
+          },
+          {
+            "name": "test_retorna_url_con_formato_correcto",
+            "line": 70,
+            "kind": "function"
+          },
+          {
+            "name": "test_error_en_token_no_genera_enlace_roto",
+            "line": 83,
+            "kind": "function"
           }
         ]
       }
@@ -240,252 +1505,59 @@
   },
   "hotspots": [
     {
-      "file": "claude/agents/planner.md",
-      "commits": 7
+      "file": "managers/gestor_dashboard.py",
+      "commits": 48
     },
     {
-      "file": "claude/agents/readers/db-reader.md",
-      "commits": 7
+      "file": "templates/dashboard/index.html",
+      "commits": 25
     },
     {
-      "file": "claude/agents/readers/project-reader.md",
-      "commits": 7
+      "file": "templates/repartidor/index.html",
+      "commits": 21
     },
     {
-      "file": "claude/agents/readers/query-reader.md",
-      "commits": 7
+      "file": "blueprints/dashboard.py",
+      "commits": 16
     },
     {
-      "file": "claude/agents/readers/ui-reader.md",
-      "commits": 7
+      "file": "templates/picker/index.html",
+      "commits": 15
     },
     {
-      "file": "claude/agents/reviewer.md",
-      "commits": 6
+      "file": "models.py",
+      "commits": 14
     },
     {
-      "file": "claude/agents/writer.md",
-      "commits": 6
+      "file": "blueprints/webhook.py",
+      "commits": 14
     },
     {
-      "file": "claude/agents/readers/reader.md",
-      "commits": 6
+      "file": "main.py",
+      "commits": 13
     },
     {
-      "file": "claude/schemas/reader-context.json",
-      "commits": 5
-    },
-    {
-      "file": "claude/hooks/pre-commit.py",
-      "commits": 5
+      "file": "blueprints/api.py",
+      "commits": 12
     }
   ],
-  "recent_changes": [
-    {
-      "file": "claude/agents/planner.md",
-      "commits_30d": 7
-    },
-    {
-      "file": "claude/agents/readers/db-reader.md",
-      "commits_30d": 7
-    },
-    {
-      "file": "claude/agents/readers/project-reader.md",
-      "commits_30d": 7
-    },
-    {
-      "file": "claude/agents/readers/query-reader.md",
-      "commits_30d": 7
-    },
-    {
-      "file": "claude/agents/readers/ui-reader.md",
-      "commits_30d": 7
-    },
-    {
-      "file": "claude/agents/reviewer.md",
-      "commits_30d": 6
-    },
-    {
-      "file": "claude/agents/writer.md",
-      "commits_30d": 6
-    },
-    {
-      "file": "claude/agents/readers/reader.md",
-      "commits_30d": 6
-    },
-    {
-      "file": "claude/schemas/reader-context.json",
-      "commits_30d": 5
-    },
-    {
-      "file": "claude/hooks/pre-commit.py",
-      "commits_30d": 5
-    }
-  ],
-  "ownership": {
-    "claude/agents/map-scanner.md": "CLAUDE.md",
-    "claude/agents/readers/db-reader.md": "CLAUDE.md",
-    "claude/agents/readers/project-reader.md": "CLAUDE.md",
-    "claude/agents/readers/query-reader.md": "CLAUDE.md",
-    "claude/agents/readers/reader.md": "CLAUDE.md",
-    "claude/agents/readers/ui-reader.md": "CLAUDE.md",
-    "claude/hooks/__pycache__/analyze-repo.cpython-312.pyc": "CLAUDE.md",
-    "claude/hooks/analyze-repo.py": "CLAUDE.md",
-    "claude/hooks/pre-commit.py": "CLAUDE.md",
-    "claude/maps/DB_MAP.json": "CLAUDE.md",
-    "claude/maps/DB_MAP.md": "CLAUDE.md",
-    "claude/maps/PROJECT_MAP.json": "CLAUDE.md",
-    "claude/maps/PROJECT_MAP.md": "CLAUDE.md",
-    "claude/maps/QUERY_MAP.json": "CLAUDE.md",
-    "claude/maps/QUERY_MAP.md": "CLAUDE.md",
-    "claude/maps/UI_MAP.json": "CLAUDE.md",
-    "claude/maps/UI_MAP.md": "CLAUDE.md",
-    "claude/schemas/db-map.json": "CLAUDE.md",
-    "claude/schemas/project-map.json": "CLAUDE.md",
-    "claude/schemas/query-map.json": "CLAUDE.md",
-    "claude/schemas/reader-context.json": "CLAUDE.md",
-    "claude/schemas/ui-map.json": "CLAUDE.md",
-    "claude/agents/plan-reviewer.md": "CLAUDE.md",
-    "claude/agents/writer.md": "CLAUDE.md",
-    "claude/schemas/plan-review.json": "CLAUDE.md",
-    "claude/agents/backend.md": "CLAUDE.md",
-    "claude/agents/frontend.md": "CLAUDE.md",
-    "claude/agents/orchestrator.md": "CLAUDE.md",
-    "claude/agents/planner.md": "CLAUDE.md",
-    "claude/agents/reviewer.md": "CLAUDE.md",
-    "claude/commands/implement-feature.md": "CLAUDE.md",
-    "claude/commands/review-change.md": "CLAUDE.md",
-    "claude/hooks/__pycache__/approve-plan.cpython-312.pyc": "CLAUDE.md",
-    "claude/hooks/__pycache__/execute-plan.cpython-312.pyc": "CLAUDE.md",
-    "claude/hooks/__pycache__/pre-commit.cpython-312.pyc": "CLAUDE.md",
-    "claude/hooks/approve-plan.py": "CLAUDE.md",
-    "claude/hooks/execute-plan.py": "CLAUDE.md",
-    "claude/plugin.json": "CLAUDE.md",
-    "claude/runtime/execution-brief.json": "CLAUDE.md",
-    "claude/runtime/execution-brief.md": "CLAUDE.md",
-    "claude/runtime/execution-dispatch.json": "CLAUDE.md",
-    "claude/runtime/operator-approval.json": "CLAUDE.md",
-    "claude/runtime/plan.json": "CLAUDE.md",
-    "claude/schemas/execution-brief.json": "CLAUDE.md",
-    "claude/schemas/execution-dispatch.json": "CLAUDE.md",
-    "claude/schemas/operator-approval.json": "CLAUDE.md",
-    "claude/schemas/plan.json": "CLAUDE.md",
-    "claude/schemas/result.json": "CLAUDE.md",
-    "claude/schemas/review.json": "CLAUDE.md"
-  },
-  "pending_changes": [
-    "claude/hooks/analyze-repo.py"
-  ],
-  "cochange": {
-    "claude/agents/plan-reviewer.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/agents/planner.md": [
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/agents/quick-agent.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/agents/reviewer.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/agents/sense-checker.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/agents/writer.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/agents/readers/db-reader.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/project-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/agents/readers/project-reader.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/query-reader.md"
-    ],
-    "claude/agents/readers/query-reader.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/agents/readers/reader.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/agents/readers/ui-reader.md": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/hooks/analyze-repo.py": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/hooks/quick-execute.py": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/runtime/operator-approval.json": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/runtime/quick-dispatch.json": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/schemas/clarifications.json": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/schemas/project-map.json": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/schemas/quick-dispatch.json": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/schemas/reader-context.json": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ],
-    "claude/schemas/sense-check.json": [
-      "claude/agents/planner.md",
-      "claude/agents/readers/db-reader.md",
-      "claude/agents/readers/project-reader.md"
-    ]
-  },
-  "dependencies": {
-    "forward": {},
-    "reverse": {}
-  },
+  "cochange": {},
   "problems": [
     {
-      "file": "claude/hooks/analyze-repo.py` (67 KB)",
-      "issue": "archivo sobredimensionado, posible God Object"
+      "file": "models.py",
+      "issue": "21 clases en un archivo"
+    },
+    {
+      "file": "tests/test_empleado.py",
+      "issue": "11 clases en un archivo"
+    },
+    {
+      "file": "tests/test_gestor_metricas.py",
+      "issue": "14 clases en un archivo"
+    },
+    {
+      "file": "tests/test_migracion_bd_dashboard.py",
+      "issue": "10 clases en un archivo"
     }
   ]
 }

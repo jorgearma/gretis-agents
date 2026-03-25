@@ -15,16 +15,13 @@
       "description": "Archivos con acceso directo a DB o con rol data_access. Cada elemento es un objeto enriquecido con semántica.",
       "items": {
         "type": "object",
-        "required": ["path", "role", "purpose", "search_keywords", "related_to", "functions", "query_examples"],
+        "required": ["path", "role", "functions", "query_examples"],
         "additionalProperties": false,
         "properties": {
-          "path":            { "type": "string" },
-          "role":            { "type": "string" },
-          "purpose":         { "type": "string", "description": "Descripción del propósito del archivo. Del docstring o inferida." },
-          "search_keywords": { "type": "array", "items": { "type": "string" }, "description": "Términos para encontrar este archivo." },
-          "related_to":      { "type": "array", "items": { "type": "string" }, "description": "Stems de módulos relacionados." },
-          "functions":       { "type": "array", "items": { "type": "string" }, "description": "Funciones o exports principales." },
-          "query_examples":  { "type": "array", "items": { "type": "string" }, "description": "Patrones ORM/SQL reales extraídos del código. Máx 4 por archivo." }
+          "path":           { "type": "string" },
+          "role":           { "type": "string" },
+          "functions":      { "type": "array", "items": { "type": "string" }, "description": "Funciones o exports principales (greppables)." },
+          "query_examples": { "type": "array", "items": { "type": "string" }, "description": "Patrones ORM/SQL reales extraídos del código. Máx 3 por archivo." }
         }
       }
     },
