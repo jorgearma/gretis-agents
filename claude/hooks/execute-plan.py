@@ -6,6 +6,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate import validate_artifact
+
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
 PLAN_PATH = PLUGIN_DIR / "runtime" / "plan.json"
@@ -15,27 +19,12 @@ REVIEW_PATH = PLUGIN_DIR / "runtime" / "plan-review.json"
 DISPATCH_PATH = PLUGIN_DIR / "runtime" / "execution-dispatch.json"
 ALLOWED_AGENTS = {"frontend", "backend", "test-runner"}
 
-# Campos requeridos mínimos por archivo (subset crítico del schema)
-_REQUIRED_FIELDS: dict[str, list[str]] = {
-    "operator-approval.json": ["status", "approved_by"],
-    "plan.json":               ["task", "steps", "done_criteria", "context_inputs"],
-    "execution-brief.json":   ["task", "approval_status", "target_agents", "implementation_steps"],
-    "plan-review.json":       ["verdict"],
-}
-
-
 def load_json(path: Path) -> dict:
     try:
         with path.open("r", encoding="utf-8") as fh:
             return json.load(fh)
     except json.JSONDecodeError as exc:
         raise ValueError(f"{path.name} tiene JSON inválido: {exc}") from exc
-
-
-def validate_fields(data: dict, filename: str) -> list[str]:
-    """Devuelve lista de campos requeridos ausentes."""
-    required = _REQUIRED_FIELDS.get(filename, [])
-    return [f for f in required if f not in data]
 
 
 def write_json(path: Path, payload: dict) -> None:
@@ -72,13 +61,17 @@ def main() -> int:
         print(str(exc))
         return 1
 
-    for obj, name in ((approval, "operator-approval.json"), (plan, "plan.json")):
-        missing = validate_fields(obj, name)
-        if missing:
-            write_json(DISPATCH_PATH, _block(plan.get("task", "") if name != "plan.json" else "",
-                                             f"{name} incompleto: faltan campos {missing}"))
-            print(f"Ejecucion bloqueada: {name} no tiene los campos requeridos: {missing}")
+    for data_obj, name in ((approval, "operator-approval.json"), (plan, "plan.json")):
+        vr = validate_artifact(name, data_obj)
+        if not vr.ok:
+            print(vr.format())
+            write_json(DISPATCH_PATH, _block(
+                plan.get("task", "") if name != "plan.json" else "",
+                vr.summary()
+            ))
             return 1
+        if vr.warnings:
+            print(vr.format_warnings())
 
     # --- Validacion plan-review.json ---
     task = plan.get("task", "")
@@ -96,11 +89,13 @@ def main() -> int:
         print(str(exc))
         return 1
 
-    missing_review = validate_fields(review, "plan-review.json")
-    if missing_review:
-        write_json(DISPATCH_PATH, _block(task, f"plan-review.json incompleto: faltan {missing_review}"))
-        print(f"Ejecucion bloqueada: plan-review.json no tiene los campos requeridos: {missing_review}")
+    vr_review = validate_artifact("plan-review.json", review)
+    if not vr_review.ok:
+        print(vr_review.format())
+        write_json(DISPATCH_PATH, _block(task, vr_review.summary()))
         return 1
+    if vr_review.warnings:
+        print(vr_review.format_warnings())
 
     verdict = review.get("verdict")
 
@@ -148,11 +143,13 @@ def main() -> int:
         print(str(exc))
         return 1
 
-    missing_brief = validate_fields(brief, "execution-brief.json")
-    if missing_brief:
-        write_json(DISPATCH_PATH, _block(task, f"execution-brief.json incompleto: faltan {missing_brief}", approved=True))
-        print(f"Ejecucion bloqueada: execution-brief.json no tiene los campos requeridos: {missing_brief}")
+    vr_brief = validate_artifact("execution-brief.json", brief)
+    if not vr_brief.ok:
+        print(vr_brief.format())
+        write_json(DISPATCH_PATH, _block(task, vr_brief.summary(), approved=True))
         return 1
+    if vr_brief.warnings:
+        print(vr_brief.format_warnings())
 
     if not task:
         write_json(DISPATCH_PATH, _block("", "El plan no define una tarea.", approved=True))
