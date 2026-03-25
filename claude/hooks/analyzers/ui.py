@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """analyzers/ui.py — Genera UI_MAP.json."""
 from __future__ import annotations
-import argparse, json
+import argparse
+import json
 from collections import defaultdict
 from pathlib import Path
 from analyzers.core import FileInfo, detect_stack, walk_repo, scan_structure

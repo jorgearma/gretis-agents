@@ -3,10 +3,21 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import pytest
+
 from analyzers import core
 from analyzers.db import run as run_db
 from analyzers.query import run as run_query
 from analyzers.ui import run as run_ui
+
+
+@pytest.fixture(autouse=True)
+def reset_model_cache():
+    """Reset the walk_repo models cache before each test to prevent cross-test contamination."""
+    from analyzers import core as _core
+    _core._walk_repo_models_cache.clear()
+    yield
+    _core._walk_repo_models_cache.clear()
 
 
 def _make_flask_project(tmp_path):

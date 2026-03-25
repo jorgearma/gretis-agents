@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """analyzers/db.py — Genera DB_MAP.json."""
 from __future__ import annotations
-import argparse, json
+import argparse
+import json
 from pathlib import Path
 from analyzers.core import (
     FileInfo, ModelInfo, detect_stack, walk_repo,
@@ -31,6 +32,8 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
         or (m.fields and len(m.fields) >= 2)
     ]
 
+    # Use first detected ORM/infrastructure — mixed-ORM repos are uncommon enough to not warrant
+    # a list here; the project reader can consult the stack for the full picture.
     result = {
         "orm": db_techs[0] if db_techs else None,
         "database": db_infra[0] if db_infra else None,
