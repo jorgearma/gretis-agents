@@ -1,0 +1,13 @@
+{
+  "scheduler": null,
+  "jobs": [
+    {
+      "file": "claude/hooks/analyzers/jobs.py",
+      "function": "run",
+      "trigger": "manual",
+      "schedule": null,
+      "description": "analyzers/jobs.py — Genera JOBS_MAP.json."
+    }
+  ],
+  "queues": []
+}
