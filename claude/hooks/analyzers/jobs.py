@@ -115,16 +115,59 @@ def _extract_manual_jobs(fi: FileInfo, root: Path) -> list[dict]:
     }]
 
 
+def _extract_rq_jobs(fi: FileInfo, root: Path) -> list[dict]:
+    """Extrae jobs RQ de un archivo (decorator @job o q.enqueue)."""
+    jobs = []
+    try:
+        source = (root / fi.rel_path).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return jobs
+
+    if "@job" not in source and "q.enqueue" not in source and "enqueue" not in source:
+        return jobs
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return jobs
+
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        is_job = any(
+            "job" in (ast.unparse(dec) if hasattr(ast, "unparse") else "").lower()
+            for dec in node.decorator_list
+        )
+        if not is_job:
+            continue
+        desc = ""
+        if (node.body and isinstance(node.body[0], ast.Expr)
+                and isinstance(node.body[0].value, ast.Constant)):
+            desc = str(node.body[0].value.value).strip().split(".")[0][:100]
+        jobs.append({
+            "file": fi.rel_path,
+            "function": node.name,
+            "trigger": "manual",
+            "schedule": None,
+            "description": desc,
+        })
+    return jobs
+
+
 def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
     """Genera JOBS_MAP.json. Escribe en .claude/maps/. Devuelve el dict."""
     scheduler = _detect_scheduler(files, stack)
 
     jobs: list[dict] = []
-    queues: list[str] = []
+    queues: list[str] = []  # populated only if explicit queue names found in task decorators
 
     if scheduler == "celery":
         for fi in files:
             jobs.extend(_extract_celery_jobs(fi, root))
+    elif scheduler == "rq":
+        for fi in files:
+            if fi.language == "python":
+                jobs.extend(_extract_rq_jobs(fi, root))
 
     # Manual scripts in all cases
     for fi in files:

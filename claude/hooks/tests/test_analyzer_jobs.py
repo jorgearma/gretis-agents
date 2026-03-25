@@ -49,7 +49,8 @@ def test_detects_celery_tasks(tmp_path):
     stack = core.detect_stack(root)
     result = run(root, files, stack)
     job_fns = [j["function"] for j in result["jobs"]]
-    assert "enviar_notificacion" in job_fns or "procesar_pago" in job_fns
+    assert "enviar_notificacion" in job_fns, f"enviar_notificacion not found in {job_fns}"
+    assert "procesar_pago" in job_fns, f"procesar_pago not found in {job_fns}"
 
 
 def test_empty_project_returns_null_scheduler(tmp_path):
