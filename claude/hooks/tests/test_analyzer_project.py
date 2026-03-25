@@ -66,3 +66,20 @@ def test_all_6_domains_present(tmp_path):
     expected = {"db", "query", "ui", "api", "services", "jobs"}
     for domain in expected:
         assert domain in result["domains"], f"Dominio '{domain}' falta en domains"
+
+
+def test_summary_graceful_when_map_missing(tmp_path):
+    """Cuando el MAP de un dominio no existe, summary debe explicar que falta."""
+    root, _ = _make_project(tmp_path)
+    # No pre-existing domain MAPs — they are not created in _make_project
+    files = core.walk_repo(root)
+    stack = core.detect_stack(root)
+    result = run(root, files, stack)
+    for domain_name, domain_data in result["domains"].items():
+        summary = domain_data["summary"]
+        assert isinstance(summary, str), f"{domain_name}: summary debe ser string"
+        assert len(summary) > 0, f"{domain_name}: summary no debe ser vacío"
+        # When MAP is missing, summary should mention it
+        assert "MAP" in summary or "map" in summary or "analyze" in summary, (
+            f"{domain_name}: summary debería mencionar que el MAP no fue generado, got: {summary!r}"
+        )
