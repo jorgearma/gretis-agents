@@ -19,6 +19,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate import validate_artifact
+
 # ─── Rutas ────────────────────────────────────────────────────────────────────
 
 PLUGIN_DIR     = Path(__file__).resolve().parents[1]
@@ -300,6 +303,12 @@ Ejemplos:
         dispatch["files_hint"] = files_hint
 
     write_json(DISPATCH_PATH, dispatch)
+    vr = validate_artifact("quick-dispatch.json", dispatch)
+    if not vr.ok:
+        print(vr.format())
+        return 1
+    if vr.warnings:
+        print(vr.format_warnings())
 
     # ── Auto-aprobar ───────────────────────────────────────────────────────────
     write_json(APPROVAL_PATH, {

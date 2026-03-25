@@ -5,7 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate import validate_artifact
 
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
@@ -77,6 +81,10 @@ def write_dispatch_reset(reason: str) -> None:
 def main() -> int:
     args = parse_args()
     payload = build_payload(args.action, args.by, args.notes)
+    vr = validate_artifact("operator-approval.json", payload)
+    if not vr.ok:
+        print(vr.format())
+        return 1
     write_payload(payload)
     if payload["status"] == "replanning":
         write_dispatch_reset("Plan enviado a replantear. Invoca el planner con el contexto de plan-review.json.")

@@ -20,7 +20,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate import validate_artifact, SCHEMA_MAP
 
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
@@ -110,12 +114,26 @@ def cmd_status() -> int:
         seen.add(f.name)
         if f.exists():
             data = load_json(f)
-            status = data.get("status") or data.get("verdict") or "—"
-            task   = data.get("task", "")
-            extra  = f" task={task[:40]!r}" if task else ""
-            print(f"  [OK] {f.name:<38} {status}{extra}")
+            if not data:
+                print(f"  [CORRUPT] {f.name:<34} (JSON inválido o vacío)")
+                continue
+            status_val = data.get("status") or data.get("verdict") or "—"
+            task_val   = data.get("task", "")
+            extra      = f" task={task_val[:40]!r}" if task_val else ""
+            if f.name in SCHEMA_MAP:
+                vr = validate_artifact(f.name, data)
+                if not vr.ok:
+                    print(f"  [INVALID] {f.name:<34} {status_val}{extra}")
+                    for e in vr.errors:
+                        print(f"            ERROR: {e}")
+                elif vr.warnings:
+                    print(f"  [WARN]    {f.name:<34} {status_val}{extra}")
+                else:
+                    print(f"  [OK]      {f.name:<34} {status_val}{extra}")
+            else:
+                print(f"  [OK]      {f.name:<34} {status_val}{extra}")
         else:
-            print(f"  [--] {f.name}")
+            print(f"  [--]      {f.name}")
 
     print()
     plan = load_json(PLAN_PATH)
@@ -134,6 +152,12 @@ def cmd_rollback(approved_by: str) -> int:
     if not plan:
         print("Error: plan.json no existe o está vacío. No hay rollback_plan que ejecutar.")
         return 1
+
+    if PLAN_PATH.name in SCHEMA_MAP:
+        vr = validate_artifact(PLAN_PATH.name, plan)
+        if not vr.ok:
+            print(f"Error: plan.json es inválido:\n{vr.format()}")
+            return 1
 
     rollback = plan.get("rollback_plan", {})
     if not rollback.get("enabled"):
@@ -181,6 +205,11 @@ def cmd_reset(approved_by: str) -> int:
     _reset_dispatch("Ciclo reseteado. Re-aprueba y vuelve a ejecutar con execute-plan.py.")
 
     plan = load_json(PLAN_PATH)
+    if plan and PLAN_PATH.name in SCHEMA_MAP:
+        vr = validate_artifact(PLAN_PATH.name, plan)
+        if vr.errors:
+            print(f"Advertencia: plan.json tiene errores de schema (se conserva de todas formas):")
+            print(vr.format())
     task = plan.get("task", "")
 
     print("Reset completado (artefactos de ejecucion eliminados).")

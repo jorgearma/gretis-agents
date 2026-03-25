@@ -4,7 +4,11 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate import validate_artifact
 
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
@@ -51,6 +55,14 @@ def main() -> int:
         write_json(REVIEWER_DISPATCH_PATH, _block("result.json esta vacio. Ningun agente produjo salida."))
         print("Reviewer dispatch bloqueado: result.json vacio.")
         return 1
+
+    vr = validate_artifact("result.json", result)
+    if not vr.ok:
+        write_json(REVIEWER_DISPATCH_PATH, _block(vr.summary(), list(result.keys())))
+        print(vr.format())
+        return 1
+    if vr.warnings:
+        print(vr.format_warnings())
 
     # Determina qué agentes debían ejecutarse según el dispatch original
     expected_agents: list[str] = []

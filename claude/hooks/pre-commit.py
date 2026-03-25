@@ -4,8 +4,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate import validate_artifact
 
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
@@ -106,6 +109,32 @@ def main() -> int:
     if invalid_json:
         print("Invalid JSON files detected:")
         for error in invalid_json:
+            print(f"- {error}")
+        return 1
+
+    # Validar maps/*.json contra sus schemas
+    MAP_ARTIFACTS = {
+        "PROJECT_MAP.json": PLUGIN_DIR / "maps" / "PROJECT_MAP.json",
+        "DB_MAP.json":      PLUGIN_DIR / "maps" / "DB_MAP.json",
+        "QUERY_MAP.json":   PLUGIN_DIR / "maps" / "QUERY_MAP.json",
+        "UI_MAP.json":      PLUGIN_DIR / "maps" / "UI_MAP.json",
+    }
+    map_schema_errors: list[str] = []
+    for artifact_name, map_path in MAP_ARTIFACTS.items():
+        try:
+            with map_path.open("r", encoding="utf-8") as fh:
+                map_data = json.load(fh)
+        except (json.JSONDecodeError, OSError):
+            continue  # already detected in invalid_json
+        vr = validate_artifact(artifact_name, map_data)
+        if not vr.ok:
+            map_schema_errors.append(
+                f"{map_path.relative_to(ROOT)}: schema violations\n{vr.format()}"
+            )
+
+    if map_schema_errors:
+        print("Map files with schema violations:")
+        for error in map_schema_errors:
             print(f"- {error}")
         return 1
 
