@@ -150,35 +150,680 @@
       ]
     }
   },
-  "cochange": {
-    "claude/hooks/pre-commit.py": [],
-    "claude/hooks/tests/test_validate.py": [
-      "claude/hooks/pre-commit.py"
+  "modules": {
+    "controller": [
+      {
+        "path": "claude/hooks/dispatch-reviewer.py",
+        "purpose": "Genera reviewer-dispatch",
+        "search_keywords": [
+          "dispatch",
+          "reviewer",
+          "load_json",
+          "write_json",
+          "main",
+          "genera"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "load_json",
+            "line": 20,
+            "kind": "function"
+          },
+          {
+            "name": "write_json",
+            "line": 28,
+            "kind": "function"
+          },
+          {
+            "name": "_block",
+            "line": 32,
+            "kind": "function"
+          },
+          {
+            "name": "main",
+            "line": 41,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      }
     ],
-    "claude/hooks/validate.py": [
-      "claude/hooks/pre-commit.py"
+    "data_access": [
+      {
+        "path": "claude/hooks/analyze-repo.py",
+        "purpose": "analyze-repo",
+        "search_keywords": [
+          "analyze",
+          "repo",
+          "check_approval",
+          "parse_args",
+          "main",
+          "orquestador"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "check_approval",
+            "line": 44,
+            "kind": "function"
+          },
+          {
+            "name": "parse_args",
+            "line": 60,
+            "kind": "function"
+          },
+          {
+            "name": "main",
+            "line": 71,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      }
     ],
-    "claude/hooks/analyze-repo.py": [
-      "claude/hooks/pre-commit.py"
+    "service": [
+      {
+        "path": "claude/hooks/analyzers/services.py",
+        "purpose": "analyzers/services",
+        "search_keywords": [
+          "services",
+          "analyzers",
+          "genera"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "_detect_integrations",
+            "line": 56,
+            "kind": "function"
+          },
+          {
+            "name": "run",
+            "line": 135,
+            "kind": "function"
+          }
+        ],
+        "test_file": "claude/hooks/tests/test_analyzer_services.py"
+      },
+      {
+        "path": "claude/hooks/tests/test_analyzer_services.py",
+        "purpose": "Tests para analyzers/services",
+        "search_keywords": [
+          "analyzer",
+          "services",
+          "test_run_returns_required_keys",
+          "test_detects_twilio",
+          "test_integration_has_type",
+          "test_integration_has_required_fields",
+          "test_integration_has_env_vars",
+          "test_empty_project_returns_empty_integrations"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "_make_project_with_services",
+            "line": 10,
+            "kind": "function"
+          },
+          {
+            "name": "test_run_returns_required_keys",
+            "line": 31,
+            "kind": "function"
+          },
+          {
+            "name": "test_detects_twilio",
+            "line": 39,
+            "kind": "function"
+          },
+          {
+            "name": "test_integration_has_type",
+            "line": 48,
+            "kind": "function"
+          },
+          {
+            "name": "test_integration_has_required_fields",
+            "line": 60,
+            "kind": "function"
+          },
+          {
+            "name": "test_integration_has_env_vars",
+            "line": 71,
+            "kind": "function"
+          },
+          {
+            "name": "test_empty_project_returns_empty_integrations",
+            "line": 81,
+            "kind": "function"
+          },
+          {
+            "name": "test_services_map_integrations_have_test_file",
+            "line": 91,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      }
     ],
-    "claude/hooks/analyzers/jobs.py": [
-      "claude/hooks/pre-commit.py"
-    ],
-    "claude/hooks/tests/test_analyzer_jobs.py": [
-      "claude/hooks/pre-commit.py"
-    ],
-    "claude/hooks/analyzers/services.py": [
-      "claude/hooks/pre-commit.py"
+    "test": [
+      {
+        "path": "claude/hooks/tests/test_analyzers_existing.py",
+        "purpose": "Tests para db",
+        "search_keywords": [
+          "analyzers",
+          "existing",
+          "reset_model_cache",
+          "test_db_run_returns_required_keys",
+          "test_db_run_detects_sqlalchemy_model",
+          "test_db_run_writes_file",
+          "test_query_run_returns_required_keys",
+          "test_ui_run_returns_required_keys"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "reset_model_cache",
+            "line": 15,
+            "kind": "function"
+          },
+          {
+            "name": "_make_flask_project",
+            "line": 23,
+            "kind": "function"
+          },
+          {
+            "name": "test_db_run_returns_required_keys",
+            "line": 49,
+            "kind": "function"
+          },
+          {
+            "name": "test_db_run_detects_sqlalchemy_model",
+            "line": 60,
+            "kind": "function"
+          },
+          {
+            "name": "test_db_run_writes_file",
+            "line": 69,
+            "kind": "function"
+          },
+          {
+            "name": "test_query_run_returns_required_keys",
+            "line": 77,
+            "kind": "function"
+          },
+          {
+            "name": "test_ui_run_returns_required_keys",
+            "line": 87,
+            "kind": "function"
+          },
+          {
+            "name": "test_db_empty_project_writes_file",
+            "line": 97,
+            "kind": "function"
+          },
+          {
+            "name": "test_query_empty_project_writes_file",
+            "line": 112,
+            "kind": "function"
+          },
+          {
+            "name": "test_ui_empty_project_writes_file",
+            "line": 125,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "claude/hooks/tests/test_analyzer_project.py",
+        "purpose": "Tests para analyzers/project",
+        "search_keywords": [
+          "analyzer",
+          "project",
+          "test_run_creates_project_map_json",
+          "test_domains_section_has_required_keys",
+          "test_result_has_no_structure_key",
+          "test_all_6_domains_present",
+          "test_summary_graceful_when_map_missing",
+          "test_project_map_has_modules_and_problems"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "_make_project",
+            "line": 10,
+            "kind": "function"
+          },
+          {
+            "name": "test_run_creates_project_map_json",
+            "line": 26,
+            "kind": "function"
+          },
+          {
+            "name": "test_domains_section_has_required_keys",
+            "line": 38,
+            "kind": "function"
+          },
+          {
+            "name": "test_result_has_no_structure_key",
+            "line": 52,
+            "kind": "function"
+          },
+          {
+            "name": "test_all_6_domains_present",
+            "line": 60,
+            "kind": "function"
+          },
+          {
+            "name": "test_summary_graceful_when_map_missing",
+            "line": 70,
+            "kind": "function"
+          },
+          {
+            "name": "test_project_map_has_modules_and_problems",
+            "line": 87,
+            "kind": "function"
+          },
+          {
+            "name": "test_project_map_modules_have_required_fields",
+            "line": 107,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "claude/hooks/tests/test_analyzer_jobs.py",
+        "purpose": "Tests para analyzers/jobs",
+        "search_keywords": [
+          "analyzer",
+          "jobs",
+          "test_run_returns_required_keys",
+          "test_detects_celery_scheduler",
+          "test_detects_celery_tasks",
+          "test_empty_project_returns_null_scheduler",
+          "test_job_has_required_fields",
+          "test_jobs_map_jobs_have_test_file"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "_make_project_with_celery",
+            "line": 10,
+            "kind": "function"
+          },
+          {
+            "name": "test_run_returns_required_keys",
+            "line": 28,
+            "kind": "function"
+          },
+          {
+            "name": "test_detects_celery_scheduler",
+            "line": 38,
+            "kind": "function"
+          },
+          {
+            "name": "test_detects_celery_tasks",
+            "line": 46,
+            "kind": "function"
+          },
+          {
+            "name": "test_empty_project_returns_null_scheduler",
+            "line": 56,
+            "kind": "function"
+          },
+          {
+            "name": "test_job_has_required_fields",
+            "line": 66,
+            "kind": "function"
+          },
+          {
+            "name": "test_jobs_map_jobs_have_test_file",
+            "line": 81,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "claude/hooks/tests/test_validate.py",
+        "purpose": "Tests unitarios para validate",
+        "search_keywords": [
+          "validate",
+          "test_plan_missing_done_criteria_is_critical",
+          "test_plan_invalid_owner_enum_is_critical",
+          "test_plan_optional_field_wrong_type_is_warning",
+          "test_unknown_artifact_raises_key_error",
+          "test_plan_review_missing_summary_is_critical",
+          "test_plan_review_missing_issues_is_critical",
+          "unitarios"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "_valid_plan",
+            "line": 14,
+            "kind": "function"
+          },
+          {
+            "name": "_valid_plan_review",
+            "line": 31,
+            "kind": "function"
+          },
+          {
+            "name": "test_plan_missing_done_criteria_is_critical",
+            "line": 42,
+            "kind": "function"
+          },
+          {
+            "name": "test_plan_invalid_owner_enum_is_critical",
+            "line": 53,
+            "kind": "function"
+          },
+          {
+            "name": "test_plan_optional_field_wrong_type_is_warning",
+            "line": 64,
+            "kind": "function"
+          },
+          {
+            "name": "test_unknown_artifact_raises_key_error",
+            "line": 75,
+            "kind": "function"
+          },
+          {
+            "name": "test_plan_review_missing_summary_is_critical",
+            "line": 84,
+            "kind": "function"
+          },
+          {
+            "name": "test_plan_review_missing_issues_is_critical",
+            "line": 93,
+            "kind": "function"
+          },
+          {
+            "name": "test_result_empty_object_passes_schema",
+            "line": 104,
+            "kind": "function"
+          },
+          {
+            "name": "test_result_with_invalid_frontend_status_is_critical",
+            "line": 110,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "claude/hooks/tests/test_core.py",
+        "purpose": "Tests para analyzers/core",
+        "search_keywords": [
+          "core",
+          "test_fileinfo_defaults",
+          "test_walk_repo_returns_fileinfos",
+          "test_walk_repo_parses_python_functions",
+          "test_detect_stack_from_requirements",
+          "test_git_hotspots_returns_empty_without_git",
+          "test_git_cochange_returns_empty_without_git",
+          "para"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "test_fileinfo_defaults",
+            "line": 14,
+            "kind": "function"
+          },
+          {
+            "name": "test_walk_repo_returns_fileinfos",
+            "line": 22,
+            "kind": "function"
+          },
+          {
+            "name": "test_walk_repo_parses_python_functions",
+            "line": 32,
+            "kind": "function"
+          },
+          {
+            "name": "test_detect_stack_from_requirements",
+            "line": 42,
+            "kind": "function"
+          },
+          {
+            "name": "test_git_hotspots_returns_empty_without_git",
+            "line": 49,
+            "kind": "function"
+          },
+          {
+            "name": "test_git_cochange_returns_empty_without_git",
+            "line": 54,
+            "kind": "function"
+          },
+          {
+            "name": "test_build_query_entry_returns_required_keys",
+            "line": 59,
+            "kind": "function"
+          },
+          {
+            "name": "_make_fi",
+            "line": 74,
+            "kind": "function"
+          },
+          {
+            "name": "test_find_test_file_pytest_convention",
+            "line": 78,
+            "kind": "function"
+          },
+          {
+            "name": "test_find_test_file_suffix_convention",
+            "line": 87,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "claude/hooks/tests/test_analyzer_api.py",
+        "purpose": "Tests para analyzers/api",
+        "search_keywords": [
+          "analyzer",
+          "api",
+          "test_run_returns_required_keys",
+          "test_detects_flask_framework",
+          "test_detects_blueprint_with_endpoints",
+          "test_webhook_classified_separately",
+          "test_auth_required_detected",
+          "test_empty_project_returns_empty_structure"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "_make_flask_api",
+            "line": 10,
+            "kind": "function"
+          },
+          {
+            "name": "test_run_returns_required_keys",
+            "line": 36,
+            "kind": "function"
+          },
+          {
+            "name": "test_detects_flask_framework",
+            "line": 47,
+            "kind": "function"
+          },
+          {
+            "name": "test_detects_blueprint_with_endpoints",
+            "line": 55,
+            "kind": "function"
+          },
+          {
+            "name": "test_webhook_classified_separately",
+            "line": 69,
+            "kind": "function"
+          },
+          {
+            "name": "test_auth_required_detected",
+            "line": 85,
+            "kind": "function"
+          },
+          {
+            "name": "test_empty_project_returns_empty_structure",
+            "line": 97,
+            "kind": "function"
+          },
+          {
+            "name": "test_webhook_entry_has_required_shape",
+            "line": 109,
+            "kind": "function"
+          },
+          {
+            "name": "test_auth_required_false_for_non_decorated_endpoint",
+            "line": 122,
+            "kind": "function"
+          },
+          {
+            "name": "test_middleware_files_empty_for_empty_project",
+            "line": 134,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "claude/hooks/tests/test_hooks_integration.py",
+        "purpose": "Verifica que los hooks modificados usan validate_artifact",
+        "search_keywords": [
+          "hooks",
+          "integration",
+          "test_execute_plan_no_required_fields_dict",
+          "test_execute_plan_uses_validate_artifact",
+          "test_approve_plan_uses_validate_artifact",
+          "test_quick_execute_uses_validate_artifact",
+          "test_dispatch_reviewer_uses_validate_artifact",
+          "test_recover_cycle_uses_validate_artifact"
+        ],
+        "related_to": [
+          "writer",
+          "reader",
+          "planner"
+        ],
+        "symbols": [
+          {
+            "name": "_src",
+            "line": 8,
+            "kind": "function"
+          },
+          {
+            "name": "test_execute_plan_no_required_fields_dict",
+            "line": 12,
+            "kind": "function"
+          },
+          {
+            "name": "test_execute_plan_uses_validate_artifact",
+            "line": 18,
+            "kind": "function"
+          },
+          {
+            "name": "test_approve_plan_uses_validate_artifact",
+            "line": 22,
+            "kind": "function"
+          },
+          {
+            "name": "test_quick_execute_uses_validate_artifact",
+            "line": 26,
+            "kind": "function"
+          },
+          {
+            "name": "test_dispatch_reviewer_uses_validate_artifact",
+            "line": 30,
+            "kind": "function"
+          },
+          {
+            "name": "test_recover_cycle_uses_validate_artifact",
+            "line": 34,
+            "kind": "function"
+          },
+          {
+            "name": "test_pre_commit_uses_validate_artifact",
+            "line": 38,
+            "kind": "function"
+          }
+        ],
+        "test_file": null
+      }
     ]
+  },
+  "problems": [
+    {
+      "file": "claude/hooks/dispatch-reviewer.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "claude/hooks/analyze-repo.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "claude/hooks/analyzers/core.py",
+      "type": "god_object",
+      "description": "764 líneas aprox, 20 funciones"
+    }
+  ],
+  "cochange": {
+    "claude/hooks/analyzers/api.py": [],
+    "claude/hooks/analyzers/db.py": [],
+    "claude/hooks/analyzers/jobs.py": [],
+    "claude/hooks/analyzers/project.py": [],
+    "claude/hooks/analyzers/services.py": [],
+    "claude/hooks/tests/test_analyzer_jobs.py": [],
+    "claude/hooks/tests/test_analyzer_services.py": [],
+    "claude/hooks/tests/test_analyzers_existing.py": []
   },
   "hotspots": [
     {
       "file": "claude/hooks/pre-commit.py",
       "commits": 7
-    },
-    {
-      "file": "claude/hooks/execute-plan.py",
-      "commits": 6
     }
   ]
 }
