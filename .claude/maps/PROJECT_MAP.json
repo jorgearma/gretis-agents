@@ -11,7 +11,7 @@
     "db": {
       "map": "DB_MAP.json",
       "reader": "db-reader",
-      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps db",
+      "summary": "0 modelos None",
       "trigger_keywords": [
         "modelo",
         "tabla",
@@ -35,7 +35,7 @@
     "query": {
       "map": "QUERY_MAP.json",
       "reader": "query-reader",
-      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps query",
+      "summary": "15 archivos con acceso a datos, patrón: Manager / Repository",
       "trigger_keywords": [
         "consulta",
         "query",
@@ -57,7 +57,7 @@
     "ui": {
       "map": "UI_MAP.json",
       "reader": "ui-reader",
-      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps ui",
+      "summary": "0 archivos de UI en 0 carpetas",
       "trigger_keywords": [
         "vista",
         "componente",
@@ -81,7 +81,7 @@
     "api": {
       "map": "API_MAP.json",
       "reader": "api-reader",
-      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps api",
+      "summary": "0 blueprints, 0 endpoints",
       "trigger_keywords": [
         "endpoint",
         "ruta",
@@ -106,7 +106,7 @@
     "services": {
       "map": "SERVICES_MAP.json",
       "reader": "services-reader",
-      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps services",
+      "summary": "0 integraciones externas",
       "trigger_keywords": [
         "servicio",
         "integración",
@@ -131,7 +131,7 @@
     "jobs": {
       "map": "JOBS_MAP.json",
       "reader": "jobs-reader",
-      "summary": "MAP no generado aún — ejecuta analyze-repo.py --maps jobs",
+      "summary": "Scheduler: ninguno, 1 jobs",
       "trigger_keywords": [
         "tarea",
         "job",
@@ -151,21 +151,33 @@
     }
   },
   "cochange": {
-    "claude/hooks/tests/test_core.py": [],
-    "claude/hooks/analyzers/__init__.py": [],
-    "claude/hooks/analyzers/core.py": [],
-    "claude/hooks/analyze-repo.py": [],
-    "claude/hooks/approve-plan.py": [],
-    "claude/hooks/execute-plan.py": [],
-    "claude/hooks/quick-execute.py": []
+    "claude/hooks/pre-commit.py": [],
+    "claude/hooks/tests/test_validate.py": [
+      "claude/hooks/pre-commit.py"
+    ],
+    "claude/hooks/validate.py": [
+      "claude/hooks/pre-commit.py"
+    ],
+    "claude/hooks/analyze-repo.py": [
+      "claude/hooks/pre-commit.py"
+    ],
+    "claude/hooks/analyzers/jobs.py": [
+      "claude/hooks/pre-commit.py"
+    ],
+    "claude/hooks/tests/test_analyzer_jobs.py": [
+      "claude/hooks/pre-commit.py"
+    ],
+    "claude/hooks/analyzers/services.py": [
+      "claude/hooks/pre-commit.py"
+    ]
   },
   "hotspots": [
     {
-      "file": "claude/hooks/execute-plan.py",
-      "commits": 6
+      "file": "claude/hooks/pre-commit.py",
+      "commits": 7
     },
     {
-      "file": "claude/hooks/pre-commit.py",
+      "file": "claude/hooks/execute-plan.py",
       "commits": 6
     }
   ]

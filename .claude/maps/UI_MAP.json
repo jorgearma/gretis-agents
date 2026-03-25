@@ -1,0 +1,9 @@
+{
+  "framework": null,
+  "template_engine": null,
+  "views": {},
+  "routers": [
+    "claude/hooks/dispatch-reviewer.py"
+  ],
+  "static": null
+}

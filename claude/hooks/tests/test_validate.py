@@ -24,6 +24,7 @@ def _valid_plan() -> dict:
             "files_to_open": [],
             "files_to_review": [],
         },
+        "rollback_plan": {"enabled": False, "steps": []},
     }
 
 
