@@ -26,8 +26,11 @@ Validar automáticamente todos los artifacts JSON en entry/exit de cada hook, us
 |----------|----------|-------|
 | ¿Dónde validar? | Solo en hooks Python | Los agentes .md no ejecutan código; los hooks son el único punto de control programático |
 | ¿Qué tan estricto? | Fallo duro para errores críticos, warning para problemas menores | Evita falsos bloqueos por campos opcionales sin romper el pipeline en casos no críticos |
-| ¿Versionado de schemas? | No (mensajes de error claros) | Un solo operador, evolución lenta, YAGNI |
-| ¿Fallback si jsonschema no instalado? | Fallo duro | Simplicidad; el entorno debe estar correctamente configurado |
+| ¿`additionalProperties` violation? | Warning, no error | Los agentes LLM pueden agregar campos extra. Degradar a warning permite evolución sin romper el pipeline. `additionalProperties: false` es un constraint de diseño, no de runtime |
+| `validate_artifact` retorna o lanza | Siempre retorna `ValidationResult`, nunca lanza | El caller (hook) decide cómo reaccionar; permite diferentes políticas por hook si se necesita |
+| ¿Versionado de schemas? | No — mensajes de error claros | Un solo operador, evolución lenta, YAGNI |
+| ¿Fallback si jsonschema no instalado? | Fallo duro con `ImportError` | Simplicidad; el entorno debe estar correctamente configurado |
+| Artifact desconocido en `validate_artifact` | Lanza `KeyError` con mensaje claro | Fail-fast: un nombre desconocido indica bug en el hook, no un caso válido en runtime |
 
 ---
 
@@ -51,15 +54,33 @@ claude/hooks/
 ### API pública de `validate.py`
 
 ```python
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+
+# Schemas cargados desde disco relativo a este archivo:
+SCHEMA_DIR = Path(__file__).resolve().parents[1] / "schemas"
+
 @dataclass
 class ValidationResult:
     ok: bool              # False si hay al menos un error crítico
-    errors: list[str]     # Mensajes de error bloqueantes
+    errors: list[str]     # Mensajes bloqueantes — campo + descripción exacta
     warnings: list[str]   # Mensajes no bloqueantes
 
-    def format(self) -> str: ...         # Output formateado para consola
-    def format_warnings(self) -> str: ...
-    def summary(self) -> str: ...        # Una línea para escribir en dispatch JSON
+    def format(self) -> str:
+        """Texto multilínea para consola. Incluye nombre del artifact, errores y warnings.
+        Ejemplo:
+          [BLOCKED] plan.json — 2 error(s), 1 warning(s)
+            ERROR   steps[0].owner: 'devops' is not valid (enum: ...)
+            ERROR   done_criteria: field required but missing
+            WARN    impact_analysis.notes: expected string, got integer
+        """
+
+    def format_warnings(self) -> str:
+        """Solo los warnings, sin el header de blocked."""
+
+    def summary(self) -> str:
+        """Una línea para incluir en dispatch JSON como campo 'reason'."""
 
 
 def validate_artifact(name: str, data: dict) -> ValidationResult:
@@ -67,68 +88,71 @@ def validate_artifact(name: str, data: dict) -> ValidationResult:
 
     Args:
         name: Nombre del artifact (ej: "plan.json", "PROJECT_MAP.json")
-        data: Contenido parseado del artifact
+        data: Contenido ya parseado del artifact
 
     Returns:
-        ValidationResult con errores clasificados
+        ValidationResult. `ok=True` si no hay errores críticos.
+        Warnings presentes no afectan `ok`.
 
     Raises:
-        ImportError: Si jsonschema no está instalado
-        KeyError: Si `name` no tiene schema registrado en SCHEMA_MAP
+        KeyError: Si `name` no está en SCHEMA_MAP — indica bug en el hook caller
+        ImportError: Si `jsonschema` no está instalado
     """
 ```
 
 ### Clasificación de errores
 
-`jsonschema` devuelve todos los errores igual. La clasificación es:
+`jsonschema` devuelve todos los errores igual. La clasificación se hace por `error.validator`:
 
-**Crítico (bloquea) — `result.ok = False`:**
-- Campo `required` ausente
-- Valor fuera de `enum` permitido
-- Tipo incorrecto en campo requerido
+**Crítico — `result.ok = False`:**
+- `"required"` — campo requerido ausente
+- `"enum"` — valor fuera de los valores permitidos
+- `"type"` — tipo incorrecto en campo que está en `required` del schema padre
 
-**Warning (notifica, no bloquea):**
-- Campo opcional con tipo incorrecto
-- `additionalProperties` violation (degradado a warning en runtime para tolerar campos nuevos que un agente agregue sin romper compatibilidad)
-
-```python
-CRITICAL_VALIDATORS = {"required", "enum", "type"}
-
-def _classify(error: ValidationError, schema: dict) -> Literal["error", "warning"]:
-    if error.validator in CRITICAL_VALIDATORS and _is_required_field(error, schema):
-        return "error"
-    return "warning"
-```
-
-### Formato de output en consola
-
-```
-[BLOCKED] plan.json — 2 error(s), 1 warning(s)
-  ERROR   steps[0].owner: 'devops' is not valid (enum: frontend, backend, reviewer, test-runner)
-  ERROR   done_criteria: field required but missing
-  WARN    impact_analysis.notes: expected string, got integer
-```
-
-### SCHEMA_MAP — mapeo artifact → schema file
+**Warning — `result.ok` no cambia:**
+- `"additionalProperties"` — campo extra presente (ver decisión de diseño)
+- `"type"` en campo opcional — tipo incorrecto en campo no requerido
+- Cualquier otro validator en campos opcionales
 
 ```python
-SCHEMA_MAP = {
+CRITICAL_VALIDATORS = {"required", "enum"}
+
+def _is_critical(error: ValidationError, schema: dict) -> bool:
+    if error.validator in CRITICAL_VALIDATORS:
+        return True
+    if error.validator == "type":
+        # Crítico solo si el campo está en `required` del schema padre
+        field_name = error.path[-1] if error.path else None
+        parent_required = error.parent.schema.get("required", []) if error.parent else []
+        return field_name in parent_required
+    return False
+```
+
+### SCHEMA_MAP — todos los artifacts mapeados
+
+```python
+SCHEMA_MAP: dict[str, str] = {
+    # Runtime artifacts
     "reader-context.json":     "reader-context.json",
     "plan.json":               "plan.json",
+    "files-read.json":         "files-read.json",
     "execution-brief.json":    "execution-brief.json",
     "execution-dispatch.json": "execution-dispatch.json",
     "operator-approval.json":  "operator-approval.json",
     "plan-review.json":        "plan-review.json",
     "result.json":             "result.json",
     "review.json":             "review.json",
+    "reviewer-dispatch.json":  "reviewer-dispatch.json",
     "sense-check.json":        "sense-check.json",
     "quick-dispatch.json":     "quick-dispatch.json",
     "clarifications.json":     "clarifications.json",
+    # Maps (nombre del artifact → nombre del schema file)
     "PROJECT_MAP.json":        "project-map.json",
     "DB_MAP.json":             "db-map.json",
     "QUERY_MAP.json":          "query-map.json",
     "UI_MAP.json":             "ui-map.json",
 }
+# Total: 17 artifacts — cubre todos los schemas en claude/schemas/
 ```
 
 ---
@@ -136,25 +160,113 @@ SCHEMA_MAP = {
 ## Cambios por hook
 
 ### `execute-plan.py`
-- **Eliminar:** `_REQUIRED_FIELDS` dict, función `validate_fields()`
-- **Agregar:** `validate_artifact` para `operator-approval.json`, `plan.json`, `plan-review.json`, `execution-brief.json`
-- El flujo de bloqueo y mensajes se mantiene idéntico
+
+**Qué valida:** inputs antes de lógica de negocio.
+**Cuándo:** inmediatamente después de `load_json()`, antes de cualquier lógica.
+
+```python
+# Reemplaza _REQUIRED_FIELDS dict y validate_fields() función
+from validate import validate_artifact
+
+for path, name in [(APPROVAL_PATH, "operator-approval.json"),
+                   (PLAN_PATH, "plan.json"),
+                   (REVIEW_PATH, "plan-review.json"),
+                   (BRIEF_PATH, "execution-brief.json")]:
+    data = load_json(path)
+    result = validate_artifact(name, data)
+    if not result.ok:
+        print(result.format())
+        write_json(DISPATCH_PATH, _block(task, result.summary()))
+        return 1
+    if result.warnings:
+        print(result.format_warnings())
+```
+
+**Eliminar:** `_REQUIRED_FIELDS`, `validate_fields()`.
 
 ### `approve-plan.py`
-- **Agregar:** validación de `operator-approval.json` al leer/escribir
+
+**Qué valida:** `operator-approval.json` al leerlo (verificar estado actual antes de sobrescribir).
+**Cuándo:** después de leer el archivo existente, antes de escribir el nuevo estado.
+
+```python
+result = validate_artifact("operator-approval.json", current_approval)
+if not result.ok:
+    print(result.format())
+    return 1
+```
 
 ### `quick-execute.py`
-- **Agregar:** validación de `quick-dispatch.json`
+
+**Qué valida:** `quick-dispatch.json` antes de pasar a ejecución.
+**Cuándo:** después de cargar el archivo, antes de lógica.
+
+```python
+result = validate_artifact("quick-dispatch.json", data)
+if not result.ok:
+    print(result.format())
+    return 1
+```
 
 ### `dispatch-reviewer.py`
-- **Agregar:** validación de `result.json` antes de generar `reviewer-dispatch.json`
+
+**Qué valida:** `result.json` (input) antes de generar `reviewer-dispatch.json`.
+**Cuándo:** después de cargar `result.json`, antes de escribir el dispatch.
+
+```python
+result = validate_artifact("result.json", result_data)
+if not result.ok:
+    print(result.format())
+    return 1
+```
 
 ### `recover-cycle.py`
-- **Agregar:** validación de los artifacts runtime presentes (no falla si un archivo no existe, solo si existe y está malformado)
+
+**Qué valida:** cada artifact de runtime presente en disco.
+**Cuándo:** al inicio, como diagnóstico. No falla si el archivo no existe — solo si existe y está malformado o inválido.
+
+```python
+for artifact_name, path in RUNTIME_ARTIFACTS.items():
+    if path.exists():
+        try:
+            data = load_json(path)
+        except ValueError:
+            print(f"  CORRUPT  {artifact_name}")
+            continue
+        result = validate_artifact(artifact_name, data)
+        if not result.ok:
+            print(f"  INVALID  {artifact_name}")
+            print(result.format())
+        elif result.warnings:
+            print(f"  WARN     {artifact_name}")
+            print(result.format_warnings())
+        else:
+            print(f"  OK       {artifact_name}")
+```
 
 ### `pre-commit.py`
-- **Mantener:** verificación de existencia de archivos y JSON parseable (sin cambios)
-- **Agregar:** validación de `maps/*.json` contra sus schemas (`project-map.json`, `db-map.json`, `query-map.json`, `ui-map.json`)
+
+**Qué valida:** `maps/*.json` contra sus schemas (hoy solo verifica JSON parseable).
+**Cuándo:** en el bloque existente de validación JSON, después del check de parseable.
+**Comportamiento:** fallo duro si un map es inválido contra su schema — los maps son archivos versionados, no artifacts runtime.
+
+```python
+from validate import validate_artifact
+
+MAP_ARTIFACTS = {
+    "PROJECT_MAP.json": PLUGIN_DIR / "maps" / "PROJECT_MAP.json",
+    "DB_MAP.json":      PLUGIN_DIR / "maps" / "DB_MAP.json",
+    "QUERY_MAP.json":   PLUGIN_DIR / "maps" / "QUERY_MAP.json",
+    "UI_MAP.json":      PLUGIN_DIR / "maps" / "UI_MAP.json",
+}
+
+for artifact_name, path in MAP_ARTIFACTS.items():
+    with path.open() as f:
+        data = json.load(f)
+    result = validate_artifact(artifact_name, data)
+    if not result.ok:
+        invalid_json.append(f"{path.relative_to(ROOT)}: schema inválido\n{result.format()}")
+```
 
 ---
 
@@ -164,19 +276,20 @@ SCHEMA_MAP = {
 pip install jsonschema
 ```
 
-Fallo duro si no está instalado — el entorno debe estar correctamente configurado.
+Requerida. `validate.py` lanza `ImportError` en el import si no está disponible — fallo inmediato antes de cualquier ejecución.
 
 ---
 
 ## Criterios de done
 
-- [ ] `validate_artifact("plan.json", data)` retorna lista de errores con campo + mensaje exacto
-- [ ] Campos `required` faltantes o enum inválidos → `result.ok = False` → hook bloquea
-- [ ] Campos opcionales malformados → `result.warnings` → solo imprime en consola
-- [ ] `execute-plan.py` no tiene más `_REQUIRED_FIELDS` ni `validate_fields()`
-- [ ] Todos los hooks importan y usan `validate.py`
-- [ ] `pre-commit.py` detecta maps malformados contra schema
-- [ ] `python3 .claude/hooks/pre-commit.py` pasa sin errores tras los cambios
+- [ ] `validate_artifact("plan.json", {"task": "x", "steps": []})` retorna `result.ok = False` con error en `done_criteria` (campo required faltante)
+- [ ] `validate_artifact("plan.json", {"task": "x", "steps": [{"id":"1","title":"t","owner":"devops"}], ...})` retorna `result.ok = False` con error en `steps[0].owner` (enum inválido)
+- [ ] Campo opcional malformado retorna `result.ok = True` con entry en `result.warnings`
+- [ ] `execute-plan.py` no contiene `_REQUIRED_FIELDS` ni `validate_fields()`
+- [ ] Todos los hooks (execute-plan, approve-plan, quick-execute, dispatch-reviewer, recover-cycle) importan y usan `validate_artifact`
+- [ ] `pre-commit.py` detecta un map con campo required faltante y retorna exit code 1
+- [ ] `python3 .claude/hooks/pre-commit.py` pasa sin errores en el repo actual tras los cambios
+- [ ] `validate_artifact("unknown.json", {})` lanza `KeyError` con mensaje que incluye el nombre del artifact
 
 ---
 
