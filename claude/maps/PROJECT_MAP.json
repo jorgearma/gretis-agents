@@ -239,5 +239,7 @@
         "async"
       ]
     }
-  }
+  },
+  "modules": {},
+  "problems": []
 }

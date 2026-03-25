@@ -76,3 +76,24 @@ def test_job_has_required_fields(tmp_path):
         assert "schedule" in job
         assert "description" in job
         assert job["trigger"] in ("manual", "cron", "interval", "event", "startup")
+
+
+def test_jobs_map_jobs_have_test_file(tmp_path):
+    from analyzers.core import walk_repo, detect_stack
+    from analyzers.jobs import run
+
+    (tmp_path / "tasks").mkdir()
+    (tmp_path / "tasks" / "email_tasks.py").write_text(
+        "from celery import shared_task\n@shared_task\ndef send_welcome_email(user_id): pass\n"
+    )
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_email_tasks.py").write_text("def test_send_welcome_email(): pass\n")
+    (tmp_path / ".git").mkdir()
+    (tmp_path / "requirements.txt").write_text("celery==5.3.0\n")
+
+    files = walk_repo(tmp_path)
+    stack = detect_stack(tmp_path)
+    result = run(tmp_path, files, stack)
+
+    for job in result["jobs"]:
+        assert "test_file" in job, f"job {job['function']} no tiene test_file"

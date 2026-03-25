@@ -10,14 +10,15 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "type", "files", "functions", "env_vars"],
+        "required": ["name", "type", "files", "functions", "env_vars", "test_file"],
         "additionalProperties": false,
         "properties": {
           "name":      { "type": "string" },
           "type":      { "type": "string", "enum": ["sms", "email", "payments", "storage", "cache", "queue", "monitoring", "other"] },
           "files":     { "type": "array", "items": { "type": "string" } },
           "functions": { "type": "array", "items": { "type": "string" } },
-          "env_vars":  { "type": "array", "items": { "type": "string" } }
+          "env_vars":  { "type": "array", "items": { "type": "string" } },
+          "test_file": { "type": ["string", "null"] }
         }
       }
     }

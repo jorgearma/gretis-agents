@@ -145,3 +145,29 @@ def test_db_model_entry_has_required_subkeys(tmp_path):
     for model_entry in result["models"]:
         for key in ("name", "table", "file", "fields", "relationships"):
             assert key in model_entry, f"model entry missing '{key}': {model_entry}"
+
+
+def test_db_map_models_have_test_file(tmp_path):
+    from analyzers.core import walk_repo, detect_stack
+    from analyzers.db import run
+    from analyzers import core as _core
+    _core._walk_repo_models_cache.clear()
+
+    (tmp_path / "models").mkdir()
+    (tmp_path / "models" / "user.py").write_text(
+        "from sqlalchemy import Column, Integer, String\n"
+        "from sqlalchemy.ext.declarative import declarative_base\n"
+        "Base = declarative_base()\n"
+        "class User(Base):\n    __tablename__ = 'users'\n    id = Column(Integer, primary_key=True)\n    email = Column(String)\n"
+    )
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_user.py").write_text("def test_user_model(): pass\n")
+    (tmp_path / ".git").mkdir()
+
+    files = walk_repo(tmp_path)
+    stack = detect_stack(tmp_path)
+    result = run(tmp_path, files, stack)
+
+    assert result["models"], "debe detectar al menos un modelo"
+    for model in result["models"]:
+        assert "test_file" in model, f"modelo {model['name']} no tiene test_file"

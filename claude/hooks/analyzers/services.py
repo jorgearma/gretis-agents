@@ -13,7 +13,7 @@ import argparse
 import json
 import re
 from pathlib import Path
-from analyzers.core import FileInfo, detect_stack, walk_repo
+from analyzers.core import FileInfo, detect_stack, walk_repo, find_test_file
 
 # SDK → (nombre display, tipo)
 SDK_MAP: dict[str, tuple[str, str]] = {
@@ -135,6 +135,11 @@ def _detect_integrations(
 def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
     """Genera SERVICES_MAP.json. Escribe en .claude/maps/. Devuelve el dict."""
     integrations = _detect_integrations(files, root, stack)
+    for integration in integrations:
+        if integration["files"]:
+            integration["test_file"] = find_test_file(integration["files"][0], files)
+        else:
+            integration["test_file"] = None
     result = {"integrations": integrations}
 
     maps_dir = root / ".claude" / "maps"

@@ -86,3 +86,23 @@ def test_empty_project_returns_empty_integrations(tmp_path):
     stack = core.detect_stack(tmp_path)
     result = run(tmp_path, files, stack)
     assert result == {"integrations": []}
+
+
+def test_services_map_integrations_have_test_file(tmp_path):
+    from analyzers.core import walk_repo, detect_stack
+    from analyzers.services import run
+
+    (tmp_path / "services").mkdir()
+    (tmp_path / "services" / "stripe_service.py").write_text(
+        "import stripe\nSTRIPE_KEY = os.getenv('STRIPE_SECRET_KEY')\ndef charge(amount): pass\n"
+    )
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_stripe_service.py").write_text("def test_charge(): pass\n")
+    (tmp_path / ".git").mkdir()
+
+    files = walk_repo(tmp_path)
+    stack = detect_stack(tmp_path)
+    result = run(tmp_path, files, stack)
+
+    for integration in result["integrations"]:
+        assert "test_file" in integration, f"integración {integration['name']} no tiene test_file"

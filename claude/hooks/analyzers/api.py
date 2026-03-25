@@ -20,7 +20,7 @@ import ast
 import json
 import re
 from pathlib import Path
-from analyzers.core import FileInfo, detect_stack, walk_repo
+from analyzers.core import FileInfo, detect_stack, walk_repo, find_test_file
 
 # Patrones de auth
 AUTH_DECORATORS = frozenset({
@@ -29,6 +29,11 @@ AUTH_DECORATORS = frozenset({
 })
 
 KNOWN_FRAMEWORKS = frozenset({"Flask", "FastAPI", "Express", "Fastify", "NestJS"})
+
+RE_SCHEMA_FILE = re.compile(
+    r"from pydantic|class\s+\w+Schema|@dataclass",
+    re.MULTILINE,
+)
 
 RE_BLUEPRINT = re.compile(
     r'(\w+)\s*=\s*Blueprint\s*\(\s*["\']([^"\']+)["\']'
@@ -179,6 +184,23 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
         )
     ]
 
+    # Detect schema files: pydantic models, dataclasses, Schema classes under schema-related dirs
+    SCHEMA_DIRS = frozenset({"schemas", "serializers", "validators"})
+    schema_files = []
+    for fi in files:
+        if fi.language != "python":
+            continue
+        parts = Path(fi.rel_path).parts
+        in_schema_dir = any(p in SCHEMA_DIRS for p in parts[:-1])
+        if not in_schema_dir:
+            continue
+        try:
+            src = (root / fi.rel_path).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if RE_SCHEMA_FILE.search(src):
+            schema_files.append(fi.rel_path)
+
     blueprints_result = []
     webhooks_result = []
 
@@ -212,11 +234,13 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
                     "name": bp_info["name"],
                     "file": bp_info["file"],
                     "prefix": bp_info["prefix"],
+                    "test_file": find_test_file(bp_info["file"], files),
                     "endpoints": normal_endpoints,
                 })
 
     result = {
         "framework": framework,
+        "schema_files": schema_files,
         "blueprints": blueprints_result,
         "webhooks": webhooks_result,
         "middleware_files": middleware_files[:10],  # cap to avoid noise in large projects

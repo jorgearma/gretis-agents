@@ -14,12 +14,13 @@
       "description": "Modelos ORM/entidades detectados.",
       "items": {
         "type": "object",
-        "required": ["name", "file"],
+        "required": ["name", "file", "test_file"],
         "additionalProperties": false,
         "properties": {
           "name":          { "type": "string" },
           "table":         { "type": "string", "description": "Nombre de tabla o colección." },
           "file":          { "type": "string" },
+          "test_file":     { "type": ["string", "null"] },
           "fields":        { "type": "array", "items": { "type": "string" }, "description": "Campos con tipo opcional. Ej: 'id:Integer', 'nombre'." },
           "relationships": { "type": "array", "items": { "type": "string" }, "description": "Nombres de las relaciones ORM." }
         }

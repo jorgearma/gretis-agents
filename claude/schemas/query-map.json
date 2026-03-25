@@ -15,13 +15,14 @@
       "description": "Archivos con acceso directo a DB o con rol data_access. Cada elemento es un objeto enriquecido con semántica.",
       "items": {
         "type": "object",
-        "required": ["path", "role", "functions", "query_examples"],
+        "required": ["path", "role", "functions", "query_examples", "test_file"],
         "additionalProperties": false,
         "properties": {
           "path":           { "type": "string" },
           "role":           { "type": "string" },
           "functions":      { "type": "array", "items": { "type": "string" }, "description": "Funciones o exports principales (greppables)." },
-          "query_examples": { "type": "array", "items": { "type": "string" }, "description": "Patrones ORM/SQL reales extraídos del código. Máx 3 por archivo." }
+          "query_examples": { "type": "array", "items": { "type": "string" }, "description": "Patrones ORM/SQL reales extraídos del código. Máx 3 por archivo." },
+          "test_file":      { "type": ["string", "null"] }
         }
       }
     },

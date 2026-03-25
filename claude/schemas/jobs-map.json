@@ -11,14 +11,15 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["file", "function", "trigger", "schedule", "description"],
+        "required": ["file", "function", "trigger", "schedule", "description", "test_file"],
         "additionalProperties": false,
         "properties": {
           "file":        { "type": "string" },
           "function":    { "type": "string" },
           "trigger":     { "type": "string", "enum": ["manual", "cron", "interval", "event", "startup"] },
           "schedule":    { "type": ["string", "null"] },
-          "description": { "type": "string" }
+          "description": { "type": "string" },
+          "test_file":   { "type": ["string", "null"] }
         }
       }
     },

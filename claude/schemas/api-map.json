@@ -3,20 +3,22 @@
   "title": "APIMap",
   "description": "Mapa de endpoints HTTP, blueprints y webhooks generado por analyzers/api.py.",
   "type": "object",
-  "required": ["framework", "blueprints", "webhooks", "middleware_files"],
+  "required": ["framework", "schema_files", "blueprints", "webhooks", "middleware_files"],
   "additionalProperties": false,
   "properties": {
-    "framework": { "type": ["string", "null"] },
+    "framework":    { "type": ["string", "null"] },
+    "schema_files": { "type": "array", "items": { "type": "string" } },
     "blueprints": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "file", "prefix", "endpoints"],
+        "required": ["name", "file", "prefix", "test_file", "endpoints"],
         "additionalProperties": false,
         "properties": {
-          "name":   { "type": "string" },
-          "file":   { "type": "string" },
-          "prefix": { "type": "string" },
+          "name":      { "type": "string" },
+          "file":      { "type": "string" },
+          "prefix":    { "type": "string" },
+          "test_file": { "type": ["string", "null"] },
           "endpoints": {
             "type": "array",
             "items": {

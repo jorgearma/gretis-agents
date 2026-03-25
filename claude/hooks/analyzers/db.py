@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from analyzers.core import (
     FileInfo, ModelInfo, detect_stack, walk_repo,
-    _walk_repo_models_cache,
+    _walk_repo_models_cache, find_test_file,
 )
 
 DB_ORMS = {
@@ -40,6 +40,7 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
         "connection_files": db_conn,
         "models": [
             {"name": m.name, "table": m.table, "file": m.file,
+             "test_file": find_test_file(m.file, files),
              "fields": m.fields, "relationships": m.relationships}
             for m in sorted(real_models, key=lambda x: x.name)
         ],

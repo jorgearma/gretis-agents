@@ -33,6 +33,52 @@
         }
       }
     },
+    "modules": {
+      "type": "object",
+      "description": "Índice de archivos por rol. Claves son el rol asignado por FileInfo.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["path", "purpose", "search_keywords", "symbols", "test_file", "related_to"],
+          "additionalProperties": false,
+          "properties": {
+            "path":            { "type": "string" },
+            "purpose":         { "type": "string" },
+            "search_keywords": { "type": "array", "items": { "type": "string" } },
+            "symbols": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "line", "kind"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": { "type": "string" },
+                  "line": { "type": "integer" },
+                  "kind": { "type": "string", "enum": ["class", "function"] }
+                }
+              }
+            },
+            "test_file":  { "type": ["string", "null"] },
+            "related_to": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "problems": {
+      "type": "array",
+      "description": "Señales de riesgo detectadas en archivos de lógica.",
+      "items": {
+        "type": "object",
+        "required": ["file", "type", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "file":        { "type": "string" },
+          "type":        { "type": "string", "enum": ["god_object", "no_tests"] },
+          "description": { "type": "string" }
+        }
+      }
+    },
     "hotspots": {
       "type": "array",
       "items": {

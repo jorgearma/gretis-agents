@@ -9,7 +9,8 @@
         "health",
         "manejar_errores_globales"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "managers/dashboard/gestor_empleados_mixin.py",
@@ -24,7 +25,8 @@
         "session.query(Empleado)",
         ".filter(Empleado.activo == True)",
         ".filter(Rol.nombre == rol)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/dashboard/gestor_estadisticas_mixin.py",
@@ -32,7 +34,8 @@
       "functions": [
         "estadisticas"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "managers/dashboard/gestor_pedidos_mixin.py",
@@ -49,7 +52,8 @@
         ".filter(Pedido.Estado.in_(_ESTADOS_OPERATIVOS)",
         ".filter(Pedido.Estado == estado)",
         ".order_by(Pedido.FechaCreacion.asc()"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/dashboard/gestor_picking_mixin.py",
@@ -69,7 +73,8 @@
         ".order_by(PickingPedido.created_at.asc()",
         "session.query(Producto)",
         ".filter(Producto.Disponible == True)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/dashboard/gestor_reparto_mixin.py",
@@ -90,7 +95,8 @@
         ".filter(Empleado.activo == True)",
         ".filter_by(PedidoID=pedido_id)",
         ".filter_by(EmpleadoID=empleado_id, activo=True)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/dashboard/gestor_turnos_mixin.py",
@@ -108,7 +114,8 @@
         ".filter_by(activo=True)",
         ".order_by(Empleado.Nombre)",
         ".filter(CheckIn.fecha == hoy)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/estado_usuario.py",
@@ -117,13 +124,15 @@
         "obtener_estado",
         "actualizar_estado"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "managers/gestor_dashboard.py",
       "role": "data_access",
       "functions": [],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "managers/gestor_empleado.py",
@@ -144,7 +153,8 @@
         "session.query(Empleado)",
         ".filter_by(EmpleadoID=empleado_id)",
         ".order_by(Turno.fecha, Turno.hora_inicio)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/gestor_metricas.py",
@@ -165,7 +175,8 @@
         ".filter(Pedido.Estado.notin_(_ESTADOS_TERMINALES)",
         ".filter(Reparto.estado == 'pendiente')",
         ".filter(Turno.fecha == hoy)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/gestor_pedidos.py",
@@ -186,7 +197,8 @@
         ".filter_by(PedidoID=pedido_id)",
         ".filter_by(ClienteID=cliente_id, Estado=EstadoPedido.PENDIENTE)",
         ".filter(Pedido.ClienteID == id_usuario)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/gestor_productos.py",
@@ -206,7 +218,8 @@
         "session.query(Producto)",
         ".filter(Producto.ProductoID == codigo)",
         ".order_by(Producto.Categoria, Producto.Nombre)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "managers/gestor_redis.py",
@@ -219,7 +232,8 @@
         "bloquear_usuario",
         "desbloquear_usuario"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "managers/gestor_usuarios.py",
@@ -233,7 +247,8 @@
       ],
       "query_examples": [
         ".filter_by(numero_cliente=numero_cliente)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "scripts/crear_pedidos_demo.py",
@@ -254,7 +269,8 @@
         ".filter_by(nombre=nombre)",
         "session.query(Categoria)",
         ".filter_by(nombre=\"Demo\")"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "scripts/crear_pedidos_demo_pagados.py",
@@ -275,7 +291,8 @@
         "session.query(Categoria)",
         ".filter_by(nombre=\"Demo\")",
         "session.query(Producto)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "scripts/migrar_categorias.py",
@@ -289,7 +306,8 @@
         "session.query(Producto.Categoria)",
         ".filter(Producto.Categoria.isnot(None)",
         "session.query(Categoria)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "scripts/migrar_empleado.py",
@@ -297,7 +315,8 @@
       "functions": [
         "run"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "scripts/migrar_sprint2.py",
@@ -312,7 +331,8 @@
       ],
       "query_examples": [
         ".filter_by(nombre=nombre)"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "scripts/migrar_sprint3.py",
@@ -323,7 +343,8 @@
         "paso1_columnas_pedidos",
         "paso2_tabla_audit_log"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "scripts/migrate_capacidades.py",
@@ -333,13 +354,15 @@
       ],
       "query_examples": [
         ".filter(Rol.nombre.in_(['picker', 'repartidor'])"
-      ]
+      ],
+      "test_file": null
     },
     {
       "path": "scripts/run_migrations.py",
       "role": "migration",
       "functions": [],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "tests/test_gestor_dashboard.py",
@@ -349,7 +372,8 @@
         "test_metricas_incluye_cancelaciones_e_ingresos_por_metodo",
         "test_monitor_datos_devuelve_claves_principales"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     },
     {
       "path": "tests/test_gestor_metricas.py",
@@ -366,7 +390,8 @@
         "test_resultado_tiene_tipo_severidad_mensaje",
         "test_claves_esperadas"
       ],
-      "query_examples": []
+      "query_examples": [],
+      "test_file": null
     }
   ],
   "cochange_with_models": [

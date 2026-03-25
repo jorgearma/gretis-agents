@@ -11,7 +11,7 @@ import ast
 import json
 import re
 from pathlib import Path
-from analyzers.core import FileInfo, detect_stack, walk_repo
+from analyzers.core import FileInfo, detect_stack, walk_repo, find_test_file
 
 RE_CRON = re.compile(r'\d+\s+\d+\s+\*\s+\*\s+\*|\*/\d+|\bcron\b', re.IGNORECASE)
 RE_INTERVAL = re.compile(r'every\s+\d+|interval\s*=|countdown\s*=', re.IGNORECASE)
@@ -182,6 +182,10 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
         if key not in seen:
             seen.add(key)
             unique_jobs.append(j)
+
+    # Add test_file to each job
+    for job in unique_jobs:
+        job["test_file"] = find_test_file(job["file"], files)
 
     if not scheduler and not unique_jobs:
         result: dict = {"scheduler": None, "jobs": [], "queues": []}

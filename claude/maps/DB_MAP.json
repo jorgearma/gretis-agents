@@ -21,7 +21,8 @@
       "relationships": [
         "pedido",
         "empleado"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Ausencia",
@@ -41,7 +42,8 @@
       "relationships": [
         "empleado",
         "aprobador"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Categoria",
@@ -55,7 +57,8 @@
       ],
       "relationships": [
         "productos"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "CheckIn",
@@ -76,7 +79,8 @@
         "empleado",
         "turno",
         "tramos"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Empleado",
@@ -107,7 +111,8 @@
         "turnos",
         "check_ins",
         "capacidades"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "EmpleadoCapacidad",
@@ -120,7 +125,8 @@
       ],
       "relationships": [
         "empleado"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "HistorialEstadoPedido",
@@ -137,7 +143,8 @@
       ],
       "relationships": [
         "pedido"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Incidencia",
@@ -159,7 +166,8 @@
         "pedido",
         "cliente",
         "asignado"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "MetricaDiariaEmpleado",
@@ -179,7 +187,8 @@
       ],
       "relationships": [
         "empleado"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Pago",
@@ -200,7 +209,8 @@
       ],
       "relationships": [
         "pedido"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Pedido",
@@ -235,7 +245,8 @@
         "picking",
         "reparto",
         "incidencias"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "PedidoDetalle",
@@ -254,7 +265,8 @@
         "pedido",
         "producto",
         "picking_item"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "PickingItem",
@@ -273,7 +285,8 @@
         "picking",
         "pedido_detalle",
         "producto_sustituto"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "PickingPedido",
@@ -293,7 +306,8 @@
         "pedido",
         "empleado",
         "items"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Producto",
@@ -318,7 +332,8 @@
       "relationships": [
         "categoria_rel",
         "detalles"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Reparto",
@@ -346,7 +361,8 @@
       "relationships": [
         "pedido",
         "repartidor"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Rol",
@@ -359,7 +375,8 @@
       ],
       "relationships": [
         "empleados"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "SolicitudCambioTurno",
@@ -381,7 +398,8 @@
         "solicitante",
         "sustituto",
         "aprobador"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "TramoTurno",
@@ -396,7 +414,8 @@
       ],
       "relationships": [
         "check_in"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Turno",
@@ -418,7 +437,8 @@
       "relationships": [
         "empleado",
         "turno_origen"
-      ]
+      ],
+      "test_file": null
     },
     {
       "name": "Usuario",
@@ -433,7 +453,8 @@
       "relationships": [
         "pedidos",
         "incidencias"
-      ]
+      ],
+      "test_file": null
     }
   ],
   "migrations": [

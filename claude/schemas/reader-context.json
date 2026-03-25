@@ -28,14 +28,16 @@
     },
     "primary_reader": {
       "type": "string",
-      "enum": ["project-reader", "db-reader", "query-reader", "ui-reader"]
+      "enum": ["project-reader", "db-reader", "query-reader", "ui-reader",
+               "api-reader", "services-reader", "jobs-reader"]
     },
     "selected_readers": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "string",
-        "enum": ["project-reader", "db-reader", "query-reader", "ui-reader"]
+        "enum": ["project-reader", "db-reader", "query-reader", "ui-reader",
+                 "api-reader", "services-reader", "jobs-reader"]
       }
     },
     "maps_used": {
@@ -43,7 +45,8 @@
       "minItems": 1,
       "items": {
         "type": "string",
-        "enum": ["PROJECT_MAP.json", "DB_MAP.json", "QUERY_MAP.json", "UI_MAP.json"]
+        "enum": ["PROJECT_MAP.json", "DB_MAP.json", "QUERY_MAP.json", "UI_MAP.json",
+                 "API_MAP.json", "SERVICES_MAP.json", "JOBS_MAP.json"]
       }
     },
     "files_to_open": {
@@ -73,6 +76,28 @@
       "type": "object",
       "description": "Grafo de dependencias forward filtrado: solo archivos relevantes para la tarea. Clave: ruta del archivo. Valor: array de rutas que importa. Identifica qué cambios propagan hacia dónde.",
       "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
+    "problems_in_scope": {
+      "type": "array",
+      "description": "Problemas detectados en archivos involucrados en esta tarea.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file":        { "type": "string" },
+          "type":        { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "env_vars_needed": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Variables de entorno necesarias para las integraciones en scope."
+    },
+    "schema_files": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Archivos de schema/validación relevantes para la tarea."
     }
   },
   "$defs": {
@@ -98,6 +123,10 @@
           "type": "string",
           "enum": ["high", "medium", "low"],
           "description": "high = el cambio ocurre aqui. medium = referencia directa. low = contexto de fondo."
+        },
+        "test_file": {
+          "type": ["string", "null"],
+          "description": "Ruta del archivo de test asociado, si existe."
         }
       }
     }

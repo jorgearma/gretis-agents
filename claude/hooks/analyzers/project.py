@@ -16,6 +16,7 @@ from analyzers.core import (
     FileInfo, detect_stack, git_hotspots, git_cochange,
     walk_repo, detect_project_name, detect_readme_summary,
     infer_architecture, scan_structure,
+    build_module_entry, detect_problems,
 )
 
 # Dominios fijos — siempre se incluyen todos en el PROJECT_MAP.
@@ -157,6 +158,17 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
             "trigger_keywords": meta["trigger_keywords"],
         }
 
+    # Build modules dict grouped by role
+    from collections import defaultdict
+    modules: dict[str, list] = defaultdict(list)
+    for fi in files:
+        if fi.role in ("entry_point", "other", None):
+            continue
+        entry = build_module_entry(fi, files, cochange_raw)
+        modules[fi.role].append(entry)
+
+    problems = detect_problems(files)
+
     result = {
         "name": name,
         "description": description,
@@ -165,6 +177,8 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
         "stack": stack,
         "entry_points": entry_points,
         "domains": domains,
+        "modules": dict(modules),
+        "problems": problems,
         "cochange": cochange,
         "hotspots": hotspots,
     }
