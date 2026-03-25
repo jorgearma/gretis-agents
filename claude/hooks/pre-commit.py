@@ -52,6 +52,15 @@ REQUIRED_PATHS = [
     PLUGIN_DIR / "commands" / "start-cycle.md",
     PLUGIN_DIR / "commands" / "implement-feature.md",
     PLUGIN_DIR / "commands" / "review-change.md",
+    PLUGIN_DIR / "maps" / "API_MAP.json",
+    PLUGIN_DIR / "maps" / "SERVICES_MAP.json",
+    PLUGIN_DIR / "maps" / "JOBS_MAP.json",
+    PLUGIN_DIR / "agents" / "readers" / "api-reader.md",
+    PLUGIN_DIR / "agents" / "readers" / "services-reader.md",
+    PLUGIN_DIR / "agents" / "readers" / "jobs-reader.md",
+    PLUGIN_DIR / "schemas" / "api-map.json",
+    PLUGIN_DIR / "schemas" / "services-map.json",
+    PLUGIN_DIR / "schemas" / "jobs-map.json",
 ]
 
 # Runtime JSON files that exist only after a cycle runs (gitignored — check only if present)
@@ -79,10 +88,16 @@ JSON_FILES = [
     PLUGIN_DIR / "schemas" / "ui-map.json",
     PLUGIN_DIR / "runtime" / "operator-approval.json",
     PLUGIN_DIR / "runtime" / "map-scan-approval.json",
+    PLUGIN_DIR / "schemas" / "api-map.json",
+    PLUGIN_DIR / "schemas" / "services-map.json",
+    PLUGIN_DIR / "schemas" / "jobs-map.json",
     PLUGIN_DIR / "maps" / "PROJECT_MAP.json",
     PLUGIN_DIR / "maps" / "DB_MAP.json",
     PLUGIN_DIR / "maps" / "QUERY_MAP.json",
     PLUGIN_DIR / "maps" / "UI_MAP.json",
+    PLUGIN_DIR / "maps" / "API_MAP.json",
+    PLUGIN_DIR / "maps" / "SERVICES_MAP.json",
+    PLUGIN_DIR / "maps" / "JOBS_MAP.json",
 ]
 
 
@@ -114,10 +129,13 @@ def main() -> int:
 
     # Validar maps/*.json contra sus schemas
     MAP_ARTIFACTS = {
-        "PROJECT_MAP.json": PLUGIN_DIR / "maps" / "PROJECT_MAP.json",
-        "DB_MAP.json":      PLUGIN_DIR / "maps" / "DB_MAP.json",
-        "QUERY_MAP.json":   PLUGIN_DIR / "maps" / "QUERY_MAP.json",
-        "UI_MAP.json":      PLUGIN_DIR / "maps" / "UI_MAP.json",
+        "PROJECT_MAP.json":  PLUGIN_DIR / "maps" / "PROJECT_MAP.json",
+        "DB_MAP.json":       PLUGIN_DIR / "maps" / "DB_MAP.json",
+        "QUERY_MAP.json":    PLUGIN_DIR / "maps" / "QUERY_MAP.json",
+        "UI_MAP.json":       PLUGIN_DIR / "maps" / "UI_MAP.json",
+        "API_MAP.json":      PLUGIN_DIR / "maps" / "API_MAP.json",
+        "SERVICES_MAP.json": PLUGIN_DIR / "maps" / "SERVICES_MAP.json",
+        "JOBS_MAP.json":     PLUGIN_DIR / "maps" / "JOBS_MAP.json",
     }
     map_schema_errors: list[str] = []
     for artifact_name, map_path in MAP_ARTIFACTS.items():
