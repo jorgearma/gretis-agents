@@ -51,7 +51,6 @@ PLANNING_ARTIFACTS = [
     RUNTIME / "execution-brief.json",
     RUNTIME / "execution-dispatch.json",
     RUNTIME / "files-read.json",
-    RUNTIME / "sense-check.json",
 ]
 
 # Artefactos del reader (inicio del ciclo)

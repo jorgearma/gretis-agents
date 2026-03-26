@@ -66,8 +66,8 @@ def main() -> int:
         print(f"Notes: {payload['notes']}")
 
     if payload["status"] == "approved":
-        print("Puedes ahora ejecutar el agente map-scanner para poblar los MAPs.")
-        print("Ver: claude/agents/map-scanner.md")
+        print("Puedes ahora ejecutar analyze-repo.py para poblar los MAPs.")
+        print("Ver: python3 .claude/hooks/analyze-repo.py")
 
     return 0
 

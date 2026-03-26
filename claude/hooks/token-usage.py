@@ -37,7 +37,6 @@ SESSION_DIR  = pathlib.Path.home() / ".claude" / "projects" / _sanitized
 RUNTIME_FILE_TO_AGENT: dict[str, str] = {
     "reader-context.json":   "reader",
     "clarifications.json":   "reader",
-    "sense-check.json":      "sense-checker",
     "plan.json":             "planner",
     "files-read.json":       "planner",
     "execution-brief.json":  "writer",
@@ -54,7 +53,6 @@ RUNTIME_FILE_TO_AGENT: dict[str, str] = {
 # Prioridad cuando hay varios matches en la misma sesión (mayor = más específico)
 AGENT_PRIORITY: dict[str, int] = {
     "reader":            10,
-    "sense-checker":     10,
     "planner":           10,
     "writer":            10,
     "plan-reviewer":     10,

@@ -254,7 +254,7 @@ Ejemplos:
         print("Modo flujo completo.")
         print("Pasos a seguir:")
         print("  1. Invoca el agente reader")
-        print("  2. Revisa reader-context.json y sense-check.json")
+        print("  2. Revisa reader-context.json")
         print("  3. python3 .claude/hooks/approve-plan.py approve --by 'tu nombre'")
         print("  4. python3 .claude/hooks/execute-plan.py")
         return 0

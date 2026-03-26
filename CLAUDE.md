@@ -41,7 +41,7 @@ python3 .claude/hooks/recover-cycle.py
 Pipeline secuencial con gate de aprobacion obligatorio:
 
 ```
-Usuario → Reader → [readers especializados] → Sense-Checker → Planner → Writer → Plan-Reviewer → [Aprobacion operador] → execute-plan.py → Frontend/Backend → Reviewer
+Usuario → Reader → Planner → Writer → Plan-Reviewer → [Aprobacion operador] → execute-plan.py → Frontend/Backend → Reviewer
 ```
 
 Path rapido para tareas simples (sin overhead de planner):
@@ -58,14 +58,12 @@ Usuario → Quick-Agent → [Aprobacion operador] → quick-execute.py → ejecu
 | `db-reader` | reader-context.json + DB_MAP.json | Partial JSON |
 | `query-reader` | reader-context.json + QUERY_MAP.json | Partial JSON |
 | `ui-reader` | reader-context.json + UI_MAP.json | Partial JSON |
-| `sense-checker` | reader-context.json + PROJECT_MAP.json | `sense-check.json` |
-| `planner` | sense-check.json + reader-context.json | `plan.json` + `files-read.json` |
+| `planner` | reader-context.json | `plan.json` + `files-read.json` |
 | `writer` | plan.json + files-read.json | `execution-brief.json` + `execution-brief.md` |
 | `plan-reviewer` | reader-context.json + plan.json + execution-brief.json | `plan-review.json` |
 | `frontend` / `backend` | execution-dispatch.json | `result.json` |
 | `reviewer` | result.json + plan.json + execution-brief.json | `review.json` |
 | `quick-agent` | Peticion simple | `quick-dispatch.json` |
-| `map-scanner` | Root del repo | MAPs actualizados |
 
 ### Readers especializados
 
@@ -75,10 +73,6 @@ El `reader` activa solo los readers necesarios segun dominio. Para requests mult
 - `db-reader` → tablas, modelos, migraciones (`DB_MAP.md`)
 - `query-reader` → queries, acceso a datos, performance (`QUERY_MAP.md`)
 - `ui-reader` → vistas, componentes, estados UI (`UI_MAP.md`)
-
-### Sense-Checker
-
-Valida coherencia temprana antes del planner. Detecta riesgos, estima esfuerzo e impacto. Si `status: "invalid"` bloquea el flujo. Si `status: "warning"` el operador decide si continuar.
 
 ### Clarifications (flujo de bloqueo por ambiguedad)
 

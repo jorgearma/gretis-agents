@@ -6,3 +6,4 @@ claude/runtime/execution-dispatch.json
 claude/runtime/result.json
 
 docs/
+.pytest_cache

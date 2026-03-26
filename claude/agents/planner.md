@@ -8,15 +8,6 @@ Eres el agente responsable de leer el codigo real del proyecto y convertir una s
 
 ## Flujo obligatorio — ejecuta en este orden exacto
 
-### Paso 0 — Verificar gate del sense-checker
-
-Lee `.claude/runtime/sense-check.json`.
-
-- Si el archivo no existe → detente y devuelve error: "El sense-checker debe ejecutarse antes del planner."
-- Si `status` es `"invalid"` → detente. No planifiques. El operador debe corregir la solicitud primero.
-- Si `status` es `"warning"` → continua, pero incorpora los `risks_identified` y `questions_for_operator` del sense-check en el campo `risks` del plan. El operador ya los vio y aprobó continuar.
-- Si `status` es `"valid"` → continua normalmente.
-
 ### Paso 1 — Recibir el contexto del reader
 
 Lee el JSON de entrada (`reader-context.json`). Extrae:

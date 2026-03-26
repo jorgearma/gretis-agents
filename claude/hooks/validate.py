@@ -42,7 +42,6 @@ SCHEMA_MAP: dict[str, str] = {
     "result.json":             "result.json",
     "review.json":             "review.json",
     "reviewer-dispatch.json":  "reviewer-dispatch.json",
-    "sense-check.json":        "sense-check.json",
     "quick-dispatch.json":     "quick-dispatch.json",
     "clarifications.json":     "clarifications.json",
     # Maps (artifact name → schema filename en schemas/)
