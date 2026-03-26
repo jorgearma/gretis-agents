@@ -17,6 +17,15 @@ python3 .claude/hooks/analyze-repo.py --maps project,db      # solo esos MAPs
 python3 .claude/hooks/analyze-repo.py --root /otro/repo      # repo externo
 python3 .claude/hooks/analyze-repo.py --force                # sin gate (testing)
 
+# Ciclo de planificacion (dos opciones, mismos JSONs de salida)
+# Opcion A — desde terminal (eficiente, cero tokens de orquestacion)
+python3 .claude/hooks/run-cycle.py "descripcion de la tarea"
+python3 .claude/hooks/run-cycle.py -v "tarea"              # verbose: comandos, JSONs, tiempos
+python3 .claude/hooks/run-cycle.py --skip-reader "tarea"   # si reader-context.json ya existe
+python3 .claude/hooks/run-cycle.py --dry-run "tarea"       # ver comandos sin ejecutar
+# Opcion B — desde Claude Code (conveniente, todo integrado)
+/start-cycle "descripcion de la tarea"
+
 # Gestion de aprobacion del plan
 python3 .claude/hooks/approve-plan.py approve --by "nombre"
 python3 .claude/hooks/approve-plan.py reject --by "nombre" --notes "motivo"
