@@ -101,7 +101,7 @@ def main() -> int:
     write_payload(payload)
     append_log(payload["status"], args.by, args.notes)
     if payload["status"] == "replanning":
-        write_dispatch_reset("Plan enviado a replantear. Invoca el planner con el contexto de plan-review.json.")
+        write_dispatch_reset("Plan enviado a replantear. Invoca el planner para generar un nuevo plan.")
     elif payload["status"] != "approved":
         write_dispatch_reset("Execution requires a newly approved plan.")
 
@@ -112,7 +112,6 @@ def main() -> int:
         print(f"Notes: {payload['notes']}")
     if payload["status"] == "replanning":
         print()
-        print("El plan volvera al planner con los warnings del plan-reviewer como contexto.")
         print("Invoca el agente planner para generar un nuevo plan.json.")
     return 0
 

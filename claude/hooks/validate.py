@@ -38,7 +38,6 @@ SCHEMA_MAP: dict[str, str] = {
     "execution-brief.json":    "execution-brief.json",
     "execution-dispatch.json": "execution-dispatch.json",
     "operator-approval.json":  "operator-approval.json",
-    "plan-review.json":        "plan-review.json",
     "result.json":             "result.json",
     "review.json":             "review.json",
     "reviewer-dispatch.json":  "reviewer-dispatch.json",

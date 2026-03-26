@@ -28,14 +28,6 @@ def _valid_plan() -> dict:
     }
 
 
-def _valid_plan_review() -> dict:
-    """plan-review.json mínimo válido: requiere verdict + summary + issues."""
-    return {
-        "verdict": "approved",
-        "summary": "El plan es correcto.",
-        "issues": [],
-    }
-
 
 # ── Criterio 1: campo required faltante bloquea ──────────────────────────────
 
@@ -78,25 +70,6 @@ def test_unknown_artifact_raises_key_error():
         validate_artifact("unknown-artifact.json", {})
     assert "unknown-artifact.json" in str(exc_info.value)
 
-
-# ── plan-review.json requiere verdict + summary + issues ─────────────────────
-
-def test_plan_review_missing_summary_is_critical():
-    """plan-review.json sin 'summary' (campo required) → ok=False."""
-    data = _valid_plan_review()
-    del data["summary"]
-    result = validate_artifact("plan-review.json", data)
-    assert not result.ok
-    assert any("summary" in e for e in result.errors), f"errors: {result.errors}"
-
-
-def test_plan_review_missing_issues_is_critical():
-    """plan-review.json sin 'issues' (campo required) → ok=False."""
-    data = _valid_plan_review()
-    del data["issues"]
-    result = validate_artifact("plan-review.json", data)
-    assert not result.ok
-    assert any("issues" in e for e in result.errors), f"errors: {result.errors}"
 
 
 # ── result.json: sin required a nivel raíz ───────────────────────────────────

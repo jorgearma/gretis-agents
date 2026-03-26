@@ -15,7 +15,6 @@ PLUGIN_DIR = Path(__file__).resolve().parents[1]
 PLAN_PATH = PLUGIN_DIR / "runtime" / "plan.json"
 BRIEF_PATH = PLUGIN_DIR / "runtime" / "execution-brief.json"
 APPROVAL_PATH = PLUGIN_DIR / "runtime" / "operator-approval.json"
-REVIEW_PATH = PLUGIN_DIR / "runtime" / "plan-review.json"
 DISPATCH_PATH = PLUGIN_DIR / "runtime" / "execution-dispatch.json"
 ALLOWED_AGENTS = {"frontend", "backend", "test-runner"}
 
@@ -105,58 +104,7 @@ def main() -> int:
         if vr.warnings:
             print(vr.format_warnings())
 
-    # --- Validacion plan-review.json ---
     task = plan.get("task", "")
-
-    if not REVIEW_PATH.exists():
-        write_json(DISPATCH_PATH, _block(task, "plan-review.json no encontrado. El plan-reviewer debe ejecutarse antes de despachar."))
-        print("Ejecucion bloqueada: plan-review.json no existe.")
-        print("Ejecuta el flujo completo desde el writer para generar la revision.")
-        return 1
-
-    try:
-        review = load_json(REVIEW_PATH)
-    except ValueError as exc:
-        write_json(DISPATCH_PATH, _block(task, str(exc)))
-        print(str(exc))
-        return 1
-
-    vr_review = validate_artifact("plan-review.json", review)
-    if not vr_review.ok:
-        print(vr_review.format())
-        write_json(DISPATCH_PATH, _block(task, vr_review.summary()))
-        return 1
-    if vr_review.warnings:
-        print(vr_review.format_warnings())
-
-    verdict = review.get("verdict")
-
-    if verdict == "blocked":
-        errors = [i for i in review.get("issues", []) if i.get("severity") == "error"]
-        write_json(DISPATCH_PATH, _block(task, f"Plan-reviewer bloqueo la ejecucion: {review.get('summary', '')}"))
-        print("=" * 60)
-        print("EJECUCION BLOQUEADA — El plan-reviewer encontro errores criticos")
-        print("=" * 60)
-        print(f"Resumen: {review.get('summary', '')}")
-        print()
-        for issue in errors:
-            print(f"  [{issue.get('id', '?')}] {issue.get('location', '?')}")
-            print(f"  Categoria: {issue.get('category', '?')}")
-            print(f"  Problema:  {issue.get('description', '')}")
-            if issue.get("suggestion"):
-                print(f"  Sugerido:  {issue['suggestion']}")
-            print()
-        print("Para reiniciar el flujo desde cero:")
-        print("  python3 .claude/hooks/approve-plan.py reset")
-        print("=" * 60)
-        return 1
-
-    if verdict == "warning":
-        warnings = [i for i in review.get("issues", []) if i.get("severity") == "warning"]
-        print(f"ADVERTENCIA — El plan-reviewer detecto {len(warnings)} riesgo(s): {review.get('summary', '')}")
-        for w in warnings:
-            print(f"  [{w.get('id', '?')}] {w.get('location', '?')}: {w.get('description', '')}")
-        print()
 
     if approval.get("status") != "approved":
         write_json(DISPATCH_PATH, _block(task, "El plan no esta aprobado por el operador."))

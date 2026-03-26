@@ -47,7 +47,6 @@ EXECUTION_ARTIFACTS = [
 # Artefactos de planificacion (anteriores a la ejecucion)
 PLANNING_ARTIFACTS = [
     RUNTIME / "plan.json",
-    RUNTIME / "plan-review.json",
     RUNTIME / "execution-brief.json",
     RUNTIME / "execution-dispatch.json",
     RUNTIME / "files-read.json",

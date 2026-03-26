@@ -26,7 +26,7 @@ python3 .claude/hooks/approve-plan.py reset
 # Ejecutar despacho (solo si el plan esta aprobado)
 python3 .claude/hooks/execute-plan.py
 
-# Ruta rapida para tareas simples (no necesita planner/writer/plan-reviewer)
+# Ruta rapida para tareas simples (no necesita planner/writer)
 python3 .claude/hooks/quick-execute.py
 
 # Despachar reviewer tras ejecucion
@@ -41,7 +41,7 @@ python3 .claude/hooks/recover-cycle.py
 Pipeline secuencial con gate de aprobacion obligatorio:
 
 ```
-Usuario → Reader → Planner → Writer → Plan-Reviewer → [Aprobacion operador] → execute-plan.py → Frontend/Backend → Reviewer
+Usuario → Reader → Planner → Writer → [Aprobacion operador] → execute-plan.py → Frontend/Backend → Reviewer
 ```
 
 Path rapido para tareas simples (sin overhead de planner):
@@ -60,7 +60,6 @@ Usuario → Quick-Agent → [Aprobacion operador] → quick-execute.py → ejecu
 | `ui-reader` | reader-context.json + UI_MAP.json | Partial JSON |
 | `planner` | reader-context.json | `plan.json` + `files-read.json` |
 | `writer` | plan.json + files-read.json | `execution-brief.json` + `execution-brief.md` |
-| `plan-reviewer` | reader-context.json + plan.json + execution-brief.json | `plan-review.json` |
 | `frontend` / `backend` | execution-dispatch.json | `result.json` |
 | `reviewer` | result.json + plan.json + execution-brief.json | `review.json` |
 | `quick-agent` | Peticion simple | `quick-dispatch.json` |

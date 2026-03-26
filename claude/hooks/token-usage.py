@@ -40,7 +40,6 @@ RUNTIME_FILE_TO_AGENT: dict[str, str] = {
     "plan.json":             "planner",
     "files-read.json":       "planner",
     "execution-brief.json":  "writer",
-    "plan-review.json":      "plan-reviewer",
     "result.json":           "frontend/backend",   # se refina con execution-dispatch
     "review.json":           "reviewer",
     "quick-dispatch.json":   "quick-agent",
@@ -55,7 +54,6 @@ AGENT_PRIORITY: dict[str, int] = {
     "reader":            10,
     "planner":           10,
     "writer":            10,
-    "plan-reviewer":     10,
     "frontend/backend":  10,
     "reviewer":          10,
     "quick-agent":       10,

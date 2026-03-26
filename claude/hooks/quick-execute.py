@@ -217,7 +217,7 @@ def show_status() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Fast track para tareas simples. Omite planner, writer y plan-reviewer.",
+        description="Fast track para tareas simples. Omite planner y writer.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos:

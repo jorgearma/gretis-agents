@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ClaudeQuickDispatch",
-  "description": "Despacho directo para tareas simples. Omite planner, writer y plan-reviewer. El quick-agent ejecuta directamente con esta informacion.",
+  "description": "Despacho directo para tareas simples. Omite planner y writer. El quick-agent ejecuta directamente con esta informacion.",
   "type": "object",
   "additionalProperties": false,
   "required": ["mode", "status", "task", "target_agent", "scope_constraint"],

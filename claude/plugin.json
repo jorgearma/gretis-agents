@@ -17,7 +17,6 @@
     "ui-reader",
     "planner",
     "writer",
-    "plan-reviewer",
     "frontend",
     "backend",
     "reviewer",
@@ -51,7 +50,6 @@
     "execution_brief":    ".claude/schemas/execution-brief.json",
     "execution_dispatch": ".claude/schemas/execution-dispatch.json",
     "operator_approval":  ".claude/schemas/operator-approval.json",
-    "plan_review":        ".claude/schemas/plan-review.json",
     "result":             ".claude/schemas/result.json",
     "review":             ".claude/schemas/review.json",
     "quick_dispatch":     ".claude/schemas/quick-dispatch.json"
@@ -64,7 +62,6 @@
     "execution_brief":    ".claude/runtime/execution-brief.json",
     "execution_dispatch": ".claude/runtime/execution-dispatch.json",
     "operator_approval":  ".claude/runtime/operator-approval.json",
-    "plan_review":        ".claude/runtime/plan-review.json",
     "result":             ".claude/runtime/result.json",
     "review":             ".claude/runtime/review.json",
     "quick_dispatch":     ".claude/runtime/quick-dispatch.json"
