@@ -167,9 +167,10 @@ def fmt_time(s: float) -> str:
     return f"{int(s // 60)}m {s % 60:.0f}s"
 
 
-def print_usage(usage: dict) -> None:
+def print_usage(usage: dict, elapsed: float | None = None) -> None:
     """Muestra el consumo de tokens de forma clara."""
     sid = usage["session_id"][:8]
+    n_tools = len(usage["tools_used"])
 
     print(f"\n{CYAN}{'─'*60}")
     print(f"  CONSUMO DE TOKENS — sesión {sid}")
@@ -196,6 +197,12 @@ def print_usage(usage: dict) -> None:
         print(f"\n  {BOLD}Operaciones:{RESET}")
         for tool in usage["tools_used"]:
             print(f"    → {tool}")
+
+    # Línea resumen estilo CLI (input+output sin cache = comparable con consola)
+    useful = usage["input_tokens"] + usage["output_tokens"]
+    time_str = fmt_time(elapsed) if elapsed else "?"
+    print(f"\n  {GREEN}Done ({n_tools} tool uses · "
+          f"{fmt_tokens(useful)} tokens · {time_str}){RESET}")
 
     print(f"\n{DIM}  Archivo: {usage['session_file']}{RESET}")
     print()
@@ -261,7 +268,7 @@ def main() -> int:
     if session_path:
         usage = parse_session_tokens(session_path)
         if usage:
-            print_usage(usage)
+            print_usage(usage, elapsed)
         else:
             print(f"\n{YELLOW}Sesión encontrada pero sin datos de tokens.{RESET}")
     else:

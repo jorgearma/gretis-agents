@@ -1,0 +1,100 @@
+{
+  "improved_prompt": "Rediseñar templates/dashboard/rendimiento.html para incluir nuevos datos estadísticos de rendimiento de trabajadores (pickers y repartidores) y del negocio en general. Ampliar los datos que se exponen desde gestor_empleados_mixin.py (rendimiento_resumen, rendimiento_empleado) y gestor_metricas.py (metricas_picking, metricas_reparto, resumen_periodo) para alimentar la nueva UI. Presentar KPIs como: pedidos completados por empleado, tiempo medio de operación, incidencias, minutos de retraso, tasa de entrega exitosa, ingresos por período, y comparativa entre empleados. El rediseño debe usar los macros de templates/macros/ui.html y seguir las convenciones de los otros templates del dashboard.",
+  "selected_readers": ["ui-reader", "query-reader", "db-reader"],
+  "maps_used": ["PROJECT_MAP.json", "UI_MAP.json", "QUERY_MAP.json", "DB_MAP.json"],
+  "files_to_open": [
+    {
+      "path": "templates/dashboard/rendimiento.html",
+      "hint": "Template a rediseñar — punto central de la tarea",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "managers/dashboard/gestor_empleados_mixin.py",
+      "hint": "Contiene rendimiento_resumen y rendimiento_empleado — fuente principal de datos para la vista de rendimiento. Probablemente necesite nuevas funciones o ampliar las existentes.",
+      "key_symbols": ["rendimiento_resumen", "rendimiento_empleado", "monitor_empleados", "empleados_disponibles"],
+      "test_file": null
+    },
+    {
+      "path": "managers/gestor_metricas.py",
+      "hint": "Motor de métricas del negocio: metricas_picking, metricas_reparto, resumen_periodo. Datos clave para las nuevas estadísticas de negocio.",
+      "key_symbols": ["resumen_periodo", "metricas_pedidos", "metricas_picking", "metricas_reparto", "resumen_operacion", "asistencia_hoy"],
+      "test_file": null
+    }
+  ],
+  "files_to_review": [
+    {
+      "path": "managers/dashboard/gestor_estadisticas_mixin.py",
+      "hint": "Función estadisticas — puede proveer datos adicionales de negocio para complementar el rediseño",
+      "key_symbols": ["estadisticas"],
+      "test_file": null
+    },
+    {
+      "path": "managers/dashboard/gestor_pedidos_mixin.py",
+      "hint": "Función metricas — métricas de pedidos activos que pueden integrarse en el panel de rendimiento",
+      "key_symbols": ["metricas", "historial_pedidos"],
+      "test_file": null
+    },
+    {
+      "path": "models.py",
+      "hint": "Modelos clave para las estadísticas: MetricaDiariaEmpleado (horas_trabajadas_min, pedidos_completados, tiempo_medio_operacion_min, incidencias, minutos_tarde), HistorialEstadoPedido (fuente de tiempos), CheckIn, PickingPedido, Reparto, Empleado",
+      "key_symbols": ["MetricaDiariaEmpleado", "HistorialEstadoPedido", "CheckIn", "PickingPedido", "Reparto", "Empleado"],
+      "test_file": null
+    },
+    {
+      "path": "templates/macros/ui.html",
+      "hint": "Macros reutilizables de UI — obligatorio consultarlo para mantener consistencia visual con el resto del dashboard",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "templates/dashboard/_nav.html",
+      "hint": "Navegación del dashboard — referencia para la estructura base del layout",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "templates/dashboard/estadisticas.html",
+      "hint": "Template hermano de estadísticas del negocio — referencia de patrones de visualización ya usados en el proyecto",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "managers/gestor_dashboard.py",
+      "hint": "Facade del dashboard que agrega todos los mixins — punto de entrada para el blueprint al llamar a rendimiento",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "tests/test_gestor_metricas.py",
+      "hint": "Tests existentes del gestor de métricas — referencia de contratos de datos esperados",
+      "key_symbols": ["test_claves_esperadas", "test_devuelve_claves_esperadas", "test_valores_son_numericos"],
+      "test_file": null
+    }
+  ],
+  "notes": "API_MAP tiene blueprints vacíos — no se puede mapear blueprints/dashboard.py desde ese MAP, pero sí aparece en PROJECT_MAP.json (cochange) como archivo que cambia junto a gestor_dashboard.py. El modelo MetricaDiariaEmpleado (tabla metricas_diarias_empleado) tiene exactamente los campos que necesita la nueva UI: horas_trabajadas_min, pedidos_completados, tiempo_medio_operacion_min, incidencias, minutos_tarde. Este modelo ya está en BD y es la fuente natural para las estadísticas por empleado por día. La función rendimiento_empleado en gestor_empleados_mixin.py es el lugar correcto para ampliar la lógica de datos. El blueprint que sirve rendimiento.html es blueprints/dashboard.py — debe revisarse para saber qué variables pasa actualmente al template. JOBS_MAP no fue leído porque no es relevante para esta tarea.",
+  "status": "ready",
+  "dependency_graph": {
+    "templates/dashboard/rendimiento.html": [
+      "templates/macros/ui.html",
+      "templates/dashboard/_nav.html"
+    ],
+    "managers/gestor_dashboard.py": [
+      "managers/dashboard/gestor_empleados_mixin.py",
+      "managers/dashboard/gestor_estadisticas_mixin.py",
+      "managers/dashboard/gestor_pedidos_mixin.py",
+      "managers/dashboard/gestor_picking_mixin.py",
+      "managers/dashboard/gestor_reparto_mixin.py",
+      "managers/dashboard/gestor_turnos_mixin.py"
+    ],
+    "managers/dashboard/gestor_empleados_mixin.py": [
+      "models.py"
+    ],
+    "managers/gestor_metricas.py": [
+      "models.py"
+    ],
+    "managers/dashboard/gestor_estadisticas_mixin.py": [
+      "models.py"
+    ]
+  }
+}
