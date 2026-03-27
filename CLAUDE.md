@@ -47,9 +47,6 @@ python3 claude/hooks/approve-plan.py reset
 # Ejecutar despacho (solo si el plan esta aprobado)
 python3 claude/hooks/execute-plan.py
 
-# Despachar reviewer tras ejecucion
-python3 claude/hooks/dispatch-reviewer.py
-
 # Recuperar ciclo interrumpido
 python3 claude/hooks/recover-cycle.py status               # ver estado runtime sin modificar
 python3 claude/hooks/recover-cycle.py rollback --by "nombre"  # activar rollback_plan
@@ -69,7 +66,7 @@ python3 claude/hooks/token-usage.py --all                  # incluir sesiones si
 Pipeline secuencial con gate de aprobacion obligatorio:
 
 ```
-Usuario → Reader → Planner → Writer → [Aprobacion operador] → execute-plan.py → Frontend/Backend → Reviewer
+Usuario → Reader → Planner → Writer → [Aprobacion operador] → execute-plan.py → Frontend/Backend
 ```
 
 Path rapido para tareas simples (sin overhead de planner):
@@ -82,11 +79,10 @@ Usuario → quick-execute.py → [auto-aprobacion] → Quick-Agent → (opcional
 | Agente | Modelo | Entrada | Salida |
 |--------|--------|---------|--------|
 | `reader` | claude-sonnet-4-6 | Peticion + MAPs | datos contextuales |
-| `planner` | claude-opus-4-6 | Peticion + MAPs + codigo fuente (lectura quirurgica) | `plan.json` + `files-read.json` |
+| `planner` | claude-opus-4-6 | reader-context.json + codigo fuente (lectura quirurgica) | `plan.json` |
 | `writer` | claude-sonnet-4-6 | plan.json | `execution-brief.json` + `execution-brief.md` |
 | `frontend` | — | execution-dispatch.json | `result.json["frontend"]` |
 | `backend` | — | execution-dispatch.json | `result.json["backend"]` |
-| `reviewer` | — | result.json + plan.json + execution-brief.json | `review.json` |
 | `quick-agent` | — | quick-dispatch.json | cambios directos |
 
 ### Lectura quirurgica del planner
@@ -94,8 +90,7 @@ Usuario → quick-execute.py → [auto-aprobacion] → Quick-Agent → (opcional
 El `planner` (opus) no lee archivos completos. Estrategia para minimizar tokens:
 1. Usa `Grep` para localizar simbolos clave y obtener numeros de linea exactos.
 2. Lee solo las secciones relevantes (3 lineas antes/despues de cada bloque, fusionando secciones cercanas).
-3. Cachea todo en `files-read.json` (path, lineas leidas, motivo) para que writer y ejecutores no relean.
-4. Nunca lee archivos completos de >80 lineas salvo que sea el unico archivo del task.
+3. Nunca lee archivos completos de >80 lineas salvo que sea el unico archivo del task.
 
 ### Gate de aprobacion
 
@@ -114,8 +109,6 @@ Score 0–10 calculado con factores aditivos (longitud de descripcion, keywords 
 ### Contratos JSON
 
 Todos los artefactos tienen schema en `claude/schemas/`. Los archivos en `claude/runtime/` son generados y sobreescritos en cada ciclo — no editar manualmente salvo `operator-approval.json` via hooks.
-
-El planner cachea el contenido leido en `files-read.json` para que los agentes downstream no relean los mismos archivos.
 
 ### Generacion de MAPs
 

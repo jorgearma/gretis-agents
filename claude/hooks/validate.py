@@ -34,15 +34,12 @@ SCHEMA_MAP: dict[str, str] = {
     # Runtime artifacts
     "reader-context.json":     "reader-context.json",
     "plan.json":               "plan.json",
-    "files-read.json":         "files-read.json",
     "execution-brief.json":    "execution-brief.json",
     "execution-dispatch.json": "execution-dispatch.json",
     "operator-approval.json":  "operator-approval.json",
     "result.json":             "result.json",
     "review.json":             "review.json",
-    "reviewer-dispatch.json":  "reviewer-dispatch.json",
     "quick-dispatch.json":     "quick-dispatch.json",
-    "clarifications.json":     "clarifications.json",
     # Maps (artifact name → schema filename en schemas/)
     "PROJECT_MAP.json":        "project-map.json",
     "DB_MAP.json":             "db-map.json",

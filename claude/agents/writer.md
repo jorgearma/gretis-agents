@@ -38,7 +38,7 @@ ra cada agente
 - si generas una version markdown complementaria, debe reflejar fielmente el JSON estructurado
 - el `approval_status` debe quedar en `pending_operator_review` hasta recibir aprobacion humana
 - no incluyas pasos con `owner` que no vayan a participar en la ejecucion posterior
-- si el plan no tiene pasos ejecutables para `frontend`, `backend` o `reviewer`, dejalo indicado en `notes`
+- si el plan no tiene pasos ejecutables para `frontend` o `backend`, dejalo indicado en `notes`
 
 ## Como trabajar
 

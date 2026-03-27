@@ -15,7 +15,7 @@
         "next_steps": { "type": "array", "items": { "type": "string" } },
         "modified_files": {
           "type": "array",
-          "description": "Archivos modificados con diff incluido. El reviewer los usa para no releer el codigo.",
+          "description": "Archivos modificados con diff incluido.",
           "items": { "$ref": "#/$defs/modified_file" }
         }
       }
@@ -31,7 +31,7 @@
         "next_steps": { "type": "array", "items": { "type": "string" } },
         "modified_files": {
           "type": "array",
-          "description": "Archivos modificados con diff incluido. El reviewer los usa para no releer el codigo.",
+          "description": "Archivos modificados con diff incluido.",
           "items": { "$ref": "#/$defs/modified_file" }
         }
       }

@@ -65,7 +65,7 @@
           },
           "owner": {
             "type": "string",
-            "enum": ["frontend", "backend", "reviewer", "test-runner"]
+            "enum": ["frontend", "backend", "test-runner"]
           },
           "depends_on": {
             "type": "array",

@@ -38,8 +38,6 @@ ROLLBACK_DISPATCH_PATH = RUNTIME / "rollback-dispatch.json"
 # Artefactos generados durante la ejecucion de agentes
 EXECUTION_ARTIFACTS = [
     RUNTIME / "result.json",
-    RUNTIME / "reviewer-dispatch.json",
-    RUNTIME / "review.json",
     RUNTIME / "rollback-dispatch.json",
     RUNTIME / "execution-brief.md",
 ]
@@ -49,13 +47,11 @@ PLANNING_ARTIFACTS = [
     RUNTIME / "plan.json",
     RUNTIME / "execution-brief.json",
     RUNTIME / "execution-dispatch.json",
-    RUNTIME / "files-read.json",
 ]
 
 # Artefactos del reader (inicio del ciclo)
 READER_ARTIFACTS = [
     RUNTIME / "reader-context.json",
-    RUNTIME / "clarifications.json",
     RUNTIME / "operator-approval.json",
 ]
 

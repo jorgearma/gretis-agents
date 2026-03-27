@@ -36,9 +36,7 @@ SESSION_DIR  = pathlib.Path.home() / ".claude" / "projects" / _sanitized
 # Si una sesión escribe varios de estos archivos, se elige el más específico.
 RUNTIME_FILE_TO_AGENT: dict[str, str] = {
     "reader-context.json":   "reader",
-    "clarifications.json":   "reader",
     "plan.json":             "planner",
-    "files-read.json":       "planner",
     "execution-brief.json":  "writer",
     "result.json":           "frontend/backend",   # se refina con execution-dispatch
     "review.json":           "reviewer",
@@ -47,6 +45,8 @@ RUNTIME_FILE_TO_AGENT: dict[str, str] = {
     "operator-approval.json": "_hook:approve-plan",
     "execution-dispatch.json": "_hook:execute-plan",
     "map-scan-approval.json":  "_hook:approve-map-scan",
+    "review.json":             "_archived",
+    "reviewer-dispatch.json":  "_archived",
 }
 
 # Prioridad cuando hay varios matches en la misma sesión (mayor = más específico)

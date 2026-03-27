@@ -26,7 +26,7 @@
       "minItems": 1,
       "items": {
         "type": "string",
-        "enum": ["frontend", "backend", "reviewer"]
+        "enum": ["frontend", "backend"]
       }
     },
     "context_summary": {
@@ -57,7 +57,7 @@
           },
           "owner": {
             "type": "string",
-            "enum": ["frontend", "backend", "reviewer", "test-runner"]
+            "enum": ["frontend", "backend", "test-runner"]
           },
           "instruction": {
             "type": "string"
@@ -67,7 +67,7 @@
           },
           "verification_checklist": {
             "type": "array",
-            "description": "Lista de condiciones concretas y verificables que el reviewer puede comprobar una a una.",
+            "description": "Lista de condiciones concretas y verificables para comprobar el trabajo.",
             "items": { "type": "string" }
           }
         }
