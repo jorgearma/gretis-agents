@@ -5,31 +5,15 @@
   "additionalProperties": false,
   "required": [
     "improved_prompt",
-    "tech_stack",
-    "context_summary",
-    "primary_reader",
     "selected_readers",
     "maps_used",
     "files_to_open",
-    "files_to_review",
-    "reason"
+    "files_to_review"
   ],
   "properties": {
     "improved_prompt": {
       "type": "string",
       "description": "Version mejorada y tecnicamente precisa del prompt original del operador."
-    },
-    "tech_stack": {
-      "type": "array",
-      "items": { "type": "string" }
-    },
-    "context_summary": {
-      "type": "string"
-    },
-    "primary_reader": {
-      "type": "string",
-      "enum": ["project-reader", "db-reader", "query-reader", "ui-reader",
-               "api-reader", "services-reader", "jobs-reader"]
     },
     "selected_readers": {
       "type": "array",
@@ -59,45 +43,18 @@
       "description": "Archivos de soporte, dependencias o referencias, con hints para el planner.",
       "items": { "$ref": "#/$defs/file_hint" }
     },
-    "reason": {
-      "type": "string"
-    },
     "notes": {
-      "type": "string"
+      "type": "string",
+      "description": "Observaciones relevantes para el planner: MAPs vacios, datos clave de modelos, contratos importantes."
     },
     "status": {
       "type": "string",
       "enum": ["ready", "blocked_no_maps", "blocked_pending_clarification"]
     },
-    "map_scan_requested": {
-      "type": "boolean"
-    },
     "dependency_graph": {
       "type": "object",
-      "description": "Grafo de dependencias forward filtrado: solo archivos relevantes para la tarea. Clave: ruta del archivo. Valor: array de rutas que importa. Identifica qué cambios propagan hacia dónde.",
+      "description": "Grafo forward de dependencias: clave es un archivo, valor es array de archivos que importa/usa. A -> [B,C] significa A depende de B y C.",
       "additionalProperties": { "type": "array", "items": { "type": "string" } }
-    },
-    "problems_in_scope": {
-      "type": "array",
-      "description": "Problemas detectados en archivos involucrados en esta tarea.",
-      "items": {
-        "type": "object",
-        "properties": {
-          "file":        { "type": "string" },
-          "type":        { "type": "string" },
-          "description": { "type": "string" }
-        }
-      }
-    },
-    "env_vars_needed": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Variables de entorno necesarias para las integraciones en scope."
-    },
-    "schema_files": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Archivos de schema/validación relevantes para la tarea."
     }
   },
   "$defs": {
@@ -117,16 +74,11 @@
         "key_symbols": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Funciones, clases o constantes que el planner debe buscar en este archivo."
-        },
-        "estimated_relevance": {
-          "type": "string",
-          "enum": ["high", "medium", "low"],
-          "description": "high = el cambio ocurre aqui. medium = referencia directa. low = contexto de fondo."
+          "description": "Funciones, clases o constantes que el planner debe buscar en este archivo. Obligatorio para files_to_open (excepto templates HTML)."
         },
         "test_file": {
           "type": ["string", "null"],
-          "description": "Ruta del archivo de test asociado, si existe."
+          "description": "Ruta del archivo de test asociado, extraida del MAP."
         }
       }
     }

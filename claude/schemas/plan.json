@@ -17,7 +17,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["project-reader", "db-reader", "query-reader", "ui-reader"]
+            "enum": ["project-reader", "db-reader", "query-reader", "ui-reader",
+                     "api-reader", "services-reader", "jobs-reader"]
           }
         },
         "maps_used": {

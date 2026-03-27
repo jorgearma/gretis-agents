@@ -215,7 +215,6 @@ def main() -> int:
 
     # Cargar reader.md (sin frontmatter) + petición
     reader_prompt = load_reader_prompt()
-    print(reader_prompt)
     if not reader_prompt:
         print(f"{RED}Error: no se encontró {READER_AGENT}{RESET}")
         return 1
@@ -241,6 +240,21 @@ def main() -> int:
         return result.returncode
 
     print(f"\n{GREEN}Completado en {fmt_time(elapsed)}{RESET}")
+
+    # Verificar que reader-context.json fue escrito
+    if READER_CONTEXT.exists():
+        try:
+            ctx = json.loads(READER_CONTEXT.read_text(encoding="utf-8"))
+            status = ctx.get("status", "ready")
+            n_open = len(ctx.get("files_to_open", []))
+            n_review = len(ctx.get("files_to_review", []))
+            print(f"\n{GREEN}reader-context.json: status={status}, "
+                  f"files_to_open={n_open}, files_to_review={n_review}{RESET}")
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"\n{RED}reader-context.json existe pero no es JSON válido: {e}{RESET}")
+    else:
+        print(f"\n{RED}El agente no escribió reader-context.json — "
+              f"el planner no tendrá contexto.{RESET}")
 
     # Buscar la sesión NUEVA (no la modificada, la que no existía antes)
     session_path = find_new_session(before, SESSION_DIR)
