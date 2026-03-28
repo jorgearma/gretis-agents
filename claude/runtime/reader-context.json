@@ -2,29 +2,29 @@
   "improved_prompt": "Rediseñar templates/dashboard/rendimiento.html para incluir nuevas métricas de rendimiento de empleados (pickers y repartidores) y del negocio. Añadir datos de MetricaDiariaEmpleado (pedidos_completados, tiempo_medio_operacion_min, incidencias, minutos_tarde, horas_trabajadas_min), HistorialEstadoPedido (tiempos de transición entre estados), PickingPedido (iniciado_en, completado_en) y Reparto (hora_salida, hora_entrega_real). Exponer estos datos desde gestor_empleados_mixin (rendimiento_resumen, rendimiento_empleado) y gestor_metricas (metricas_picking, metricas_reparto, resumen_periodo). Si los datos necesarios no están disponibles en las funciones existentes, ampliarlos. Presentar las estadísticas con gráficas, tablas comparativas por empleado y KPIs del negocio.",
   "selected_readers": ["ui-reader", "query-reader", "db-reader"],
   "maps_used": ["PROJECT_MAP.json", "UI_MAP.json", "QUERY_MAP.json", "DB_MAP.json"],
-  "files_to_open": [
-    {
-      "path": "templates/dashboard/rendimiento.html",
-      "hint": "Plantilla principal a rediseñar — actualmente muestra resumen de rendimiento, hay que ampliarla con nuevas métricas de empleados y negocio",
-      "key_symbols": [],
-      "test_file": null
-    },
-    {
-      "path": "managers/dashboard/gestor_empleados_mixin.py",
-      "hint": "Contiene rendimiento_resumen y rendimiento_empleado — funciones que alimentan la vista actual y que deben ampliarse para exponer los nuevos datos",
-      "key_symbols": ["rendimiento_resumen", "rendimiento_empleado", "monitor_empleados"],
-      "test_file": null
-    },
-    {
-      "path": "managers/gestor_metricas.py",
-      "hint": "Contiene metricas_picking, metricas_reparto, resumen_periodo y metricas_pedidos — fuente de KPIs del negocio a integrar en la vista de rendimiento",
-      "key_symbols": ["metricas_picking", "metricas_reparto", "resumen_periodo", "metricas_pedidos", "resumen_operacion"],
-      "test_file": "tests/test_gestor_metricas.py"
-    }
+      "files_to_open": [
+        {
+          "path": "templates/dashboard/rendimiento.html",
+          "hint": "Plantilla principal a rediseñar — actualmente muestra resumen de rendimiento, hay que ampliarla con nuevas métricas de empleados y negocio",
+          "key_symbols": [],
+          "test_file": null
+        },
+        {
+          "path": "managers/dashboard/gestor_empleados.py",
+          "hint": "Contiene rendimiento_resumen y rendimiento_empleado — funciones que alimentan la vista actual y que deben ampliarse para exponer los nuevos datos",
+          "key_symbols": ["rendimiento_resumen", "rendimiento_empleado", "monitor_empleados"],
+          "test_file": null
+        },
+        {
+          "path": "managers/gestor_metricas.py",
+          "hint": "Contiene metricas_picking, metricas_reparto, resumen_periodo y metricas_pedidos — fuente de KPIs del negocio a integrar en la vista de rendimiento",
+          "key_symbols": ["metricas_picking", "metricas_reparto", "resumen_periodo", "metricas_pedidos", "resumen_operacion"],
+          "test_file": "tests/test_gestor_metricas.py"
+        }
   ],
   "files_to_review": [
     {
-      "path": "managers/dashboard/gestor_pedidos_mixin.py",
+      "path": "managers/dashboard/gestor_pedidos.py",
       "hint": "Función metricas() expone datos de pedidos activos y cancelaciones — referencia indirecta para KPIs de negocio",
       "key_symbols": ["metricas", "historial_pedidos"],
       "test_file": null
@@ -45,6 +45,7 @@
       "path": "templates/dashboard/_nav.html",
       "hint": "Navegación del dashboard — verificar que rendimiento.html está enlazado correctamente",
       "key_symbols": [],
+      
       "test_file": null
     },
     {
@@ -60,7 +61,7 @@
       "test_file": null
     },
     {
-      "path": "managers/dashboard/gestor_estadisticas_mixin.py",
+      "path": "managers/dashboard/gestor_estadisticas.py",
       "hint": "Mixin estadisticas() — puede contener datos de negocio complementarios a los de rendimiento",
       "key_symbols": ["estadisticas"],
       "test_file": null

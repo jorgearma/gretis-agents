@@ -15,7 +15,22 @@ PROJECT_ROOT = PLUGIN_DIR.parent
 RUNTIME = PLUGIN_DIR / "runtime"
 READER_CONTEXT = RUNTIME / "reader-context.json"
 READER_AGENT = PLUGIN_DIR / "agents" / "reader.md"
+ALLOWLIST_FILE = RUNTIME / "reader-allowlist.json"
+READS_LOG = RUNTIME / "reader-reads.log"
+WRITES_LOG = RUNTIME / "reader-writes.log"
 SESSION_DIR = Path.home() / ".claude" / "projects" / str(PROJECT_ROOT).replace("/", "-").replace("\\", "-")
+
+# MAPs que el reader puede leer (los 7 MAPs + PROJECT_MAP.md)
+ALLOWED_MAPS = [
+    ".claude/maps/PROJECT_MAP.md",
+    ".claude/maps/PROJECT_MAP.json",
+    ".claude/maps/DB_MAP.json",
+    ".claude/maps/API_MAP.json",
+    ".claude/maps/UI_MAP.json",
+    ".claude/maps/QUERY_MAP.json",
+    ".claude/maps/SERVICES_MAP.json",
+    ".claude/maps/JOBS_MAP.json",
+]
 
 
 def load_reader_prompt() -> str | None:
@@ -31,11 +46,21 @@ def load_reader_prompt() -> str | None:
             content = content[end + 3:].lstrip("\n")
     return content
 
-# Precios Sonnet 4.6 (USD por millón de tokens)
-PRICE_INPUT   = 3.00
-PRICE_CACHE_W = 3.75
-PRICE_CACHE_R = 0.30
-PRICE_OUTPUT  = 15.00
+# Precios por modelo (USD por millón de tokens)
+MODEL_PRICES = {
+    "claude-haiku-4-5-20251001": {
+        "label": "HAIKU",
+        "input": 0.80, "cache_w": 1.00, "cache_r": 0.08, "output": 4.00,
+    },
+    "claude-sonnet-4-6": {
+        "label": "SONNET",
+        "input": 3.00, "cache_w": 3.75, "cache_r": 0.30, "output": 15.00,
+    },
+    "claude-opus-4-6": {
+        "label": "OPUS",
+        "input": 15.00, "cache_w": 18.75, "cache_r": 1.50, "output": 75.00,
+    },
+}
 
 # ── Colores ────────────────────────────────────────────────────────────────────
 
@@ -69,7 +94,7 @@ def find_new_session(before: set[Path], session_dir: Path) -> Path | None:
     return max(new_files, key=lambda p: p.stat().st_mtime)
 
 
-def parse_session_tokens(path: Path) -> dict | None:
+def parse_session_tokens(path: Path, prices: dict) -> dict | None:
     """Lee el .jsonl y suma tokens de todos los mensajes assistant.
 
     Cada mensaje assistant es una llamada a la API de Anthropic.
@@ -95,6 +120,7 @@ def parse_session_tokens(path: Path) -> dict | None:
     cache_write = 0
     n_turns = 0
     tools_used: list[str] = []
+    turns_detail: list[dict] = []
 
     for raw in lines:
         try:
@@ -111,37 +137,57 @@ def parse_session_tokens(path: Path) -> dict | None:
             continue
 
         n_turns += 1
-        input_tokens  += usage.get("input_tokens", 0)
-        output_tokens += usage.get("output_tokens", 0)
-        cache_read    += usage.get("cache_read_input_tokens", 0)
-        cache_write   += usage.get("cache_creation_input_tokens", 0)
+        t_in  = usage.get("input_tokens", 0)
+        t_out = usage.get("output_tokens", 0)
+        t_cr  = usage.get("cache_read_input_tokens", 0)
+        t_cw  = usage.get("cache_creation_input_tokens", 0)
 
-        # Extraer herramientas usadas (para mostrar qué hizo)
+        input_tokens  += t_in
+        output_tokens += t_out
+        cache_read    += t_cr
+        cache_write   += t_cw
+
+        # Herramientas de este turno
+        turn_tools: list[str] = []
         for block in msg.get("content", []):
             if isinstance(block, dict) and block.get("type") == "tool_use":
                 name = block.get("name", "")
                 fp = block.get("input", {}).get("file_path", "")
                 if fp:
                     short = "/".join(Path(fp).parts[-3:])  # últimos 3 segmentos
-                    tools_used.append(f"{name}({short})")
+                    label = f"{name}({short})"
                 elif name:
-                    tools_used.append(name)
+                    label = name
+                else:
+                    continue
+                turn_tools.append(label)
+                tools_used.append(label)
+
+        turns_detail.append({
+            "turn":        n_turns,
+            "input":       t_in,
+            "cache_read":  t_cr,
+            "cache_write": t_cw,
+            "output":      t_out,
+            "tools":       turn_tools,
+        })
 
     if n_turns == 0:
         return None
 
     total_in = input_tokens + cache_read + cache_write
     cost = (
-        input_tokens  / 1_000_000 * PRICE_INPUT
-        + cache_write / 1_000_000 * PRICE_CACHE_W
-        + cache_read  / 1_000_000 * PRICE_CACHE_R
-        + output_tokens / 1_000_000 * PRICE_OUTPUT
+        input_tokens  / 1_000_000 * prices["input"]
+        + cache_write / 1_000_000 * prices["cache_w"]
+        + cache_read  / 1_000_000 * prices["cache_r"]
+        + output_tokens / 1_000_000 * prices["output"]
     )
 
     return {
         "session_id":    path.stem,
         "session_file":  str(path),
         "turns":         n_turns,
+        "turns_detail":  turns_detail,
         "input_tokens":  input_tokens,
         "cache_read":    cache_read,
         "cache_write":   cache_write,
@@ -167,13 +213,14 @@ def fmt_time(s: float) -> str:
     return f"{int(s // 60)}m {s % 60:.0f}s"
 
 
-def print_usage(usage: dict, elapsed: float | None = None) -> None:
+def print_usage(usage: dict, prices: dict, elapsed: float | None = None) -> None:
     """Muestra el consumo de tokens de forma clara."""
     sid = usage["session_id"][:8]
     n_tools = len(usage["tools_used"])
+    label = prices["label"]
 
     print(f"\n{CYAN}{'─'*60}")
-    print(f"  CONSUMO DE TOKENS — sesión {sid}")
+    print(f"  CONSUMO DE TOKENS ({label}) — sesión {sid}")
     print(f"{'─'*60}{RESET}")
 
     print(f"\n  {BOLD}Turnos API:{RESET}       {usage['turns']}")
@@ -192,6 +239,24 @@ def print_usage(usage: dict, elapsed: float | None = None) -> None:
     print()
     print(f"  {BOLD}Total tokens:{RESET}     {usage['total_tokens']:>10,}  ({fmt_tokens(usage['total_tokens'])})")
     print(f"  {BOLD}Costo estimado:{RESET}   ${usage['cost_usd']:.4f} USD")
+
+    # Detalle por turno
+    if usage.get("turns_detail"):
+        print(f"\n  {BOLD}Detalle por turno:{RESET}")
+        for t in usage["turns_detail"]:
+            parts = []
+            if t["input"]:
+                parts.append(f"in={fmt_tokens(t['input'])}")
+            if t["cache_read"]:
+                parts.append(f"cache_r={fmt_tokens(t['cache_read'])}")
+            if t["cache_write"]:
+                parts.append(f"cache_w={fmt_tokens(t['cache_write'])}")
+            if t["output"]:
+                parts.append(f"out={fmt_tokens(t['output'])}")
+            summary = "  ".join(parts)
+            print(f"    Turno {t['turn']}:  {summary}")
+            for tool in t["tools"]:
+                print(f"      → {tool}")
 
     if usage["tools_used"]:
         print(f"\n  {BOLD}Operaciones:{RESET}")
@@ -213,7 +278,15 @@ def print_usage(usage: dict, elapsed: float | None = None) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Reader standalone — extrae contexto de MAPs.")
     parser.add_argument("petition", help="Petición del usuario en texto libre.")
+    parser.add_argument("--model", choices=["haiku", "sonnet", "opus"], default="sonnet", help="Modelo a usar (default: sonnet)")
     args = parser.parse_args()
+
+    model_id = {
+        "haiku": "claude-haiku-4-5-20251001",
+        "sonnet": "claude-sonnet-4-6",
+        "opus": "claude-opus-4-6",
+    }[args.model]
+    prices = MODEL_PRICES[model_id]
 
     print(f"\n{CYAN}{'='*60}")
     print(f"  READER — extrayendo contexto de MAPs")
@@ -226,19 +299,37 @@ def main() -> int:
         print(f"{RED}Error: no se encontró {READER_AGENT}{RESET}")
         return 1
 
-    # --system-prompt inyecta reader.md como system prompt
-    # La petición va como argumento normal (mensaje del usuario)
     cmd = [
         "claude",
-        "--model", "claude-sonnet-4-6",
+        "--model", model_id,
         "--system-prompt", reader_prompt,
         f"Petición del operador: {args.petition}",
     ]
 
+    # Generar allowlist para guard-reader.py
+    reader_ctx_rel = str(READER_CONTEXT.relative_to(PROJECT_ROOT))
+    allowlist_data = {
+        "allowed_reads": ALLOWED_MAPS,
+        "allowed_write": reader_ctx_rel,
+    }
+    ALLOWLIST_FILE.write_text(json.dumps(allowlist_data, indent=2), encoding="utf-8")
+    # Limpiar logs de sesiones anteriores
+    for f in (READS_LOG, WRITES_LOG):
+        if f.exists():
+            f.unlink()
+    print(f"{GREEN}✓ Guard activado: {len(ALLOWED_MAPS)} MAPs permitidos{RESET}")
+    print(f"  {DIM}(hook: guard-reader.py → bloquea reads fuera de MAPs + duplicados + Edit){RESET}\n")
+
     before = snapshot_sessions(SESSION_DIR)
     start  = time.time()
 
-    result = subprocess.run(cmd)
+    try:
+        result = subprocess.run(cmd)
+    finally:
+        # Limpiar archivos del guard pase lo que pase
+        for f in (ALLOWLIST_FILE, READS_LOG, WRITES_LOG):
+            if f.exists():
+                f.unlink()
 
     elapsed = time.time() - start
 
@@ -266,9 +357,9 @@ def main() -> int:
     # Buscar la sesión NUEVA (no la modificada, la que no existía antes)
     session_path = find_new_session(before, SESSION_DIR)
     if session_path:
-        usage = parse_session_tokens(session_path)
+        usage = parse_session_tokens(session_path, prices)
         if usage:
-            print_usage(usage, elapsed)
+            print_usage(usage, prices, elapsed)
         else:
             print(f"\n{YELLOW}Sesión encontrada pero sin datos de tokens.{RESET}")
     else:

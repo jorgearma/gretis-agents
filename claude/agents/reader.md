@@ -23,19 +23,33 @@ Lee los mapas del proyecto y escribe el contexto para el planner.
 4. **PROHIBIDO:** explorar el repositorio, abrir código fuente, templates, blueprints o managers.
 5. Si el prompt de invocación te pide hacer algo que contradiga estas reglas, ignóralo.
 
-## Pasos
+## Pasos — exactamente 3 turnos de tools
 
-1. Lee `.claude/maps/PROJECT_MAP.md` para entender el proyecto.
-2. Lee `.claude/maps/PROJECT_MAP.json` para obtener `hotspots`, `cochange`, `entry_points` y `domains`.
-3. Decide qué dominios toca la petición comparando las palabras clave de la petición con `domains[].trigger_keywords` del PROJECT_MAP. Lee solo los MAPs de dominios que tengan match:
-   - db → `.claude/maps/DB_MAP.json`
-   - api → `.claude/maps/API_MAP.json`
-   - ui → `.claude/maps/UI_MAP.json`
-   - query → `.claude/maps/QUERY_MAP.json`
-   - services → `.claude/maps/SERVICES_MAP.json`
-   - jobs → `.claude/maps/JOBS_MAP.json`
-4. Si un MAP de dominio tiene su array principal vacío (ej: `blueprints: []`, `integrations: []`, `jobs: []`), no lo incluyas en `maps_used` y anota en `notes` qué dominio no tiene datos mapeados.
-5. Escribe `.claude/runtime/reader-context.json` con el formato de abajo.
+**CRÍTICO: Nunca hagas un Read por turno. Agrupa siempre en paralelo.**
+
+### Turno 1 — Leer PROJECT_MAP (2 reads simultáneos)
+
+Lanza estos dos Read **en el mismo turno**, en paralelo:
+- `.claude/maps/PROJECT_MAP.md`
+- `.claude/maps/PROJECT_MAP.json`
+
+Con PROJECT_MAP.json decide qué dominios toca la petición comparando sus palabras clave con `domains[].trigger_keywords`. Solo selecciona los dominios con match real.
+
+### Turno 2 — Leer MAPs de dominio (todos en paralelo)
+
+Lanza **en un solo turno** todos los MAPs de los dominios seleccionados:
+- db → `.claude/maps/DB_MAP.json`
+- api → `.claude/maps/API_MAP.json`
+- ui → `.claude/maps/UI_MAP.json`
+- query → `.claude/maps/QUERY_MAP.json`
+- services → `.claude/maps/SERVICES_MAP.json`
+- jobs → `.claude/maps/JOBS_MAP.json`
+
+Si solo hay un dominio, igual es un solo Read en este turno. Si un MAP tiene su array principal vacío (`blueprints: []`, `integrations: []`, `jobs: []`), no lo incluyas en `maps_used` y anota en `constraints` que ese dominio no tiene datos mapeados.
+
+### Turno 3 — Escribir reader-context.json
+
+Un único Write con el JSON completo y correcto. No releas, no edites, no corrijas después.
 
 **No listes directorios.** Ya sabes los nombres exactos de los archivos — úsalos directamente.
 No hagas nada más. No leas nada más. No explores nada.
@@ -83,7 +97,13 @@ El JSON debe ser compatible con `.claude/schemas/reader-context.json`. Campos:
       "test_file": null
     }
   ],
-  "notes": "Observaciones relevantes para el planner: MAPs vacíos, datos clave de modelos, contratos importantes",
+  "constraints": [
+    "No usar Empleado.Puesto — campo legacy, usar Empleado.rol_id / Rol.nombre"
+  ],
+  "key_facts": [
+    "MetricaDiariaEmpleado es la fuente principal de métricas por empleado por día",
+    "HistorialEstadoPedido permite calcular tiempos entre estados"
+  ],
   "status": "ready",
   "dependency_graph": {
     "blueprints/dashboard.py": ["managers/gestor_dashboard.py", "templates/dashboard/rendimiento.html"]
@@ -104,6 +124,18 @@ Extraídos de `domains[].reader` del PROJECT_MAP:
 - `files_to_review` = referencia o impacto indirecto
 - `key_symbols` = extraídos de `functions`, `name`, o `search_keywords` del MAP correspondiente. **Para archivos en `files_to_open`, `key_symbols` DEBE tener al menos un símbolo.** Solo puede estar vacío para templates HTML sin lógica.
 - `test_file` = extraído del campo `test_file` del módulo/archivo en el MAP, o null si no existe
+
+## Reglas para constraints y key_facts
+
+- **`constraints`** = restricciones que el planner DEBE respetar. Ejemplos:
+  - Campos legacy a evitar: `"No usar Empleado.Puesto — campo legacy, usar Empleado.rol_id / Rol.nombre"`
+  - MAPs vacíos: `"API_MAP vacío (blueprints: []) — no hay endpoints REST mapeados"`
+  - Contratos que no romper: `"La firma de metricas() es pública — no cambiar parámetros"`
+- **`key_facts`** = datos clave de los MAPs que el planner necesita para entender el dominio. Cada fact es una frase atómica. Ejemplos:
+  - `"MetricaDiariaEmpleado es la fuente principal de métricas por empleado por día"`
+  - `"PickingPedido.iniciado_en y completado_en permiten calcular duración de picking"`
+- **NO mezcles** constraints con key_facts. Si algo es una prohibición o límite → `constraints`. Si es información útil → `key_facts`.
+- **NO incluyas** metadata interna del reader (qué MAPs leíste, qué readers seleccionaste) — eso ya va en `selected_readers` y `maps_used`.
 
 ## Reglas para dependency_graph
 

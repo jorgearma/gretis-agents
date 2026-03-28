@@ -1,13 +1,195 @@
 {
-  "task": "",
+  "task": "Rediseñar templates/dashboard/rendimiento.html para mostrar estadísticas avanzadas de rendimiento de trabajadores (pickers y repartidores) y del negocio, incorporando datos de MetricaDiariaEmpleado, HistorialEstadoPedido, PickingPedido y Reparto. Ampliar los métodos rendimiento_resumen y rendimiento_empleado que viven directamente en managers/gestor_dashboard.py (líneas 2223 y 2325), exponer los KPIs de negocio de managers/gestor_metricas.py (metricas_picking / metricas_reparto / resumen_periodo) vía un nuevo endpoint en blueprints/dashboard.py, y actualizar la SPA Alpine.js del template para consumir todos los nuevos datos.",
+
   "context_inputs": {
     "selected_readers": [],
     "maps_used": [],
-    "files_to_open": [],
-    "files_to_review": [],
-    "notes": ""
+    "constraints": [
+      "No usar Empleado.Puesto — campo legacy; usar Empleado.rol_id / Rol.nombre",
+      "No usar Producto.Categoria (String) — campo legacy; usar Producto.categoria_id (FK)",
+      "Nunca cambiar estado de pedido directamente en el modelo — usar gestor_pedidos.actualizar_estado()",
+      "La firma pública de metricas() en gestor_pedidos_mixin.py no debe romperse — es usada por otras vistas del dashboard"
+    ],
+    "key_facts": [
+      "MetricaDiariaEmpleado contiene horas_trabajadas_min, pedidos_completados, tiempo_medio_operacion_min, incidencias, minutos_tarde con UniqueConstraint (empleado_id, fecha, rol) — es una caché computada externamente, puede estar vacía",
+      "PickingPedido.iniciado_en y completado_en permiten calcular duración exacta de picking; Reparto.hora_salida y hora_entrega_real para tiempo de entrega por repartidor",
+      "rendimiento_resumen y rendimiento_empleado viven DIRECTAMENTE en GestorDashboard (gestor_dashboard.py líneas 2223 y 2325) — los archivos mixin listados en la tarea NO EXISTEN",
+      "rendimiento_resumen shape actual: { empleados: [{ id, nombre, rol_sistema, rol_operativo, pedidos, tiempo_medio_min, incidencias, tasa_pct }] }",
+      "rendimiento_empleado shape actual: { nombre, rol_sistema, kpis: { pedidos, tiempo_medio_min, mejor_tiempo_min, incidencias }, pedidos_por_dia, turnos_recientes, ultimos_pedidos }",
+      "gestor_metricas.py expone metricas_picking (tiempo_medio_picking_min, items_encontrados_pct, items_sin_stock_pct, items_sustituidos_pct, top_productos_sin_stock), metricas_reparto (tiempo_medio_entrega_min, tasa_entrega_exitosa_pct, entregas_por_repartidor) y resumen_periodo (pedidos_completados, tasa_entrega_pct, tiempo_medio_ciclo_min, ratio_cancelacion_pct, pedidos_por_forma_pago, dias_analizados)",
+      "blueprints/dashboard.py ya tiene GET /dashboard/rendimiento-datos → rendimiento_resumen() y GET /dashboard/rendimiento/<id> → rendimiento_empleado(); rutas protegidas con @requiere_rol('manager','admin')",
+      "rendimiento.html es una SPA Alpine.js pura — no recibe contexto Jinja2 en el render, consume fetch() a las rutas JSON",
+      "_nav.html ya incluye la pestaña Rendimiento apuntando a /dashboard/rendimiento — no necesita cambios",
+      "macros ui.html expone empty_state, loading_skeleton, error_banner — ya importados en rendimiento.html; error_banner requiere x-data con error (string|null) y cargar()",
+      "blueprints/dashboard.py importa desde services (from services import gestor_dashboard) — GestorMetricas debe exponerse con el mismo patrón"
+    ],
+    "files_to_open": [
+      "templates/dashboard/rendimiento.html",
+      "managers/dashboard/gestor_empleados_mixin.py",
+      "managers/gestor_metricas.py"
+    ],
+    "files_to_review": [
+      "blueprints/dashboard.py",
+      "managers/gestor_dashboard.py",
+      "managers/dashboard/gestor_estadisticas_mixin.py",
+      "managers/dashboard/gestor_pedidos_mixin.py",
+      "models.py",
+      "templates/macros/ui.html",
+      "templates/dashboard/_nav.html"
+    ],
+    "dependency_graph": {
+      "templates/dashboard/rendimiento.html": ["templates/dashboard/_nav.html", "templates/macros/ui.html"],
+      "blueprints/dashboard.py": ["managers/gestor_dashboard.py", "templates/dashboard/rendimiento.html"],
+      "managers/gestor_dashboard.py": ["managers/dashboard/gestor_empleados_mixin.py", "managers/dashboard/gestor_estadisticas_mixin.py", "managers/dashboard/gestor_pedidos_mixin.py", "managers/dashboard/gestor_picking_mixin.py", "managers/dashboard/gestor_reparto_mixin.py", "managers/dashboard/gestor_turnos_mixin.py"],
+      "managers/dashboard/gestor_empleados_mixin.py": ["models.py"],
+      "managers/gestor_metricas.py": ["models.py"],
+      "managers/dashboard/gestor_pedidos_mixin.py": ["models.py"]
+    }
   },
-  "steps": [],
-  "risks": [],
-  "done_criteria": []
+
+  "steps": [
+    {
+      "id": 1,
+      "title": "Registrar GestorMetricas en la capa de servicios",
+      "owner": "backend",
+      "files": ["services/__init__.py"],
+      "description": "Leer services/__init__.py para entender cómo está instanciado gestor_dashboard (singleton, factory o lazy import). Replicar exactamente el mismo patrón para GestorMetricas importado desde managers.gestor_metricas. Exponer la instancia como gestor_metricas para que blueprints/dashboard.py pueda importarla con 'from services import gestor_metricas'. GestorMetricas usa self.session → get_db() igual que GestorDashboard — no requiere cambios de ciclo de sesión.",
+      "acceptance": "from services import gestor_metricas no lanza ImportError ni AttributeError en arranque de la app"
+    },
+    {
+      "id": 2,
+      "title": "Extender rendimiento_resumen en gestor_dashboard.py (línea 2223)",
+      "owner": "backend",
+      "files": ["managers/gestor_dashboard.py"],
+      "description": "Dentro del método rendimiento_resumen (línea 2223), tras construir el dict resultado por (empleado_id, rol_op), añadir una query a MetricaDiariaEmpleado filtrada por empleado_id IN ids, fecha >= desde, y rol IN ('picker','repartidor'). Agregar con func.sum: horas_trabajadas_min → horas_min (int|null), sum(minutos_tarde) → minutos_tarde (int|null). Enriquecer el dict de cada empleado con estos dos campos. Usar Empleado.rol_id / Rol.nombre para cualquier join de rol (no Empleado.Puesto). Los campos son aditivos — el shape actual {id, nombre, rol_sistema, rol_operativo, pedidos, tiempo_medio_min, incidencias, tasa_pct} no se rompe.",
+      "models_used": ["MetricaDiariaEmpleado"],
+      "new_fields_per_employee": ["horas_min", "minutos_tarde"]
+    },
+    {
+      "id": 3,
+      "title": "Extender rendimiento_empleado en gestor_dashboard.py (línea 2325)",
+      "owner": "backend",
+      "files": ["managers/gestor_dashboard.py"],
+      "description": "Dentro de rendimiento_empleado (línea 2325), añadir tras la sección de KPIs: (a) Query MetricaDiariaEmpleado por empleado_id y rango → sumar horas_trabajadas_min (dividir entre 60, redondear a 1 decimal → horas_trabajadas_h), sumar minutos_tarde; (b) Si hay pickings en el período: calcular tasa_items_ok_pct = encontrados/(total items) *100 via PickingItem JOIN PickingPedido WHERE empleado_id=empleado_id y completado_en en rango; (c) Si hay repartos en el período: calcular tasa_entrega_pct = entregados/(entregados+no_entregados)*100 via Reparto.repartidor_id; (d) Añadir campo rol_operativo_detectado: 'picker' si hay pickings, 'repartidor' si hay repartos, null si ninguno. Añadir todos al dict kpis — cambio aditivo.",
+      "models_used": ["MetricaDiariaEmpleado", "PickingItem", "PickingPedido", "Reparto"],
+      "new_kpis_fields": ["horas_trabajadas_h", "minutos_tarde", "tasa_items_ok_pct", "tasa_entrega_pct", "rol_operativo_detectado"]
+    },
+    {
+      "id": 4,
+      "title": "Añadir endpoint GET /dashboard/rendimiento-negocio en blueprints/dashboard.py",
+      "owner": "backend",
+      "files": ["blueprints/dashboard.py"],
+      "description": "Añadir nueva ruta decorada con @blueprint_dashboard.route('/dashboard/rendimiento-negocio') y @requiere_rol('manager','admin'). Leer param periodo (default 'hoy'). Calcular desde/hasta con la misma lógica que rendimiento_resumen: hoy=date.today(), semana=hoy-6días, mes=hoy-29días, hoy=hoy. Importar gestor_metricas desde services. Llamar gestor_metricas.resumen_periodo(desde, hasta), gestor_metricas.metricas_picking(desde, hasta), gestor_metricas.metricas_reparto(desde, hasta). Devolver _ok({ 'resumen': ..., 'picking': ..., 'reparto': ... }). Envolver en try/except con logger.error y return _err('Error interno', 500) en caso de excepción.",
+      "response_shape": {
+        "resumen": "{ pedidos_completados, tasa_entrega_pct, tiempo_medio_ciclo_min, ratio_cancelacion_pct, pedidos_por_forma_pago, dias_analizados }",
+        "picking": "{ tiempo_medio_picking_min, items_total, items_encontrados_pct, items_sin_stock_pct, items_sustituidos_pct, top_productos_sin_stock }",
+        "reparto": "{ tiempo_medio_entrega_min, tiempo_medio_espera_antes_salida_min, tasa_entrega_exitosa_pct, entregas_por_repartidor }"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Rediseñar templates/dashboard/rendimiento.html",
+      "owner": "frontend",
+      "files": ["templates/dashboard/rendimiento.html"],
+      "description": "Ampliar la SPA Alpine.js manteniendo toda la estructura HTML y JS existente: (A) En vista 'lista': añadir selector de sub-vista ['empleados','negocio'] con botones toggle. En sub-vista 'negocio' hacer fetch a /dashboard/rendimiento-negocio?periodo=... al cambiar periodo o sub-vista. Mostrar: (i) 4 KPI cards de resumen_periodo (pedidos_completados, tasa_entrega_pct, tiempo_medio_ciclo_min, ratio_cancelacion_pct) con glass-panel rounded-2xl; (ii) Panel metricas_picking con 3 pills de porcentaje (encontrados/sin_stock/sustituidos), tiempo medio picking y lista top_productos_sin_stock; (iii) Panel metricas_reparto con tasa_entrega_exitosa_pct, tiempo_medio_entrega_min y tabla entregas_por_repartidor. (B) En tabla de ranking: añadir columnas 'Horas' (emp.horas_min calculado a horas) y 'Tarde' (emp.minutos_tarde en min) junto a las existentes. (C) En vista 'detalle': ampliar la grid de 4 KPI cards a 6: añadir 'Horas' (detalle.kpis.horas_trabajadas_h + 'h') y 'Min tarde' (detalle.kpis.minutos_tarde); añadir panel condicional para picker (tasa_items_ok_pct con badge de color) y panel condicional para repartidor (tasa_entrega_pct). (D) Mantener sin cambios: imports de macros (empty_state, loading_skeleton, error_banner), include _nav.html, CDN scripts de Tailwind/AlpineJS/ChartJS, CSS variables --brand/--panel/--muted, función _renderChart(), métodos ordenarPor/formatFecha/formatHora.",
+      "ui_rules": [
+        "Usar glass-panel rounded-2xl para todos los paneles nuevos",
+        "Usar variables CSS existentes: --brand, --panel, --muted, --ink",
+        "Valores null mostrar como '—' en x-text",
+        "tasa_pct >= 90 → emerald, >= 75 → yellow, < 75 → red (mismo patrón que columna Tasa existente)",
+        "error_banner requiere que x-data tenga error (string|null) y cargar() — ya existe en rendimientoApp()",
+        "Añadir negocioData, cargandoNegocio a rendimientoApp() x-data junto con método cargarNegocio()"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Validar nuevos endpoints y regresión de la suite",
+      "owner": "test-runner",
+      "files": ["blueprints/dashboard.py", "managers/gestor_dashboard.py"],
+      "description": "Ejecutar pytest -v --tb=short. Verificar: (1) /dashboard/rendimiento-datos?periodo=hoy retorna shape con horas_min y minutos_tarde por empleado; (2) /dashboard/rendimiento/<id>?periodo=semana retorna kpis con horas_trabajadas_h, minutos_tarde y campo de tasa según rol; (3) /dashboard/rendimiento-negocio?periodo=semana retorna { resumen, picking, reparto } sin errores 500; (4) Los 3 tests pre-existentes que fallan (TestWebhookMonei) siguen siendo los únicos fallos conocidos; (5) No hay referencias a Empleado.Puesto ni Producto.Categoria en el código nuevo."
+    }
+  ],
+
+  "impact_analysis": {
+    "files_affected": 3,
+    "files_modified": [
+      "managers/gestor_dashboard.py",
+      "blueprints/dashboard.py",
+      "templates/dashboard/rendimiento.html"
+    ],
+    "files_created": [],
+    "endpoints_affected": [
+      {
+        "route": "GET /dashboard/rendimiento-datos",
+        "change": "Respuesta ampliada: cada empleado añade horas_min (int|null) y minutos_tarde (int|null) — cambio aditivo, no breaking"
+      },
+      {
+        "route": "GET /dashboard/rendimiento/<int:empleado_id>",
+        "change": "kpis ampliado con horas_trabajadas_h, minutos_tarde, tasa_items_ok_pct|tasa_entrega_pct, rol_operativo_detectado — cambio aditivo, no breaking"
+      },
+      {
+        "route": "GET /dashboard/rendimiento-negocio",
+        "change": "Nuevo endpoint — no breaking"
+      }
+    ],
+    "breaking_changes": [],
+    "migration_needed": false,
+    "notes": "Los tres archivos mixin listados en la tarea (gestor_empleados_mixin.py, gestor_estadisticas_mixin.py, gestor_pedidos_mixin.py) NO EXISTEN. GestorDashboard es una clase monolítica en gestor_dashboard.py. Todos los cambios backend van en gestor_dashboard.py directamente."
+  },
+
+  "risks": [
+    {
+      "id": "R1",
+      "severity": "high",
+      "description": "managers/dashboard/gestor_empleados_mixin.py NO EXISTE — rendimiento_resumen y rendimiento_empleado viven en gestor_dashboard.py (líneas 2223 y 2325). La arquitectura mixin descrita en la tarea no coincide con el código real.",
+      "mitigation": "Todos los cambios backend se hacen directamente en gestor_dashboard.py. No crear el archivo mixin (fuera de scope)."
+    },
+    {
+      "id": "R2",
+      "severity": "medium",
+      "description": "managers/dashboard/gestor_estadisticas_mixin.py y gestor_pedidos_mixin.py NO EXISTEN — referenciados en el dependency_graph pero ausentes en el repo.",
+      "mitigation": "No afectan esta tarea directamente. Ignorar en la implementación."
+    },
+    {
+      "id": "R3",
+      "severity": "high",
+      "description": "services/__init__.py no está en los archivos autorizados — se desconoce el mecanismo exacto de instanciación de GestorDashboard y si admite añadir GestorMetricas al mismo módulo.",
+      "mitigation": "Paso 1 debe comenzar con Read de services/__init__.py para replicar el patrón exacto antes de cualquier edición."
+    },
+    {
+      "id": "R4",
+      "severity": "medium",
+      "description": "MetricaDiariaEmpleado es una caché computada por un proceso externo — puede estar vacía o desactualizada para períodos recientes, haciendo que horas_min y minutos_tarde retornen null sin indicar error.",
+      "mitigation": "Backend devuelve null (no 0) cuando no hay registros. Frontend muestra '—' para valores null. No propagar error 500 por ausencia de datos en la caché."
+    },
+    {
+      "id": "R5",
+      "severity": "medium",
+      "description": "gestor_dashboard.py tiene 2854 líneas y 48 commits — alto riesgo de conflicto de merge con trabajo paralelo. Los métodos a editar (rendimiento_resumen, rendimiento_empleado) están en líneas 2223-2502.",
+      "mitigation": "Editar en bloque único y localizado. Revisar git diff y git status antes del commit para detectar conflictos."
+    },
+    {
+      "id": "R6",
+      "severity": "low",
+      "description": "GestorMetricas importa from models internamente en cada método — el inicio del archivo (clase, imports de módulo) no fue leído completo debido a la restricción de lectura única.",
+      "mitigation": "El patrón self.session y los imports locales por método están confirmados en las líneas leídas (418-817). La clase sigue el mismo contrato que GestorDashboard."
+    }
+  ],
+
+  "done_criteria": [
+    "GET /dashboard/rendimiento-datos?periodo=hoy retorna { empleados: [...] } donde cada elemento incluye horas_min (int|null) y minutos_tarde (int|null) además de los campos existentes (id, nombre, rol_sistema, rol_operativo, pedidos, tiempo_medio_min, incidencias, tasa_pct)",
+    "GET /dashboard/rendimiento/<id>?periodo=semana retorna kpis con horas_trabajadas_h, minutos_tarde, rol_operativo_detectado, y tasa_items_ok_pct (si picker) o tasa_entrega_pct (si repartidor)",
+    "GET /dashboard/rendimiento-negocio?periodo=semana retorna { resumen: {...}, picking: {...}, reparto: {...} } con HTTP 200",
+    "rendimiento.html muestra sub-vista 'Negocio' con KPI cards de resumen_periodo, panel picking y panel reparto",
+    "La tabla de ranking muestra columnas Horas y Min tarde junto a las existentes",
+    "La vista detalle muestra 6 KPI cards (pedidos, T.medio, mejor_tiempo, incidencias, horas, min_tarde) más panel condicional de tasa según rol",
+    "pytest -v --tb=short pasa sin nuevos fallos respecto al baseline (los 3 TestWebhookMonei pre-existentes siguen siendo los únicos fallos conocidos)",
+    "No aparece Empleado.Puesto ni Producto.Categoria en ningún código añadido o modificado"
+  ],
+
+  "rollback_plan": {
+    "enabled": false,
+    "reason": "No hay breaking changes — todos los cambios en endpoints existentes son aditivos (nuevos campos opcionales). El nuevo endpoint /dashboard/rendimiento-negocio es independiente. Revertir se reduce a hacer git revert de los commits afectados sin riesgo de romper funcionalidad existente.",
+    "steps": []
+  }
 }

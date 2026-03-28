@@ -43,9 +43,15 @@
       "description": "Archivos de soporte, dependencias o referencias, con hints para el planner.",
       "items": { "$ref": "#/$defs/file_hint" }
     },
-    "notes": {
-      "type": "string",
-      "description": "Observaciones relevantes para el planner: MAPs vacios, datos clave de modelos, contratos importantes."
+    "constraints": {
+      "type": "array",
+      "description": "Restricciones que el planner debe respetar: campos legacy a evitar, contratos que no romper, limites tecnicos.",
+      "items": { "type": "string" }
+    },
+    "key_facts": {
+      "type": "array",
+      "description": "Datos clave extraidos de los MAPs que el planner necesita para planificar: relaciones entre modelos, campos relevantes, patrones existentes.",
+      "items": { "type": "string" }
     },
     "status": {
       "type": "string",

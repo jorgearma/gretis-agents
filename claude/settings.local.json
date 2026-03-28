@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 .claude/hooks/guard-planner.py)",
+      "Bash(python3 .claude/hooks/guard-reader.py)",
+      "Bash(python3 .claude/hooks/guard-writer.py)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Grep|Write|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/guard-planner.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit|Bash|Glob|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/guard-reader.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit|Bash|Glob|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/guard-writer.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
