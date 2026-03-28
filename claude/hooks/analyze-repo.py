@@ -22,22 +22,24 @@ APPROVAL_PATH = PLUGIN_DIR / "runtime" / "map-scan-approval.json"
 
 # Importaciones de analyzers (después de sys.path)
 from analyzers import core
-from analyzers.project  import run as run_project
-from analyzers.db       import run as run_db
-from analyzers.query    import run as run_query
-from analyzers.ui       import run as run_ui
-from analyzers.api      import run as run_api
-from analyzers.services import run as run_services
-from analyzers.jobs     import run as run_jobs
+from analyzers.project     import run as run_project
+from analyzers.db          import run as run_db
+from analyzers.query       import run as run_query
+from analyzers.ui          import run as run_ui
+from analyzers.api         import run as run_api
+from analyzers.services    import run as run_services
+from analyzers.jobs        import run as run_jobs
+from analyzers.dependency  import run as run_dependency
 
 ANALYZER_MAP = {
-    "project":  run_project,
-    "db":       run_db,
-    "query":    run_query,
-    "ui":       run_ui,
-    "api":      run_api,
-    "services": run_services,
-    "jobs":     run_jobs,
+    "project":    run_project,
+    "db":         run_db,
+    "query":      run_query,
+    "ui":         run_ui,
+    "api":        run_api,
+    "services":   run_services,
+    "jobs":       run_jobs,
+    "dependency": run_dependency,
 }
 
 
@@ -61,7 +63,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Genera MAP.json para el plugin de Claude.")
     p.add_argument("--root", default=None,
                    help="Raíz del repositorio a analizar (default: directorio que contiene .claude/)")
-    p.add_argument("--maps", default="project,db,query,ui,api,services,jobs",
+    p.add_argument("--maps", default="project,db,query,ui,api,services,jobs,dependency",
                    help="MAPs a generar, coma-separados.")
     p.add_argument("--force", action="store_true",
                    help="Omitir verificación de aprobación")
@@ -105,7 +107,7 @@ def main() -> int:
     maps_dir = root / ".claude" / "maps"
     maps_dir.mkdir(parents=True, exist_ok=True)
 
-    for map_name in ["project", "db", "query", "ui", "api", "services", "jobs"]:
+    for map_name in ["project", "db", "query", "ui", "api", "services", "jobs", "dependency"]:
         if map_name not in maps_to_gen:
             continue
         print(f"  Generando {map_name.upper()}_MAP.json...")

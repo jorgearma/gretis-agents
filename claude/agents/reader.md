@@ -29,21 +29,27 @@ Lee los mapas del proyecto y escribe el contexto para el planner.
 
 ### Turno 1 — Leer PROJECT_MAP (2 reads simultáneos)
 
-Lanza estos dos Read **en el mismo turno**, en paralelo:
-- `.claude/maps/PROJECT_MAP.md`
-- `.claude/maps/PROJECT_MAP.json`
+Lanza estos dos Read **sin especificar rango de líneas** (eso evita fragmentación automática):
+- `Read(.claude/maps/PROJECT_MAP.md)`
+- `Read(.claude/maps/PROJECT_MAP.json)` — **leerá todo automáticamente sin fragmentar**
 
 Con PROJECT_MAP.json decide qué dominios toca la petición comparando sus palabras clave con `domains[].trigger_keywords`. Solo selecciona los dominios con match real.
 
+**CRÍTICO:**
+- NO uses `lines 1-3000` ni rango alguno — solo `Read(archivo)`
+- Lee el JSON **completo de una sola vez**, sin fragmentar
+
 ### Turno 2 — Leer MAPs de dominio (todos en paralelo)
 
-Lanza **en un solo turno** todos los MAPs de los dominios seleccionados:
-- db → `.claude/maps/DB_MAP.json`
-- api → `.claude/maps/API_MAP.json`
-- ui → `.claude/maps/UI_MAP.json`
-- query → `.claude/maps/QUERY_MAP.json`
-- services → `.claude/maps/SERVICES_MAP.json`
-- jobs → `.claude/maps/JOBS_MAP.json`
+Lanza **en un solo turno** todos los MAPs de los dominios seleccionados, **sin especificar rango de líneas**:
+- `Read(.claude/maps/DB_MAP.json)` — si es necesario
+- `Read(.claude/maps/API_MAP.json)` — si es necesario
+- `Read(.claude/maps/UI_MAP.json)` — si es necesario
+- `Read(.claude/maps/QUERY_MAP.json)` — si es necesario
+- `Read(.claude/maps/SERVICES_MAP.json)` — si es necesario
+- `Read(.claude/maps/JOBS_MAP.json)` — si es necesario
+
+Lanza **solo los que necesites** según el match de trigger_keywords en Turno 1.
 
 Si solo hay un dominio, igual es un solo Read en este turno. Si un MAP tiene su array principal vacío (`blueprints: []`, `integrations: []`, `jobs: []`), no lo incluyas en `maps_used` y anota en `constraints` que ese dominio no tiene datos mapeados.
 
@@ -104,10 +110,7 @@ El JSON debe ser compatible con `.claude/schemas/reader-context.json`. Campos:
     "MetricaDiariaEmpleado es la fuente principal de métricas por empleado por día",
     "HistorialEstadoPedido permite calcular tiempos entre estados"
   ],
-  "status": "ready",
-  "dependency_graph": {
-    "blueprints/dashboard.py": ["managers/gestor_dashboard.py", "templates/dashboard/rendimiento.html"]
-  }
+  "status": "ready"
 }
 ```
 
@@ -137,11 +140,3 @@ Extraídos de `domains[].reader` del PROJECT_MAP:
 - **NO mezcles** constraints con key_facts. Si algo es una prohibición o límite → `constraints`. Si es información útil → `key_facts`.
 - **NO incluyas** metadata interna del reader (qué MAPs leíste, qué readers seleccionaste) — eso ya va en `selected_readers` y `maps_used`.
 
-## Reglas para dependency_graph
-
-Grafo **forward**: cada clave es un archivo, su valor es un array de archivos que ese archivo importa, renderiza o usa directamente.
-
-- `A → [B, C]` significa "A depende de B y C" (A importa/usa B y C)
-- Ejemplo: `"blueprints/dashboard.py": ["managers/gestor_dashboard.py"]` porque el blueprint importa el gestor
-- Construir desde las relaciones visibles en los MAPs (`files[].path` dentro del mismo dominio, `models[].file` referenciado por queries)
-- NO uses `cochange` para el grafo — cochange es correlación temporal, no dependencia real

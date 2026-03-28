@@ -1159,11 +1159,15 @@ def detect_problems(files: list[FileInfo]) -> list[dict]:
 
 
 def build_symbols(fi: FileInfo) -> list[dict]:
-    """Devuelve lista de {name, line, kind} — mínimo para que el reader grep-ee el símbolo."""
+    """Devuelve lista de {name, line, kind, end_line?} para grep quirúrgico y recorte de contexto."""
+    fn_info_map = {fn.name: fn for fn in fi.function_infos}
     result = []
     for name, line in sorted(fi.symbols_with_lines.items(), key=lambda x: x[1]):
         kind = "class" if name in fi.classes else "function"
-        result.append({"name": name, "line": line, "kind": kind})
+        entry: dict = {"name": name, "line": line, "kind": kind}
+        if name in fn_info_map:
+            entry["end_line"] = fn_info_map[name].end_line
+        result.append(entry)
     return result[:10]
 
 

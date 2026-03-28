@@ -1,104 +1,63 @@
 {
-  "improved_prompt": "Rediseñar templates/dashboard/rendimiento.html para incluir nuevas métricas de rendimiento de empleados (pickers y repartidores) y del negocio. Añadir datos de MetricaDiariaEmpleado (pedidos_completados, tiempo_medio_operacion_min, incidencias, minutos_tarde, horas_trabajadas_min), HistorialEstadoPedido (tiempos de transición entre estados), PickingPedido (iniciado_en, completado_en) y Reparto (hora_salida, hora_entrega_real). Exponer estos datos desde gestor_empleados_mixin (rendimiento_resumen, rendimiento_empleado) y gestor_metricas (metricas_picking, metricas_reparto, resumen_periodo). Si los datos necesarios no están disponibles en las funciones existentes, ampliarlos. Presentar las estadísticas con gráficas, tablas comparativas por empleado y KPIs del negocio.",
-  "selected_readers": ["ui-reader", "query-reader", "db-reader"],
-  "maps_used": ["PROJECT_MAP.json", "UI_MAP.json", "QUERY_MAP.json", "DB_MAP.json"],
-      "files_to_open": [
-        {
-          "path": "templates/dashboard/rendimiento.html",
-          "hint": "Plantilla principal a rediseñar — actualmente muestra resumen de rendimiento, hay que ampliarla con nuevas métricas de empleados y negocio",
-          "key_symbols": [],
-          "test_file": null
-        },
-        {
-          "path": "managers/dashboard/gestor_empleados.py",
-          "hint": "Contiene rendimiento_resumen y rendimiento_empleado — funciones que alimentan la vista actual y que deben ampliarse para exponer los nuevos datos",
-          "key_symbols": ["rendimiento_resumen", "rendimiento_empleado", "monitor_empleados"],
-          "test_file": null
-        },
-        {
-          "path": "managers/gestor_metricas.py",
-          "hint": "Contiene metricas_picking, metricas_reparto, resumen_periodo y metricas_pedidos — fuente de KPIs del negocio a integrar en la vista de rendimiento",
-          "key_symbols": ["metricas_picking", "metricas_reparto", "resumen_periodo", "metricas_pedidos", "resumen_operacion"],
-          "test_file": "tests/test_gestor_metricas.py"
-        }
+  "improved_prompt": "Modificar envio de SMS",
+  "selected_readers": [
+    "services-reader"
+  ],
+  "maps_used": [
+    "PROJECT_MAP.json",
+    "SERVICES_MAP.json"
+  ],
+  "files_to_open": [
+    {
+      "path": "services/sms.py",
+      "hint": "Servicio SMS",
+      "key_symbols": [
+        "send_sms"
+      ]
+    }
   ],
   "files_to_review": [
     {
-      "path": "managers/dashboard/gestor_pedidos.py",
-      "hint": "Función metricas() expone datos de pedidos activos y cancelaciones — referencia indirecta para KPIs de negocio",
-      "key_symbols": ["metricas", "historial_pedidos"],
+      "path": "app.py",
+      "hint": "Descubierto via grafo de dependencias (role: entry_point)",
       "test_file": null
     },
     {
-      "path": "models.py",
-      "hint": "Modelos clave para las nuevas métricas: MetricaDiariaEmpleado (pedidos_completados, tiempo_medio_operacion_min, incidencias, minutos_tarde), HistorialEstadoPedido (tiempos entre estados), CheckIn (minutos_tarde), PickingPedido (iniciado_en/completado_en), Reparto (hora_salida/hora_entrega_real)",
-      "key_symbols": ["MetricaDiariaEmpleado", "HistorialEstadoPedido", "CheckIn", "PickingPedido", "Reparto", "Empleado"],
-      "test_file": null
+      "path": "models/user.py",
+      "hint": "Descubierto via grafo de dependencias (role: model)",
+      "test_file": null,
+      "key_symbols": [
+        "User"
+      ]
     },
     {
-      "path": "templates/dashboard/estadisticas.html",
-      "hint": "Vista de estadísticas del dashboard — revisar para evitar duplicidades y reusar componentes/macros existentes",
-      "key_symbols": [],
-      "test_file": null
+      "path": "routes/api.py",
+      "hint": "Descubierto via grafo de dependencias (role: controller)",
+      "test_file": null,
+      "key_symbols": [
+        "send_notification"
+      ]
     },
     {
-      "path": "templates/dashboard/_nav.html",
-      "hint": "Navegación del dashboard — verificar que rendimiento.html está enlazado correctamente",
-      "key_symbols": [],
-      
-      "test_file": null
-    },
-    {
-      "path": "templates/macros/ui.html",
-      "hint": "Macros de UI reutilizables — usar los componentes existentes (badges, tablas, cards) para mantener consistencia visual",
-      "key_symbols": [],
-      "test_file": null
-    },
-    {
-      "path": "blueprints/dashboard.py",
-      "hint": "Blueprint que renderiza rendimiento.html — revisar qué datos se pasan al contexto Jinja actualmente y qué hay que añadir",
-      "key_symbols": [],
-      "test_file": null
-    },
-    {
-      "path": "managers/dashboard/gestor_estadisticas.py",
-      "hint": "Mixin estadisticas() — puede contener datos de negocio complementarios a los de rendimiento",
-      "key_symbols": ["estadisticas"],
-      "test_file": null
-    },
-    {
-      "path": "managers/gestor_dashboard.py",
-      "hint": "Fachada que agrega todos los mixins — cualquier función nueva en los mixins debe ser accesible desde aquí",
-      "key_symbols": [],
-      "test_file": "tests/test_gestor_dashboard.py"
+      "path": "services/twilio_client.py",
+      "hint": "Descubierto via grafo de dependencias (role: service)",
+      "test_file": null,
+      "key_symbols": [
+        "send_whatsapp"
+      ]
     }
   ],
-  "notes": "API_MAP está vacío (blueprints: []) — no se incluye api-reader. El modelo MetricaDiariaEmpleado es la fuente principal para métricas de empleados por día (pedidos_completados, tiempo_medio_operacion_min, incidencias, minutos_tarde, horas_trabajadas_min, rol). HistorialEstadoPedido permite calcular tiempos entre estados (PAGADO→EN_PREPARACION→PREPARADO→EN_REPARTO→ENTREGADO). PickingPedido.iniciado_en y completado_en permiten calcular duración de picking por empleado. Reparto.hora_salida y hora_entrega_real permiten calcular tiempo de entrega real. Campo legacy a evitar: Empleado.Puesto → usar Empleado.rol_id / Rol.nombre. JOBS_MAP no aplica a esta tarea.",
   "status": "ready",
   "dependency_graph": {
-    "templates/dashboard/rendimiento.html": [
-      "managers/dashboard/gestor_empleados_mixin.py",
-      "managers/gestor_metricas.py",
-      "templates/macros/ui.html",
-      "templates/dashboard/_nav.html"
+    "services/sms.py": [
+      "models/user.py",
+      "services/twilio_client.py"
     ],
-    "blueprints/dashboard.py": [
-      "managers/gestor_dashboard.py",
-      "templates/dashboard/rendimiento.html"
+    "routes/api.py": [
+      "services/sms.py"
     ],
-    "managers/gestor_dashboard.py": [
-      "managers/dashboard/gestor_empleados_mixin.py",
-      "managers/dashboard/gestor_estadisticas_mixin.py",
-      "managers/dashboard/gestor_pedidos_mixin.py",
-      "managers/dashboard/gestor_picking_mixin.py",
-      "managers/dashboard/gestor_reparto_mixin.py",
-      "managers/dashboard/gestor_turnos_mixin.py"
-    ],
-    "managers/dashboard/gestor_empleados_mixin.py": [
-      "models.py"
-    ],
-    "managers/gestor_metricas.py": [
-      "models.py"
+    "app.py": [
+      "routes/api.py"
     ]
   }
 }

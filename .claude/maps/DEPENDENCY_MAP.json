@@ -1,0 +1,13 @@
+{
+  "entry_points": [],
+  "forward": {},
+  "reverse": {},
+  "nodes": {},
+  "cycles": [],
+  "stats": {
+    "total_files": 35,
+    "connected_files": 0,
+    "edges": 0,
+    "cycles_found": 0
+  }
+}

@@ -10,9 +10,11 @@ import sys
 import time
 from pathlib import Path
 
-PLUGIN_DIR = Path(__file__).resolve().parents[1]
+PLUGIN_DIR   = Path(__file__).resolve().parents[1]
+HOOKS_DIR    = Path(__file__).resolve().parent
 PROJECT_ROOT = PLUGIN_DIR.parent
-RUNTIME = PLUGIN_DIR / "runtime"
+RUNTIME      = PLUGIN_DIR / "runtime"
+BUILD_SUBGRAPH = HOOKS_DIR / "build-subgraph.py"
 READER_CONTEXT = RUNTIME / "reader-context.json"
 PLAN_PATH = RUNTIME / "plan.json"
 BRIEF_PATH = RUNTIME / "execution-brief.json"
@@ -311,7 +313,7 @@ def main() -> int:
         log(f"Modo: {'dry-run' if args.dry_run else 'ejecucion real'} | verbose: on", DIM)
 
     # --- Paso 1: Reader ---
-    log_step(1, 3, "Reader (Sonnet) — extraer contexto de MAPs")
+    log_step(1, 4, "Reader (Sonnet) — extraer contexto de MAPs")
 
     if args.skip_reader and READER_CONTEXT.exists():
         log("  Saltando — reader-context.json ya existe.", YELLOW)
@@ -345,8 +347,23 @@ def main() -> int:
                 "maps_used", "files_to_open", "files_to_review",
             ])
 
-    # --- Paso 2: Planner ---
-    log_step(2, 3, "Planner (Opus) — leer codigo y generar plan")
+    # --- Paso 1.5: Build subgraph ---
+    log_step(2, 4, "Build-subgraph — enriquecer contexto con grafo de dependencias")
+    if args.dry_run:
+        log("  [dry-run] python3 build-subgraph.py", DIM)
+    else:
+        subgraph_result = subprocess.run(
+            [sys.executable, str(BUILD_SUBGRAPH)],
+            capture_output=True, text=True,
+        )
+        if subgraph_result.stdout.strip():
+            for line in subgraph_result.stdout.strip().splitlines():
+                log(line, DIM)
+        if subgraph_result.returncode != 0:
+            log(f"  build-subgraph fallo (no critico): {subgraph_result.stderr.strip()}", YELLOW)
+
+    # --- Paso 3: Planner ---
+    log_step(3, 4, "Planner (Opus) — leer codigo y generar plan")
 
     if args.dry_run:
         log(f"  [dry-run] claude --agent planner --print", DIM)
@@ -371,8 +388,8 @@ def main() -> int:
     else:
         log(f"  {len(steps)} paso(s) generados.", DIM)
 
-    # --- Paso 3: Writer ---
-    log_step(3, 3, "Writer (Sonnet) — generar instrucciones de ejecucion")
+    # --- Paso 4: Writer ---
+    log_step(4, 4, "Writer (Sonnet) — generar instrucciones de ejecucion")
 
     if args.dry_run:
         log(f"  [dry-run] claude --agent writer --print", DIM)

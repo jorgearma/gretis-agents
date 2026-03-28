@@ -131,20 +131,23 @@ if target not in allowed_paths:
 		f"Archivos permitidos: {', '.join(sorted(allowed_paths))}"
 	)
 
-# ── Read: verificar duplicado ─────────────────────────────────────────────────
+# ── Read: permitir hasta 3 relecturas (límite para evitar loops) ──────────────
 
 if tool_name == "Read":
-	already_read: set[str] = set()
+	MAX_READS = 3
+	read_count: dict[str, int] = {}
 	if READS_LOG.exists():
 		try:
-			already_read = set(READS_LOG.read_text(encoding="utf-8").splitlines())
+			lines = READS_LOG.read_text(encoding="utf-8").splitlines()
+			for line in lines:
+				read_count[line] = read_count.get(line, 0) + 1
 		except OSError:
 			pass
 
-	if target in already_read:
+	if target in read_count and read_count[target] >= MAX_READS:
 		deny(
-			f"'{target}' ya fue leído. No leas el mismo archivo dos veces. "
-			"Usa la información que ya obtuviste en la lectura anterior."
+			f"'{target}' ya fue leído {MAX_READS} veces. "
+			"Usa la información que obtuviste en las lecturas anteriores o registra en risks si necesitas más contexto."
 		)
 
 	# Registrar lectura

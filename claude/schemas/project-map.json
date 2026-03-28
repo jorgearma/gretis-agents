@@ -53,9 +53,10 @@
                 "required": ["name", "line", "kind"],
                 "additionalProperties": false,
                 "properties": {
-                  "name": { "type": "string" },
-                  "line": { "type": "integer" },
-                  "kind": { "type": "string", "enum": ["class", "function"] }
+                  "name":     { "type": "string" },
+                  "line":     { "type": "integer" },
+                  "end_line": { "type": "integer" },
+                  "kind":     { "type": "string", "enum": ["class", "function"] }
                 }
               }
             },
