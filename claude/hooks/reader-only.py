@@ -95,9 +95,12 @@ def find_new_session(before: set[Path], session_dir: Path) -> Path | None:
 
 
 def parse_session_tokens(path: Path, prices: dict) -> dict | None:
-    """Lee el .jsonl y suma tokens de todos los mensajes assistant.
+    """Lee el .jsonl y suma tokens de llamadas API únicas.
 
-    Cada mensaje assistant es una llamada a la API de Anthropic.
+    Claude Code a veces divide una misma request en varios eventos assistant
+    con el mismo requestId (por ejemplo texto preliminar + tool_use).
+    Aquí se agrupan por requestId para no duplicar tokens ni inflar turnos.
+
     Los campos de usage son POR REQUEST (no acumulativos):
       - input_tokens: tokens nuevos enviados (sin cache)
       - cache_read_input_tokens: tokens leídos de cache
@@ -121,6 +124,7 @@ def parse_session_tokens(path: Path, prices: dict) -> dict | None:
     n_turns = 0
     tools_used: list[str] = []
     turns_detail: list[dict] = []
+    seen_requests: dict[str, int] = {}
 
     for raw in lines:
         try:
@@ -136,18 +140,6 @@ def parse_session_tokens(path: Path, prices: dict) -> dict | None:
         if not usage:
             continue
 
-        n_turns += 1
-        t_in  = usage.get("input_tokens", 0)
-        t_out = usage.get("output_tokens", 0)
-        t_cr  = usage.get("cache_read_input_tokens", 0)
-        t_cw  = usage.get("cache_creation_input_tokens", 0)
-
-        input_tokens  += t_in
-        output_tokens += t_out
-        cache_read    += t_cr
-        cache_write   += t_cw
-
-        # Herramientas de este turno
         turn_tools: list[str] = []
         for block in msg.get("content", []):
             if isinstance(block, dict) and block.get("type") == "tool_use":
@@ -161,6 +153,31 @@ def parse_session_tokens(path: Path, prices: dict) -> dict | None:
                 else:
                     continue
                 turn_tools.append(label)
+
+        request_key = entry.get("requestId") or msg.get("id")
+        if request_key and request_key in seen_requests:
+            idx = seen_requests[request_key]
+            existing_tools = turns_detail[idx]["tools"]
+            for label in turn_tools:
+                if label not in existing_tools:
+                    existing_tools.append(label)
+                if label not in tools_used:
+                    tools_used.append(label)
+            continue
+
+        n_turns += 1
+        t_in  = usage.get("input_tokens", 0)
+        t_out = usage.get("output_tokens", 0)
+        t_cr  = usage.get("cache_read_input_tokens", 0)
+        t_cw  = usage.get("cache_creation_input_tokens", 0)
+
+        input_tokens  += t_in
+        output_tokens += t_out
+        cache_read    += t_cr
+        cache_write   += t_cw
+
+        for label in turn_tools:
+            if label not in tools_used:
                 tools_used.append(label)
 
         turns_detail.append({
@@ -171,6 +188,8 @@ def parse_session_tokens(path: Path, prices: dict) -> dict | None:
             "output":      t_out,
             "tools":       turn_tools,
         })
+        if request_key:
+            seen_requests[request_key] = len(turns_detail) - 1
 
     if n_turns == 0:
         return None
