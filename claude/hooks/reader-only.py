@@ -303,6 +303,7 @@ def main() -> int:
         "claude",
         "--model", model_id,
         "--system-prompt", reader_prompt,
+        "--dangerously-skip-permissions",
         f"Petición del operador: {args.petition}",
     ]
 

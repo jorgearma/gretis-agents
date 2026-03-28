@@ -468,6 +468,7 @@ def main() -> int:
 		"claude",
 		"--model", model_id,
 		"--system-prompt", planner_prompt,
+		"--dangerously-skip-permissions",
 	]
 
 	print(f"{BOLD}Ejecutando planner ({prices['label']})...{RESET}\n")

@@ -325,6 +325,7 @@ def main() -> int:
 		"claude",
 		"--model", model_id,
 		"--system-prompt", writer_prompt,
+		"--dangerously-skip-permissions",
 	]
 	user_message = "Convierte plan.json en execution-brief.json y execution-brief.md según tus instrucciones."
 
