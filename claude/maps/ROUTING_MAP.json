@@ -1,0 +1,212 @@
+{
+  "project_summary": {
+    "name": "losgretis",
+    "description": "",
+    "languages": [
+      "python"
+    ],
+    "stack": {},
+    "architecture": "Arquitectura no inferida — revisar estructura de carpetas",
+    "entry_points": [
+      "claude/hooks/analyzers/domain_index.py"
+    ]
+  },
+  "glossary": {
+    "approve": [
+      "approves"
+    ],
+    "reader": [
+      "readers"
+    ],
+    "only": [
+      "onlys"
+    ],
+    "writer": [
+      "writers"
+    ],
+    "execute": [
+      "executes"
+    ],
+    "plan": [
+      "plans"
+    ],
+    "guard": [
+      "guards"
+    ],
+    "planner": [
+      "planners"
+    ],
+    "cycle": [
+      "cycles"
+    ],
+    "services": [
+      "service"
+    ],
+    "data": [
+      "datas"
+    ]
+  },
+  "domains": [
+    {
+      "name": "api",
+      "keywords": [
+        "endpoint",
+        "ruta",
+        "blueprint",
+        "HTTP",
+        "request",
+        "response",
+        "webhook",
+        "API",
+        "route",
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "REST",
+        "controller",
+        "handler",
+        "middleware"
+      ],
+      "negative_keywords": [
+        "migration",
+        "seed",
+        "test"
+      ],
+      "priority": 1,
+      "preferred_indexes": [
+        "DOMAIN_INDEX_api.json"
+      ]
+    },
+    {
+      "name": "data",
+      "keywords": [
+        "modelo",
+        "tabla",
+        "migración",
+        "campo",
+        "relación",
+        "ORM",
+        "schema",
+        "base de datos",
+        "database",
+        "model",
+        "table",
+        "field",
+        "relationship",
+        "consulta",
+        "query",
+        "filtro",
+        "join",
+        "repository",
+        "manager",
+        "acceso a datos",
+        "data access"
+      ],
+      "negative_keywords": [
+        "test",
+        "fixture"
+      ],
+      "priority": 2,
+      "preferred_indexes": [
+        "DOMAIN_INDEX_data.json",
+        "DATA_MODEL_MAP.json"
+      ]
+    },
+    {
+      "name": "services",
+      "keywords": [
+        "servicio",
+        "integración",
+        "externo",
+        "Twilio",
+        "Stripe",
+        "Redis",
+        "Monei",
+        "SMS",
+        "email",
+        "pago",
+        "payment",
+        "service",
+        "integration",
+        "external",
+        "SDK",
+        "tercero",
+        "third-party",
+        "webhook"
+      ],
+      "negative_keywords": [
+        "test",
+        "mock"
+      ],
+      "priority": 3,
+      "preferred_indexes": [
+        "DOMAIN_INDEX_services.json"
+      ]
+    },
+    {
+      "name": "ui",
+      "keywords": [
+        "vista",
+        "componente",
+        "pantalla",
+        "formulario",
+        "plantilla",
+        "frontend",
+        "view",
+        "component",
+        "template",
+        "page",
+        "layout",
+        "UI",
+        "interfaz",
+        "interface",
+        "render",
+        "HTML",
+        "CSS"
+      ],
+      "negative_keywords": [
+        "test",
+        "migration"
+      ],
+      "priority": 4,
+      "preferred_indexes": [
+        "DOMAIN_INDEX_ui.json"
+      ]
+    },
+    {
+      "name": "jobs",
+      "keywords": [
+        "tarea",
+        "job",
+        "celery",
+        "queue",
+        "cola",
+        "cron",
+        "programado",
+        "worker",
+        "scheduled",
+        "task",
+        "background",
+        "periodic",
+        "interval"
+      ],
+      "negative_keywords": [
+        "test"
+      ],
+      "priority": 5,
+      "preferred_indexes": [
+        "DOMAIN_INDEX_jobs.json"
+      ]
+    }
+  ],
+  "entry_points": [
+    "claude/hooks/analyzers/domain_index.py"
+  ],
+  "default_constraints": [
+    "No romper endpoints públicos documentados en CONTRACT_MAP.json",
+    "No modificar migraciones ya aplicadas",
+    "No cambiar env vars sin actualizar .env.example"
+  ]
+}

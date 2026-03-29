@@ -41,13 +41,14 @@ SCHEMA_MAP: dict[str, str] = {
     "review.json":             "review.json",
     "quick-dispatch.json":     "quick-dispatch.json",
     # Maps (artifact name → schema filename en schemas/)
-    "PROJECT_MAP.json":        "project-map.json",
-    "DB_MAP.json":             "db-map.json",
-    "QUERY_MAP.json":          "query-map.json",
-    "UI_MAP.json":             "ui-map.json",
-    "API_MAP.json":            "api-map.json",
-    "SERVICES_MAP.json":       "services-map.json",
-    "JOBS_MAP.json":           "jobs-map.json",
+    "ROUTING_MAP.json":            "routing-map.json",
+    "DOMAIN_INDEX_api.json":       "domain-index.json",
+    "DOMAIN_INDEX_data.json":      "domain-index.json",
+    "DOMAIN_INDEX_ui.json":        "domain-index.json",
+    "DOMAIN_INDEX_services.json":  "domain-index.json",
+    "DOMAIN_INDEX_jobs.json":      "domain-index.json",
+    "CONTRACT_MAP.json":           "contract-map.json",
+    "DEPENDENCY_MAP.json":         "dependency-map.json",
 }
 
 # Validators que son críticos en campos requeridos

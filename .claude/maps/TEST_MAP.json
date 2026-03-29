@@ -1,0 +1,47 @@
+{
+  "source_to_tests": {
+    "claude/hooks/validate.py": [
+      "claude/hooks/tests/test_validate.py"
+    ],
+    "claude/hooks/analyzers/services.py": [
+      "claude/hooks/tests/test_analyzer_services.py"
+    ],
+    "claude/hooks/analyzers/jobs.py": [
+      "claude/hooks/tests/test_analyzer_jobs.py"
+    ],
+    "claude/hooks/analyzers/core.py": [
+      "claude/hooks/tests/test_core.py"
+    ],
+    "claude/hooks/analyzers/api.py": [
+      "claude/hooks/tests/test_analyzer_api.py"
+    ]
+  },
+  "test_to_sources": {
+    "claude/hooks/analyzers/test_map.py": [
+      "claude/hooks/analyzers/core.py"
+    ],
+    "claude/hooks/tests/test_analyzers_existing.py": [
+      "claude/hooks/analyzers/ui.py"
+    ],
+    "claude/hooks/tests/test_analyzer_services.py": [
+      "claude/hooks/analyzers/services.py"
+    ],
+    "claude/hooks/tests/test_analyzer_jobs.py": [
+      "claude/hooks/analyzers/jobs.py"
+    ],
+    "claude/hooks/tests/test_validate.py": [
+      "claude/hooks/validate.py"
+    ],
+    "claude/hooks/tests/test_core.py": [
+      "claude/hooks/analyzers/core.py"
+    ],
+    "claude/hooks/tests/test_analyzer_api.py": [
+      "claude/hooks/analyzers/api.py"
+    ]
+  },
+  "fixtures_by_test": {},
+  "integration_tests": [
+    "claude/hooks/tests/test_hooks_integration.py"
+  ],
+  "smoke_tests": []
+}

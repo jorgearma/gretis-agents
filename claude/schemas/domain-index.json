@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DOMAIN_INDEX",
+  "description": "Índice uniforme de candidatos para un dominio. Mismo schema para api, data, ui, services, jobs.",
+  "type": "object",
+  "required": ["domain", "candidates"],
+  "additionalProperties": false,
+  "properties": {
+    "domain": { "type": "string" },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "role", "open_priority"],
+        "additionalProperties": false,
+        "properties": {
+          "path":               { "type": "string" },
+          "role":               { "type": "string" },
+          "purpose":            { "type": "string" },
+          "keywords":           { "type": "array", "items": { "type": "string" } },
+          "key_symbols":        { "type": "array", "items": { "type": "string" } },
+          "symbols": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "line", "kind"],
+              "properties": {
+                "name":     { "type": "string" },
+                "line":     { "type": "integer" },
+                "end_line": { "type": "integer" },
+                "kind":     { "type": "string", "enum": ["function", "class"] }
+              }
+            }
+          },
+          "test_files":         { "type": "array", "items": { "type": "string" } },
+          "related_paths":      { "type": "array", "items": { "type": "string" } },
+          "contracts":          { "type": "array", "items": { "type": "string" } },
+          "open_priority":      { "type": "string", "enum": ["seed", "review"] },
+          "confidence_signals": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """
-analyzers/services.py — Genera SERVICES_MAP.json.
+analyzers/services.py — Genera DOMAIN_INDEX_services.json.
 
-Detecta integraciones externas por:
-1. Imports de SDKs conocidos (twilio, stripe, boto3, etc.)
-2. Patrones de env vars de credenciales (_KEY, _SECRET, _TOKEN, _URL)
-3. Archivos en carpetas services/, adapters/, providers/
+Candidatos del dominio SERVICES (integraciones externas):
+  - "seed"   : archivos que importan SDKs conocidos directamente
+  - "review" : archivos que solo leen env vars de credenciales
+
+Cada candidato lleva contracts[] = ["integration:NombreSDK", "env:VAR_NAME", ...]
+para que el planner sepa qué credenciales/integraciones no puede romper.
 """
 from __future__ import annotations
 
 import argparse
-import json
 import re
 from pathlib import Path
-from analyzers.core import FileInfo, detect_stack, walk_repo, find_test_file
+
+from analyzers.core import FileInfo, detect_stack, git_cochange, resolve_dependencies, walk_repo
+from analyzers.domain_index import build_candidate, write_domain_index
 
 # SDK → (nombre display, tipo)
 SDK_MAP: dict[str, tuple[str, str]] = {
@@ -38,129 +41,103 @@ SDK_MAP: dict[str, tuple[str, str]] = {
     "sentry_sdk":    ("Sentry", "monitoring"),
     "datadog":       ("Datadog", "monitoring"),
     "newrelic":      ("New Relic", "monitoring"),
-    "httpx":         ("httpx", "other"),
-    "requests":      ("requests", "other"),
+    "httpx":         ("httpx", "http"),
+    "requests":      ("requests", "http"),
 }
 
-# Display name → (sdk_key, type) for stack-based detection
-DISPLAY_TO_SDK: dict[str, tuple[str, str]] = {
-    v[0]: (k, v[1]) for k, v in SDK_MAP.items()
-}
+DISPLAY_TO_SDK: dict[str, tuple[str, str]] = {v[0]: (k, v[1]) for k, v in SDK_MAP.items()}
 
-# Patrones de env vars de credenciales
 RE_ENV_VAR = re.compile(
-    r'(?:os\.environ\.get|os\.environ|os\.getenv)\s*[\[\(]\s*["\']([A-Z][A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_URL|_SID|_API|_PASSWORD|_PASS|_AUTH)["\'])',
+    r'(?:os\.environ\.get|os\.environ|os\.getenv)\s*[\[\(]\s*["\']'
+    r'([A-Z][A-Z0-9_]+(?:_KEY|_SECRET|_TOKEN|_URL|_SID|_API|_PASSWORD|_PASS|_AUTH)["\'])',
 )
 
 
-def _detect_integrations(
-    files: list[FileInfo], root: Path, stack: dict
-) -> list[dict]:
-    integrations: dict[str, dict] = {}
+def _sdk_imports(fi: FileInfo) -> list[str]:
+    """Devuelve lista de display names de SDKs importados por este archivo."""
+    found: list[str] = []
+    for imp in fi.imports_external:
+        key = imp.lower().replace("-", "_")
+        for sdk_key, (sdk_name, _) in SDK_MAP.items():
+            if key == sdk_key or key.startswith(sdk_key + "."):
+                found.append(sdk_name)
+                break
+    return found
 
-    for fi in files:
-        is_service_file = any(
-            seg in fi.rel_path.lower()
-            for seg in ("service", "adapter", "provider", "integration", "client")
-        )
 
-        # Detect by known external imports
-        for imp in fi.imports_external:
-            imp_lower = imp.lower().replace("-", "_")
-            for sdk_key, (sdk_name, sdk_type) in SDK_MAP.items():
-                if imp_lower == sdk_key or imp_lower.startswith(sdk_key + "."):
-                    if sdk_name not in integrations:
-                        integrations[sdk_name] = {
-                            "name": sdk_name,
-                            "type": sdk_type,
-                            "files": [],
-                            "functions": [],
-                            "env_vars": [],
-                        }
-                    if fi.rel_path not in integrations[sdk_name]["files"]:
-                        integrations[sdk_name]["files"].append(fi.rel_path)
-                    integrations[sdk_name]["functions"].extend(
-                        [fn for fn in fi.functions if not fn.startswith("_")][:5]
-                    )
-
-        # Detect credential env vars from source
-        if is_service_file or any(
-            imp.lower().replace("-", "_") in SDK_MAP for imp in fi.imports_external
-        ):
-            try:
-                source = (root / fi.rel_path).read_text(encoding="utf-8", errors="replace")
-            except OSError:
-                continue
-            for m in RE_ENV_VAR.finditer(source):
-                env_name = m.group(1).strip("\"'")
-                # Assign env var to the most likely integration by prefix
-                assigned = False
-                for sdk_name, int_data in integrations.items():
-                    sdk_prefix = sdk_name.upper().replace(" ", "_").replace("(", "").replace(")", "").replace("-", "_")
-                    # 4-char prefix heuristic — pragmatic but imprecise for short prefixes
-                    # (e.g. "SEND" matches both SendGrid and custom SEND_* vars).
-                    # Env vars are assigned to the first matching integration.
-                    if env_name.startswith(sdk_prefix[:4]):
-                        if env_name not in int_data["env_vars"]:
-                            int_data["env_vars"].append(env_name)
-                        assigned = True
-                        break
-                if not assigned and integrations:
-                    # Assign to the integration that already owns this file
-                    for sdk_name, int_data in integrations.items():
-                        if fi.rel_path in int_data["files"]:
-                            if env_name not in int_data["env_vars"]:
-                                int_data["env_vars"].append(env_name)
-                            break
-
-    # Also detect from requirements.txt stack (display name based)
-    for display_name in stack:
-        if display_name in DISPLAY_TO_SDK and display_name not in integrations:
-            sdk_key, sdk_type = DISPLAY_TO_SDK[display_name]
-            integrations[display_name] = {
-                "name": display_name,
-                "type": sdk_type,
-                "files": [],
-                "functions": [],
-                "env_vars": [],
-            }
-
-    # Deduplicate functions
-    for int_data in integrations.values():
-        int_data["functions"] = list(dict.fromkeys(int_data["functions"]))[:8]
-
-    return list(integrations.values())
+def _env_vars(fi: FileInfo, root: Path) -> list[str]:
+    """Extrae env vars de credenciales del source de este archivo."""
+    try:
+        src = (root / fi.rel_path).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return []
+    return [m.group(1).strip("\"'") for m in RE_ENV_VAR.finditer(src)]
 
 
 def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
-    """Genera SERVICES_MAP.json. Escribe en .claude/maps/. Devuelve el dict."""
-    integrations = _detect_integrations(files, root, stack)
-    for integration in integrations:
-        if integration["files"]:
-            integration["test_file"] = find_test_file(integration["files"][0], files)
-        else:
-            integration["test_file"] = None
-    result = {"integrations": integrations}
+    """Genera DOMAIN_INDEX_services.json. Escribe en .claude/maps/. Devuelve el dict."""
+    cochange = git_cochange(root)
+    prod = [f for f in files if f.role not in ("test", "migration")]
+    dep_forward = resolve_dependencies(prod).get("forward", {})
 
-    maps_dir = root / ".claude" / "maps"
-    maps_dir.mkdir(parents=True, exist_ok=True)
-    (maps_dir / "SERVICES_MAP.json").write_text(
-        json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
-    return result
+    candidates: list[dict] = []
+    seen: set[str] = set()
 
+    # ── 1. Archivos con imports directos de SDK (seeds) ───────────────────────
+    for fi in files:
+        sdks = _sdk_imports(fi)
+        if not sdks:
+            continue
+        env_vars = _env_vars(fi, root)
+        contracts = [f"integration:{s}" for s in sdks] + [f"env:{v}" for v in env_vars]
+        candidates.append(build_candidate(
+            fi, files, cochange, dep_forward,
+            contracts=contracts,
+            open_priority="seed",
+            confidence_signals=["has_sdk_import"],
+        ))
+        seen.add(fi.rel_path)
+
+    # ── 2. Service files sin SDK directo pero con env vars (review) ───────────
+    service_path_kws = ("service", "adapter", "provider", "integration", "client")
+    for fi in files:
+        if fi.rel_path in seen:
+            continue
+        is_service_file = any(kw in fi.rel_path.lower() for kw in service_path_kws)
+        if not is_service_file:
+            continue
+        env_vars = _env_vars(fi, root)
+        if not env_vars:
+            continue
+        contracts = [f"env:{v}" for v in env_vars]
+        candidates.append(build_candidate(
+            fi, files, cochange, dep_forward,
+            contracts=contracts,
+            open_priority="review",
+            confidence_signals=["has_env_vars", "is_service_file"],
+        ))
+        seen.add(fi.rel_path)
+
+    # ── 3. Integraciones detectadas desde stack pero sin archivo propio ────────
+    # (solo añadir a contracts del primer candidato existente si ya hay archivos;
+    #  si no hay ningún candidato para esa integración, crear candidato vacío no aporta)
+
+    return write_domain_index(root, "services", candidates)
+
+
+# ─── CLI standalone ───────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    p = argparse.ArgumentParser(description="Genera SERVICES_MAP.json")
+    p = argparse.ArgumentParser(description="Genera DOMAIN_INDEX_services.json")
     p.add_argument("--root", default=None)
     args = p.parse_args()
     repo_root = Path(args.root).resolve() if args.root else next(
         (c for c in [Path.cwd(), *Path.cwd().parents] if (c / ".claude").exists()),
-        Path.cwd()
+        Path.cwd(),
     )
     _stack = detect_stack(repo_root)
     _files = walk_repo(repo_root)
     run(repo_root, _files, _stack)
-    print("SERVICES_MAP.json generado.")
+    print("DOMAIN_INDEX_services.json generado.")

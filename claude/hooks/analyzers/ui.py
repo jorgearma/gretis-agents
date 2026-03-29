@@ -1,62 +1,95 @@
 #!/usr/bin/env python3
-"""analyzers/ui.py — Genera UI_MAP.json."""
-from __future__ import annotations
-import argparse
-import json
-from collections import defaultdict
-from pathlib import Path
-from analyzers.core import FileInfo, detect_stack, walk_repo, scan_structure
+"""
+analyzers/ui.py — Genera DOMAIN_INDEX_ui.json.
 
-UI_FRAMEWORKS = {"React", "Vue", "Angular", "Svelte", "Solid", "Next.js", "Nuxt.js", "Gatsby"}
-TEMPLATE_ENGINES = {"Jinja2", "Handlebars", "Nunjucks"}
+Candidatos del dominio UI:
+  - "seed"   : componentes y templates con contenido real
+  - "review" : archivos de routing frontend (controllers que renderizan vistas)
+"""
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from analyzers.core import (
+    FileInfo,
+    detect_stack,
+    git_cochange,
+    resolve_dependencies,
+    walk_repo,
+)
+from analyzers.domain_index import build_candidate, write_domain_index
+
+UI_FRAMEWORKS = frozenset({"React", "Vue", "Angular", "Svelte", "Solid", "Next.js", "Nuxt.js", "Gatsby"})
+TEMPLATE_ENGINES = frozenset({"Jinja2", "Handlebars", "Nunjucks"})
 
 
 def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
-    ui_techs = [t for t in stack if t in UI_FRAMEWORKS]
-    template_techs = [t for t in stack if t in TEMPLATE_ENGINES]
-    ui_files = [f for f in files if f.role in ("template", "component")]
+    """Genera DOMAIN_INDEX_ui.json. Escribe en .claude/maps/. Devuelve el dict."""
+    cochange = git_cochange(root)
+    prod_files = [f for f in files if f.role not in ("test", "migration")]
+    dep_graph = resolve_dependencies(prod_files)
+    dep_forward = dep_graph.get("forward", {})
 
-    by_folder: dict[str, list[str]] = defaultdict(list)
-    for f in ui_files:
-        folder = str(Path(f.rel_path).parent)
-        by_folder[folder].append(Path(f.rel_path).name)
+    candidates: list[dict] = []
+    seen: set[str] = set()
 
-    route_files = [
-        f.rel_path for f in files
-        if f.role == "controller" and f.language in ("python", "typescript", "javascript")
-    ]
+    # ── 1. Templates y componentes (seeds) ────────────────────────────────────
+    for fi in files:
+        if fi.role not in ("template", "component"):
+            continue
+        signals: list[str] = []
+        if fi.role == "template":
+            signals.append("is_template")
+        else:
+            signals.append("is_component")
 
-    folder_structure = scan_structure(root)
-    static_dir = next(
-        (k for k in folder_structure if k in ("static", "public", "assets")), None
-    )
+        candidates.append(build_candidate(
+            fi, files, cochange, dep_forward,
+            open_priority="seed",
+            confidence_signals=signals,
+        ))
+        seen.add(fi.rel_path)
 
-    result = {
-        "framework": ui_techs[0] if ui_techs else None,
-        "template_engine": template_techs[0] if template_techs else None,
-        "views": {folder: sorted(flist)[:12] for folder, flist in sorted(by_folder.items())},
-        "routers": route_files[:15],
-        "static": static_dir,
-    }
-    maps_dir = root / ".claude" / "maps"
-    maps_dir.mkdir(parents=True, exist_ok=True)
-    (maps_dir / "UI_MAP.json").write_text(
-        json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
-    return result
+    # ── 2. Controllers que renderizan vistas (review) ─────────────────────────
+    for fi in files:
+        if fi.rel_path in seen or fi.role != "controller":
+            continue
+        # Solo incluir si hay indicios de render (imports de template engine o
+        # palabras clave de render en funciones)
+        has_render = any(
+            kw in fi.rel_path.lower()
+            for kw in ("view", "template", "render", "page", "ui")
+        ) or any(
+            kw in (fn.lower() for fn in fi.functions)
+            for kw in ("render", "template", "view")
+        )
+        if not has_render:
+            continue
 
+        candidates.append(build_candidate(
+            fi, files, cochange, dep_forward,
+            open_priority="review",
+            confidence_signals=["is_view_router"],
+        ))
+        seen.add(fi.rel_path)
+
+    return write_domain_index(root, "ui", candidates)
+
+
+# ─── CLI standalone ───────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(description="Genera DOMAIN_INDEX_ui.json")
     p.add_argument("--root", default=None)
     args = p.parse_args()
     repo_root = Path(args.root).resolve() if args.root else next(
         (c for c in [Path.cwd(), *Path.cwd().parents] if (c / ".claude").exists()),
-        Path.cwd()
+        Path.cwd(),
     )
     _stack = detect_stack(repo_root)
     _files = walk_repo(repo_root)
     run(repo_root, _files, _stack)
-    print("UI_MAP.json generado.")
+    print("DOMAIN_INDEX_ui.json generado.")

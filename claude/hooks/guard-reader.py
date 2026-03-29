@@ -148,8 +148,13 @@ if target not in allowed_reads:
 
 MAX_READS_DEFAULT = 3
 MAX_READS_BY_TARGET = {
-	".claude/maps/PROJECT_MAP.json": 25,
-	"claude/maps/PROJECT_MAP.json": 25,
+	# ROUTING_MAP es pequeño — límite estándar
+	# DOMAIN_INDEX_data puede tener muchos candidatos si el proyecto tiene >20 modelos
+	".claude/maps/DOMAIN_INDEX_data.json":     10,
+	"claude/maps/DOMAIN_INDEX_data.json":      10,
+	# DEPENDENCY_MAP puede ser muy grande en proyectos con muchos archivos
+	".claude/maps/DEPENDENCY_MAP.json":        10,
+	"claude/maps/DEPENDENCY_MAP.json":         10,
 }
 read_count: dict[str, int] = {}
 

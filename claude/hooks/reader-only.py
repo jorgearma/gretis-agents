@@ -20,16 +20,18 @@ READS_LOG = RUNTIME / "reader-reads.log"
 WRITES_LOG = RUNTIME / "reader-writes.log"
 SESSION_DIR = Path.home() / ".claude" / "projects" / str(PROJECT_ROOT).replace("/", "-").replace("\\", "-")
 
-# MAPs que el reader puede leer (los 7 MAPs + PROJECT_MAP.md)
+# MAPs que el reader puede leer
 ALLOWED_MAPS = [
-    ".claude/maps/PROJECT_MAP.md",
-    ".claude/maps/PROJECT_MAP.json",
-    ".claude/maps/DB_MAP.json",
-    ".claude/maps/API_MAP.json",
-    ".claude/maps/UI_MAP.json",
-    ".claude/maps/QUERY_MAP.json",
-    ".claude/maps/SERVICES_MAP.json",
-    ".claude/maps/JOBS_MAP.json",
+    ".claude/maps/ROUTING_MAP.json",
+    ".claude/maps/DOMAIN_INDEX_api.json",
+    ".claude/maps/DOMAIN_INDEX_data.json",
+    ".claude/maps/DOMAIN_INDEX_ui.json",
+    ".claude/maps/DOMAIN_INDEX_services.json",
+    ".claude/maps/DOMAIN_INDEX_jobs.json",
+    ".claude/maps/CONTRACT_MAP.json",
+    ".claude/maps/DATA_MODEL_MAP.json",
+    ".claude/maps/DEPENDENCY_MAP.json",
+    ".claude/maps/TEST_MAP.json",
 ]
 
 

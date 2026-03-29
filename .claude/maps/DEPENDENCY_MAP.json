@@ -1,13 +1,34 @@
 {
-  "entry_points": [],
+  "entry_points": [
+    "claude/hooks/analyzers/domain_index.py"
+  ],
   "forward": {},
   "reverse": {},
-  "nodes": {},
+  "nodes": {
+    "claude/hooks/analyzers/domain_index.py": {
+      "role": "entry_point",
+      "symbols": [
+        {
+          "name": "build_candidate",
+          "line": 23,
+          "kind": "function",
+          "end_line": 56
+        },
+        {
+          "name": "write_domain_index",
+          "line": 59,
+          "kind": "function",
+          "end_line": 68
+        }
+      ]
+    }
+  },
   "cycles": [],
   "stats": {
-    "total_files": 35,
-    "connected_files": 0,
+    "total_files": 29,
+    "connected_files": 1,
     "edges": 0,
-    "cycles_found": 0
+    "cycles_found": 0,
+    "blueprint_edges_added": 0
   }
 }
