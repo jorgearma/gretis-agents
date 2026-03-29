@@ -49,7 +49,7 @@
     "query": {
       "map": "QUERY_MAP.json",
       "reader": "query-reader",
-      "summary": "25 archivos con acceso a datos, patrón: Manager / Repository",
+      "summary": "21 archivos con acceso a datos, patrón: Manager / Repository",
       "trigger_keywords": [
         "consulta",
         "query",
@@ -71,7 +71,7 @@
     "ui": {
       "map": "UI_MAP.json",
       "reader": "ui-reader",
-      "summary": "20 archivos de UI en 8 carpetas",
+      "summary": "19 archivos de UI en 8 carpetas",
       "trigger_keywords": [
         "vista",
         "componente",
@@ -95,7 +95,7 @@
     "api": {
       "map": "API_MAP.json",
       "reader": "api-reader",
-      "summary": "0 blueprints, 0 endpoints",
+      "summary": "11 blueprints, 103 endpoints",
       "trigger_keywords": [
         "endpoint",
         "ruta",
@@ -120,7 +120,7 @@
     "services": {
       "map": "SERVICES_MAP.json",
       "reader": "services-reader",
-      "summary": "0 integraciones externas",
+      "summary": "6 integraciones externas",
       "trigger_keywords": [
         "servicio",
         "integración",
@@ -145,7 +145,7 @@
     "jobs": {
       "map": "JOBS_MAP.json",
       "reader": "jobs-reader",
-      "summary": "Scheduler: ninguno, 0 jobs",
+      "summary": "Scheduler: ninguno, 4 jobs",
       "trigger_keywords": [
         "tarea",
         "job",
@@ -173,8 +173,7 @@
           "config"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [],
         "test_file": null
@@ -191,8 +190,8 @@
           "conectar_bd1"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "models.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -215,50 +214,6 @@
           }
         ],
         "test_file": "tests/test_database.py"
-      },
-      {
-        "path": "tests/test_database.py",
-        "purpose": "Tests for database initialization and ORM models",
-        "search_keywords": [
-          "database",
-          "test_conectar_bd1_incluye_audit_log",
-          "test_conectar_bd1_fuente_incluye_audit_log",
-          "test_empleado_tiene_estado_operativo",
-          "test_modelo_turno_existe",
-          "initialization",
-          "models"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_conectar_bd1_incluye_audit_log",
-            "line": 7,
-            "kind": "function",
-            "end_line": 9
-          },
-          {
-            "name": "test_conectar_bd1_fuente_incluye_audit_log",
-            "line": 12,
-            "kind": "function",
-            "end_line": 22
-          },
-          {
-            "name": "test_empleado_tiene_estado_operativo",
-            "line": 25,
-            "kind": "function",
-            "end_line": 30
-          },
-          {
-            "name": "test_modelo_turno_existe",
-            "line": 33,
-            "kind": "function",
-            "end_line": 39
-          }
-        ],
-        "test_file": null
       }
     ],
     "model": [
@@ -273,8 +228,8 @@
           "Pedido"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -345,8 +300,7 @@
           "transicion_valida_registro"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -358,7 +312,7 @@
             "name": "__str__",
             "line": 11,
             "kind": "function",
-            "end_line": 64
+            "end_line": 12
           },
           {
             "name": "EstadoPedido",
@@ -389,162 +343,228 @@
           }
         ],
         "test_file": "tests/test_states.py"
-      },
+      }
+    ],
+    "controller": [
       {
-        "path": "tests/test_states.py",
-        "purpose": "Tests de la máquina de estados: funciones puras, sin dependencias externas",
+        "path": "controllers/mensajes_registrados.py",
+        "purpose": "Lógica de negocio para manejo de mensajes de usuarios registrados",
         "search_keywords": [
-          "states",
-          "TestEstadoPedidoEnum",
-          "TestEstadoRegistroEnum",
-          "TestTransicionValidaPedidoHappyPath",
-          "TestTransicionValidaPedidoInvalidas",
-          "test_valores_string",
-          "test_comparacion_con_string_plano",
-          "test_serializable_json"
+          "mensajes",
+          "registrados",
+          "ManejadorMensajesRegistrados",
+          "manejar_mensajes_registrados"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "controllers/pedido.py",
+          "services/__init__.py",
+          "services/whatsapp_service.py",
+          "states.py",
+          "utils/menu_opciones.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "TestEstadoPedidoEnum",
-            "line": 20,
+            "name": "ManejadorMensajesRegistrados",
+            "line": 14,
             "kind": "class"
           },
           {
-            "name": "test_valores_string",
-            "line": 21,
+            "name": "_iniciar_pedido_y_enviar_menu",
+            "line": 17,
             "kind": "function",
-            "end_line": 57
+            "end_line": 35
           },
           {
-            "name": "test_comparacion_con_string_plano",
-            "line": 28,
-            "kind": "function",
-            "end_line": 65
-          },
-          {
-            "name": "test_serializable_json",
-            "line": 33,
-            "kind": "function",
-            "end_line": 61
-          },
-          {
-            "name": "test_construccion_desde_string",
+            "name": "_responder_pedido_en_curso",
             "line": 38,
             "kind": "function",
-            "end_line": 40
+            "end_line": 94
           },
           {
-            "name": "test_construccion_desde_string_invalido",
-            "line": 42,
+            "name": "manejar_mensajes_registrados",
+            "line": 97,
             "kind": "function",
-            "end_line": 44
-          },
+            "end_line": 174
+          }
+        ],
+        "test_file": "tests/test_mensajes_registrados.py"
+      },
+      {
+        "path": "controllers/pago.py",
+        "purpose": "Lógica de negocio para iniciar flujos de pago (enlace y efectivo)",
+        "search_keywords": [
+          "pago",
+          "iniciar_pago",
+          "iniciar_pago_efectivo"
+        ],
+        "related_to": [
+          "services/whatsapp_service.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
           {
-            "name": "TestEstadoRegistroEnum",
-            "line": 51,
-            "kind": "class"
-          },
-          {
-            "name": "TestTransicionValidaPedidoHappyPath",
-            "line": 72,
-            "kind": "class"
-          },
-          {
-            "name": "test_pendiente_a_enlace",
-            "line": 73,
+            "name": "iniciar_pago",
+            "line": 11,
             "kind": "function",
-            "end_line": 74
+            "end_line": 112
           },
           {
-            "name": "test_enlace_a_enlace2",
-            "line": 76,
+            "name": "iniciar_pago_efectivo",
+            "line": 115,
             "kind": "function",
-            "end_line": 77
+            "end_line": 186
           }
         ],
         "test_file": null
+      },
+      {
+        "path": "controllers/__init__.py",
+        "purpose": "Paquete controllers",
+        "search_keywords": [],
+        "related_to": [],
+        "symbols": [],
+        "test_file": null
+      },
+      {
+        "path": "controllers/pedido.py",
+        "purpose": "Lógica de negocio para procesar y confirmar pedidos",
+        "search_keywords": [
+          "pedido",
+          "procesar_pedido",
+          "confirmar_carrito"
+        ],
+        "related_to": [
+          "schemas/twilio.py",
+          "services/__init__.py",
+          "services/maps_service.py",
+          "services/token_service.py",
+          "services/whatsapp_service.py",
+          "states.py"
+        ],
+        "symbols": [
+          {
+            "name": "procesar_pedido",
+            "line": 18,
+            "kind": "function",
+            "end_line": 66
+          },
+          {
+            "name": "confirmar_carrito",
+            "line": 69,
+            "kind": "function",
+            "end_line": 176
+          }
+        ],
+        "test_file": "tests/test_gestor_pedidos.py"
+      },
+      {
+        "path": "controllers/registro.py",
+        "purpose": "Lógica de negocio para el flujo de registro de nuevos usuarios",
+        "search_keywords": [
+          "registro",
+          "RegistroUsuario",
+          "confirmar_direccion",
+          "manejar_registro"
+        ],
+        "related_to": [
+          "managers/estado_usuario.py",
+          "services/__init__.py",
+          "services/maps_service.py",
+          "services/whatsapp_service.py",
+          "states.py",
+          "utils/menu_opciones.py"
+        ],
+        "symbols": [
+          {
+            "name": "_enviar_mensaje_registro",
+            "line": 18,
+            "kind": "function",
+            "end_line": 22
+          },
+          {
+            "name": "confirmar_direccion",
+            "line": 25,
+            "kind": "function",
+            "end_line": 38
+          },
+          {
+            "name": "_enviar_bienvenida",
+            "line": 41,
+            "kind": "function",
+            "end_line": 48
+          },
+          {
+            "name": "_enviar_cancelacion_registro",
+            "line": 51,
+            "kind": "function",
+            "end_line": 55
+          },
+          {
+            "name": "_solicitar_nombre",
+            "line": 58,
+            "kind": "function",
+            "end_line": 62
+          },
+          {
+            "name": "_solicitar_direccion",
+            "line": 65,
+            "kind": "function",
+            "end_line": 70
+          },
+          {
+            "name": "_enviar_confirmacion_direccion",
+            "line": 73,
+            "kind": "function",
+            "end_line": 79
+          },
+          {
+            "name": "_enviar_direccion_invalida",
+            "line": 82,
+            "kind": "function",
+            "end_line": 88
+          },
+          {
+            "name": "_es_nombre_valido",
+            "line": 90,
+            "kind": "function",
+            "end_line": 94
+          },
+          {
+            "name": "_validar_y_confirmar_direccion",
+            "line": 97,
+            "kind": "function",
+            "end_line": 104
+          }
+        ],
+        "test_file": "tests/test_registro.py"
       }
     ],
     "data_access": [
       {
         "path": "managers/gestor_dashboard.py",
-        "purpose": "Gestiona acceso a datos de dashboard",
+        "purpose": "GestorDashboard — Public API",
         "search_keywords": [
           "gestor",
           "dashboard",
           "GestorDashboard",
-          "session",
-          "metricas",
-          "pedidos_activos",
-          "picking_activo",
-          "repartidores"
+          "gestordashboard",
+          "public"
         ],
         "related_to": [
-          "confirmacion_pago"
+          "managers/dashboard/_base.py",
+          "managers/dashboard/gestor_empleados_mixin.py",
+          "managers/dashboard/gestor_estadisticas_mixin.py",
+          "managers/dashboard/gestor_pedidos_mixin.py",
+          "managers/dashboard/gestor_picking_mixin.py",
+          "managers/dashboard/gestor_reparto_mixin.py"
         ],
         "symbols": [
           {
-            "name": "_iso",
-            "line": 21,
-            "kind": "function",
-            "end_line": 26
-          },
-          {
             "name": "GestorDashboard",
-            "line": 66,
+            "line": 15,
             "kind": "class"
-          },
-          {
-            "name": "session",
-            "line": 69,
-            "kind": "function",
-            "end_line": 71
-          },
-          {
-            "name": "_actualizar_estado_operativo",
-            "line": 75,
-            "kind": "function",
-            "end_line": 99
-          },
-          {
-            "name": "_ejecutar",
-            "line": 85,
-            "kind": "function",
-            "end_line": 97
-          },
-          {
-            "name": "metricas",
-            "line": 105,
-            "kind": "function",
-            "end_line": 186
-          },
-          {
-            "name": "_tiempo_medio",
-            "line": 188,
-            "kind": "function",
-            "end_line": 211
-          },
-          {
-            "name": "pedidos_activos",
-            "line": 213,
-            "kind": "function",
-            "end_line": 290
-          },
-          {
-            "name": "picking_activo",
-            "line": 292,
-            "kind": "function",
-            "end_line": 443
-          },
-          {
-            "name": "repartidores",
-            "line": 445,
-            "kind": "function",
-            "end_line": 513
           }
         ],
         "test_file": "tests/test_gestor_dashboard.py"
@@ -563,8 +583,10 @@
           "obtener_pedido_mas_reciente"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -630,6 +652,14 @@
         "test_file": "tests/test_gestor_pedidos.py"
       },
       {
+        "path": "managers/__init__.py",
+        "purpose": "Gestiona acceso a datos de init",
+        "search_keywords": [],
+        "related_to": [],
+        "symbols": [],
+        "test_file": null
+      },
+      {
         "path": "managers/gestor_usuarios.py",
         "purpose": "Gestiona acceso a datos de usuarios",
         "search_keywords": [
@@ -643,8 +673,9 @@
           "verificar_usuario"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "models.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -698,8 +729,7 @@
           "desbloquear_usuario"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -766,8 +796,9 @@
           "actualizar_stock"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "models.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -843,11 +874,13 @@
           "perfil",
           "cambiar_estado",
           "turno_hoy",
-          "capacidades"
+          "turnos_proximos"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -880,34 +913,75 @@
             "end_line": 82
           },
           {
-            "name": "capacidades",
+            "name": "turnos_proximos",
             "line": 84,
             "kind": "function",
-            "end_line": 91
+            "end_line": 111
+          },
+          {
+            "name": "capacidades",
+            "line": 113,
+            "kind": "function",
+            "end_line": 120
           },
           {
             "name": "es_polivalente",
-            "line": 93,
+            "line": 122,
             "kind": "function",
-            "end_line": 95
+            "end_line": 124
           },
           {
             "name": "tiene_rol_activo",
-            "line": 97,
+            "line": 126,
             "kind": "function",
-            "end_line": 102
+            "end_line": 131
           },
           {
             "name": "cambiar_rol",
-            "line": 104,
+            "line": 133,
             "kind": "function",
-            "end_line": 175
+            "end_line": 204
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "managers/estado_usuario.py",
+        "purpose": "Gestiona acceso a datos de usuario",
+        "search_keywords": [
+          "estado",
+          "usuario",
+          "EstadoUsuario",
+          "obtener_estado",
+          "actualizar_estado"
+        ],
+        "related_to": [
+          "states.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "EstadoUsuario",
+            "line": 9,
+            "kind": "class"
           },
           {
-            "name": "_checkin_abierto_hoy",
-            "line": 181,
+            "name": "__init__",
+            "line": 11,
             "kind": "function",
-            "end_line": 188
+            "end_line": 18
+          },
+          {
+            "name": "obtener_estado",
+            "line": 21,
+            "kind": "function",
+            "end_line": 33
+          },
+          {
+            "name": "actualizar_estado",
+            "line": 36,
+            "kind": "function",
+            "end_line": 58
           }
         ],
         "test_file": null
@@ -926,8 +1000,10 @@
           "pedidos_por_estado"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "managers/gestor_empleado.py",
+          "models.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -993,360 +1069,643 @@
         "test_file": "tests/test_gestor_metricas.py"
       },
       {
-        "path": "tests/test_gestor_dashboard.py",
-        "purpose": "Gestiona acceso a datos de gestor dashboard",
+        "path": "managers/dashboard/gestor_estadisticas_mixin.py",
+        "purpose": "Mixin: analítica histórica de ventas y operaciones",
         "search_keywords": [
           "gestor",
-          "dashboard",
-          "test_metricas_keys_existentes_presentes",
-          "test_metricas_incluye_cancelaciones_e_ingresos_por_metodo",
-          "test_monitor_datos_devuelve_claves_principales"
+          "estadisticas",
+          "mixin",
+          "GestorEstadisticasMixin",
+          "anal",
+          "tica"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "test_metricas_keys_existentes_presentes",
-            "line": 5,
-            "kind": "function",
-            "end_line": 22
+            "name": "GestorEstadisticasMixin",
+            "line": 8,
+            "kind": "class"
           },
           {
-            "name": "test_metricas_incluye_cancelaciones_e_ingresos_por_metodo",
-            "line": 25,
+            "name": "estadisticas",
+            "line": 10,
             "kind": "function",
-            "end_line": 39
+            "end_line": 201
           },
           {
-            "name": "test_monitor_datos_devuelve_claves_principales",
-            "line": 42,
+            "name": "_gen_keys",
+            "line": 136,
             "kind": "function",
-            "end_line": 61
+            "end_line": 149
+          },
+          {
+            "name": "_dias_in_key",
+            "line": 151,
+            "kind": "function",
+            "end_line": 164
           }
         ],
         "test_file": null
       },
       {
-        "path": "tests/test_gestor_usuarios.py",
-        "purpose": "Tests for managers/gestor_usuarios",
+        "path": "managers/dashboard/__init__.py",
+        "purpose": "Gestiona acceso a datos de init",
+        "search_keywords": [],
+        "related_to": [
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [],
+        "test_file": null
+      },
+      {
+        "path": "managers/dashboard/gestor_empleados_mixin.py",
+        "purpose": "Mixin: monitorización de empleados y rendimiento individual/colectivo",
         "search_keywords": [
           "gestor",
-          "usuarios",
-          "TestVerificarUsuario",
-          "TestObtenerUsuarioCompleto",
-          "TestGuardarUsuario",
-          "make_usuario",
-          "make_gestor_with_session",
-          "test_usuario_existente_retorna_objeto"
+          "empleados",
+          "mixin",
+          "GestorEmpleadosMixin",
+          "empleados_disponibles",
+          "monitor_empleados",
+          "rendimiento_resumen",
+          "rendimiento_empleado"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/dashboard/_helpers.py",
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "make_usuario",
+            "name": "GestorEmpleadosMixin",
             "line": 17,
-            "kind": "function",
-            "end_line": 23
+            "kind": "class"
           },
           {
-            "name": "make_gestor_with_session",
-            "line": 26,
+            "name": "empleados_disponibles",
+            "line": 19,
             "kind": "function",
             "end_line": 31
           },
           {
-            "name": "TestVerificarUsuario",
-            "line": 34,
-            "kind": "class"
-          },
-          {
-            "name": "test_usuario_existente_retorna_objeto",
-            "line": 36,
+            "name": "monitor_empleados",
+            "line": 33,
             "kind": "function",
-            "end_line": 44
+            "end_line": 359
           },
           {
-            "name": "test_usuario_no_existente_retorna_none",
-            "line": 46,
+            "name": "rendimiento_resumen",
+            "line": 361,
             "kind": "function",
-            "end_line": 88
+            "end_line": 461
           },
           {
-            "name": "test_error_bd_relanza_excepcion",
-            "line": 55,
+            "name": "rendimiento_empleado",
+            "line": 463,
             "kind": "function",
-            "end_line": 63
-          },
-          {
-            "name": "TestObtenerUsuarioCompleto",
-            "line": 66,
-            "kind": "class"
-          },
-          {
-            "name": "test_usuario_existente_retorna_dict",
-            "line": 68,
-            "kind": "function",
-            "end_line": 79
-          },
-          {
-            "name": "TestGuardarUsuario",
-            "line": 91,
-            "kind": "class"
-          },
-          {
-            "name": "test_usuario_nuevo_llama_add_y_commit",
-            "line": 93,
-            "kind": "function",
-            "end_line": 100
+            "end_line": 640
           }
         ],
         "test_file": null
       },
       {
-        "path": "tests/test_gestor_metricas.py",
-        "purpose": "Gestiona acceso a datos de gestor metricas",
+        "path": "managers/dashboard/gestor_picking_mixin.py",
+        "purpose": "Mixin: operaciones de picking — asignación, reclamación, completado",
         "search_keywords": [
           "gestor",
-          "metricas",
-          "TestResumenOperacion",
-          "TestAsistenciaHoy",
-          "TestColasDetalle",
-          "TestPedidosPorEstado",
-          "test_devuelve_claves_esperadas",
-          "test_valores_son_numericos"
+          "picking",
+          "mixin",
+          "GestorPickingMixin",
+          "picking_activo",
+          "buscar_productos",
+          "asignar_picker",
+          "reasignar_picker"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "managers/dashboard/_helpers.py",
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "_make_gestor",
-            "line": 6,
-            "kind": "function",
-            "end_line": 8
+            "name": "GestorPickingMixin",
+            "line": 24,
+            "kind": "class"
           },
           {
-            "name": "TestResumenOperacion",
+            "name": "picking_activo",
+            "line": 26,
+            "kind": "function",
+            "end_line": 177
+          },
+          {
+            "name": "buscar_productos",
+            "line": 179,
+            "kind": "function",
+            "end_line": 192
+          },
+          {
+            "name": "asignar_picker",
+            "line": 194,
+            "kind": "function",
+            "end_line": 244
+          },
+          {
+            "name": "reasignar_picker",
+            "line": 246,
+            "kind": "function",
+            "end_line": 309
+          },
+          {
+            "name": "completar_picking",
+            "line": 311,
+            "kind": "function",
+            "end_line": 424
+          },
+          {
+            "name": "_descontar",
+            "line": 370,
+            "kind": "function",
+            "end_line": 393
+          },
+          {
+            "name": "_actualizar_disponibilidad_picker",
+            "line": 399,
+            "kind": "function",
+            "end_line": 416
+          },
+          {
+            "name": "pickings_del_picker",
+            "line": 426,
+            "kind": "function",
+            "end_line": 482
+          },
+          {
+            "name": "actualizar_item_picking",
+            "line": 484,
+            "kind": "function",
+            "end_line": 516
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "managers/dashboard/_base.py",
+        "purpose": "Gestiona acceso a datos de base",
+        "search_keywords": [
+          "GestorDashboardBase",
+          "session"
+        ],
+        "related_to": [
+          "database.py",
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "GestorDashboardBase",
             "line": 11,
             "kind": "class"
           },
           {
-            "name": "test_devuelve_claves_esperadas",
-            "line": 12,
+            "name": "session",
+            "line": 14,
             "kind": "function",
-            "end_line": 25
+            "end_line": 16
           },
           {
-            "name": "test_valores_son_numericos",
-            "line": 27,
+            "name": "_actualizar_estado_operativo",
+            "line": 20,
             "kind": "function",
-            "end_line": 35
+            "end_line": 44
           },
           {
-            "name": "TestAsistenciaHoy",
-            "line": 38,
-            "kind": "class"
-          },
-          {
-            "name": "test_devuelve_lista",
-            "line": 39,
+            "name": "_ejecutar",
+            "line": 30,
             "kind": "function",
-            "end_line": 299
+            "end_line": 42
           },
           {
-            "name": "test_sin_checkin_es_ausente",
-            "line": 65,
+            "name": "_tiempo_medio",
+            "line": 46,
             "kind": "function",
-            "end_line": 81
-          },
-          {
-            "name": "TestColasDetalle",
-            "line": 84,
-            "kind": "class"
-          },
-          {
-            "name": "test_estructura_devuelta",
-            "line": 85,
-            "kind": "function",
-            "end_line": 96
-          },
-          {
-            "name": "TestPedidosPorEstado",
-            "line": 99,
-            "kind": "class"
+            "end_line": 69
           }
         ],
         "test_file": null
       },
       {
-        "path": "tests/test_gestor_pedidos.py",
-        "purpose": "Tests de GestorPedidos",
+        "path": "managers/dashboard/gestor_reparto_mixin.py",
+        "purpose": "Mixin: operaciones de reparto — asignación, entrega, cobro, cierre de caja",
         "search_keywords": [
           "gestor",
-          "pedidos",
-          "TestActualizarEstadoValido",
-          "TestActualizarEstadoInvalido",
-          "TestActualizarEstadoPedidoNoEncontrado",
-          "make_pedido",
-          "test_pendiente_a_enlace",
-          "test_enlace_a_enlace2"
+          "reparto",
+          "mixin",
+          "GestorRepartoMixin",
+          "repartidores",
+          "mapa",
+          "asignar_repartidor",
+          "marcar_salida_reparto"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "managers/dashboard/_helpers.py",
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "make_pedido",
-            "line": 15,
-            "kind": "function",
-            "end_line": 19
-          },
-          {
-            "name": "gestor",
-            "line": 23,
-            "kind": "function",
-            "end_line": 27
-          },
-          {
-            "name": "TestActualizarEstadoValido",
-            "line": 34,
+            "name": "GestorRepartoMixin",
+            "line": 27,
             "kind": "class"
           },
           {
-            "name": "test_pendiente_a_enlace",
-            "line": 35,
+            "name": "repartidores",
+            "line": 29,
             "kind": "function",
-            "end_line": 40
+            "end_line": 98
           },
           {
-            "name": "test_enlace_a_enlace2",
-            "line": 42,
+            "name": "mapa",
+            "line": 100,
             "kind": "function",
-            "end_line": 47
+            "end_line": 123
           },
           {
-            "name": "test_enlace2_a_confirmando_pago",
-            "line": 49,
+            "name": "asignar_repartidor",
+            "line": 125,
             "kind": "function",
-            "end_line": 53
+            "end_line": 155
           },
           {
-            "name": "test_confirmando_pago_a_pagado",
-            "line": 55,
+            "name": "marcar_salida_reparto",
+            "line": 157,
             "kind": "function",
-            "end_line": 59
+            "end_line": 185
           },
           {
-            "name": "test_confirmando_pago_a_pagado_crea_picking_pendiente",
-            "line": 61,
+            "name": "marcar_no_entregado",
+            "line": 187,
             "kind": "function",
-            "end_line": 83
+            "end_line": 208
           },
           {
-            "name": "test_enlace_a_pendiente_rollback_error",
-            "line": 85,
+            "name": "marcar_entregado",
+            "line": 210,
             "kind": "function",
-            "end_line": 89
+            "end_line": 266
           },
           {
-            "name": "test_enlace2_a_enlace_boton_atras",
-            "line": 91,
+            "name": "_actualizar_disponibilidad",
+            "line": 242,
             "kind": "function",
-            "end_line": 95
+            "end_line": 258
+          },
+          {
+            "name": "registrar_cobro",
+            "line": 268,
+            "kind": "function",
+            "end_line": 298
+          },
+          {
+            "name": "cierre_caja_repartidor",
+            "line": 300,
+            "kind": "function",
+            "end_line": 384
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "managers/dashboard/gestor_turnos_mixin.py",
+        "purpose": "Mixin: gestión de turnos y asistencia — consultas, creación, edición, cancelación",
+        "search_keywords": [
+          "gestor",
+          "turnos",
+          "mixin",
+          "GestorTurnosMixin",
+          "turnos_hoy",
+          "turnos_historial",
+          "turnos_planificacion",
+          "crear_turno"
+        ],
+        "related_to": [
+          "managers/dashboard/_helpers.py",
+          "models.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "GestorTurnosMixin",
+            "line": 13,
+            "kind": "class"
+          },
+          {
+            "name": "turnos_hoy",
+            "line": 15,
+            "kind": "function",
+            "end_line": 122
+          },
+          {
+            "name": "turnos_historial",
+            "line": 124,
+            "kind": "function",
+            "end_line": 210
+          },
+          {
+            "name": "turnos_planificacion",
+            "line": 212,
+            "kind": "function",
+            "end_line": 266
+          },
+          {
+            "name": "crear_turno",
+            "line": 268,
+            "kind": "function",
+            "end_line": 312
+          },
+          {
+            "name": "editar_turno",
+            "line": 314,
+            "kind": "function",
+            "end_line": 348
+          },
+          {
+            "name": "cancelar_turno",
+            "line": 350,
+            "kind": "function",
+            "end_line": 369
+          },
+          {
+            "name": "eliminar_turno",
+            "line": 371,
+            "kind": "function",
+            "end_line": 392
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "managers/dashboard/gestor_pedidos_mixin.py",
+        "purpose": "Mixin: consultas de pedidos activos, métricas diarias, alertas e historial",
+        "search_keywords": [
+          "gestor",
+          "pedidos",
+          "mixin",
+          "GestorPedidosMixin",
+          "metricas",
+          "pedidos_activos",
+          "alertas",
+          "eventos"
+        ],
+        "related_to": [
+          "managers/dashboard/_helpers.py",
+          "models.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "GestorPedidosMixin",
+            "line": 20,
+            "kind": "class"
+          },
+          {
+            "name": "metricas",
+            "line": 22,
+            "kind": "function",
+            "end_line": 103
+          },
+          {
+            "name": "pedidos_activos",
+            "line": 105,
+            "kind": "function",
+            "end_line": 182
+          },
+          {
+            "name": "alertas",
+            "line": 184,
+            "kind": "function",
+            "end_line": 233
+          },
+          {
+            "name": "eventos",
+            "line": 235,
+            "kind": "function",
+            "end_line": 252
+          },
+          {
+            "name": "historial_pedidos",
+            "line": 254,
+            "kind": "function",
+            "end_line": 340
+          },
+          {
+            "name": "detalle_pedido",
+            "line": 342,
+            "kind": "function",
+            "end_line": 416
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "managers/dashboard/_helpers.py",
+        "purpose": "Helpers internos del paquete dashboard (serialización de fechas ISO)",
+        "search_keywords": [
+          "_iso",
+          "helpers",
+          "dashboard"
+        ],
+        "related_to": [
+          "managers/dashboard/_base.py"
+        ],
+        "symbols": [
+          {
+            "name": "_iso",
+            "line": 6,
+            "kind": "function",
+            "end_line": 11
           }
         ],
         "test_file": null
       }
     ],
-    "migration": [
+    "utility": [
       {
-        "path": "scripts/migrate_capacidades.py",
-        "purpose": "Migración: poblar empleado_capacidades desde rol_id actual",
+        "path": "managers/dashboard/_helpers.py",
+        "purpose": "Constantes y helpers de módulo compartidos por todos los mixins del dashboard",
         "search_keywords": [
-          "migrate",
-          "capacidades",
-          "main",
-          "migraci",
-          "poblar",
-          "empleado"
+          "helpers",
+          "constantes",
+          "dulo"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "main",
-            "line": 21,
+            "name": "_iso",
+            "line": 6,
             "kind": "function",
-            "end_line": 67
+            "end_line": 11
           }
         ],
         "test_file": null
       },
       {
-        "path": "scripts/seed_pedidos_prueba.sql",
-        "purpose": "Migración de esquema de pedidos prueba",
+        "path": "utils/text_utils.py",
+        "purpose": "Utilidades para utils",
         "search_keywords": [
-          "seed",
-          "pedidos",
-          "prueba"
+          "text",
+          "utils",
+          "limpiar_texto"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "limpiar_texto",
+            "line": 5,
+            "kind": "function",
+            "end_line": 9
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "utils/__init__.py",
+        "purpose": "Utilidades para init",
+        "search_keywords": [],
+        "related_to": [],
+        "symbols": [],
+        "test_file": null
+      },
+      {
+        "path": "utils/menu_opciones.py",
+        "purpose": "Utilidades para opciones",
+        "search_keywords": [
+          "menu",
+          "opciones",
+          "mostrar_menu"
+        ],
+        "related_to": [
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "mostrar_menu",
+            "line": 10,
+            "kind": "function",
+            "end_line": 17
+          }
+        ],
+        "test_file": null
+      },
+      {
+        "path": "utils/es_pregunta.py",
+        "purpose": "Utilidades para pregunta",
+        "search_keywords": [
+          "pregunta",
+          "es_pregunta",
+          "quitar_tildes"
+        ],
+        "related_to": [],
+        "symbols": [
+          {
+            "name": "es_pregunta",
+            "line": 6,
+            "kind": "function",
+            "end_line": 54
+          },
+          {
+            "name": "quitar_tildes",
+            "line": 17,
+            "kind": "function",
+            "end_line": 20
+          }
+        ],
+        "test_file": null
+      }
+    ],
+    "schema": [
+      {
+        "path": "schemas/usuario.py",
+        "purpose": "Valida el esquema de entrada para usuario",
+        "search_keywords": [
+          "usuario",
+          "UsuarioDatos"
+        ],
+        "related_to": [
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "UsuarioDatos",
+            "line": 4,
+            "kind": "class"
+          }
+        ],
+        "test_file": "tests/test_gestor_usuarios.py"
+      },
+      {
+        "path": "schemas/__init__.py",
+        "purpose": "Valida el esquema de entrada para init",
+        "search_keywords": [],
+        "related_to": [
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [],
         "test_file": null
       },
       {
-        "path": "scripts/run_migrations.py",
-        "purpose": "Ejecuta todas las migraciones SQL en orden desde el directorio migrations/",
+        "path": "schemas/twilio.py",
+        "purpose": "Valida el esquema de entrada para twilio",
         "search_keywords": [
-          "migrations",
-          "ejecuta",
-          "todas",
-          "migraciones"
+          "twilio",
+          "WebhookRequest",
+          "PedidoInput",
+          "validate_phone_number",
+          "validate_body"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_dashboard.py"
         ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "scripts/seed_simple.sql",
-        "purpose": "Migración de esquema de simple",
-        "search_keywords": [
-          "seed",
-          "simple"
+        "symbols": [
+          {
+            "name": "WebhookRequest",
+            "line": 4,
+            "kind": "class"
+          },
+          {
+            "name": "validate_phone_number",
+            "line": 10,
+            "kind": "function",
+            "end_line": 15
+          },
+          {
+            "name": "validate_body",
+            "line": 19,
+            "kind": "function",
+            "end_line": 22
+          },
+          {
+            "name": "PedidoInput",
+            "line": 24,
+            "kind": "class"
+          }
         ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "scripts/seed_turnos_ui.sql",
-        "purpose": "Migración de esquema de turnos",
-        "search_keywords": [
-          "seed",
-          "turnos"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
         "test_file": null
       }
     ],
@@ -1361,8 +1720,9 @@
           "generar_enlace"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_redis.py",
+          "schemas/usuario.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -1389,8 +1749,7 @@
           "enviar_mensaje_whatsapp"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -1421,6 +1780,30 @@
         "test_file": "tests/test_whatsapp_service.py"
       },
       {
+        "path": "services/__init__.py",
+        "purpose": "Adapta el servicio externo de init",
+        "search_keywords": [
+          "get_monei"
+        ],
+        "related_to": [
+          "managers/gestor_dashboard.py",
+          "managers/gestor_empleado.py",
+          "managers/gestor_pedidos.py",
+          "managers/gestor_productos.py",
+          "managers/gestor_redis.py",
+          "managers/gestor_usuarios.py"
+        ],
+        "symbols": [
+          {
+            "name": "get_monei",
+            "line": 18,
+            "kind": "function",
+            "end_line": 22
+          }
+        ],
+        "test_file": null
+      },
+      {
         "path": "services/maps_service.py",
         "purpose": "Adapta el servicio externo de service",
         "search_keywords": [
@@ -1433,8 +1816,7 @@
           "validar_direccion"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
@@ -1469,2021 +1851,980 @@
           }
         ],
         "test_file": null
-      },
+      }
+    ],
+    "blueprint": [
       {
-        "path": "tests/test_whatsapp_service.py",
-        "purpose": "Adapta el servicio externo de whatsapp service",
+        "path": "blueprints/metricas_operacion.py",
+        "purpose": "Define rutas HTTP para operacion",
         "search_keywords": [
-          "whatsapp",
-          "service",
-          "TestEnviarMensajeTwilio",
-          "TestEnviarMensajeMeta",
-          "test_twilio_es_proveedor_por_defecto",
-          "test_twilio_pasa_numero_con_prefijo",
-          "test_meta_normaliza_numero",
-          "test_meta_envia_mensaje_correcto"
+          "metricas",
+          "operacion",
+          "resumen",
+          "asistencia",
+          "colas",
+          "pedidos_estado",
+          "alertas"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "blueprints/auth.py",
+          "managers/gestor_metricas.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "TestEnviarMensajeTwilio",
-            "line": 6,
-            "kind": "class"
-          },
-          {
-            "name": "test_twilio_es_proveedor_por_defecto",
-            "line": 8,
+            "name": "_ok",
+            "line": 12,
             "kind": "function",
-            "end_line": 16
+            "end_line": 13
           },
           {
-            "name": "test_twilio_pasa_numero_con_prefijo",
-            "line": 18,
+            "name": "_err",
+            "line": 16,
             "kind": "function",
-            "end_line": 27
+            "end_line": 17
           },
           {
-            "name": "TestEnviarMensajeMeta",
-            "line": 30,
-            "kind": "class"
+            "name": "resumen",
+            "line": 22,
+            "kind": "function",
+            "end_line": 23
           },
           {
-            "name": "test_meta_normaliza_numero",
-            "line": 32,
+            "name": "asistencia",
+            "line": 28,
+            "kind": "function",
+            "end_line": 29
+          },
+          {
+            "name": "colas",
+            "line": 34,
+            "kind": "function",
+            "end_line": 35
+          },
+          {
+            "name": "pedidos_estado",
+            "line": 40,
+            "kind": "function",
+            "end_line": 41
+          },
+          {
+            "name": "alertas",
+            "line": 46,
+            "kind": "function",
+            "end_line": 47
+          }
+        ],
+        "test_file": "tests/test_metricas_operacion.py"
+      },
+      {
+        "path": "blueprints/empleado.py",
+        "purpose": "Define rutas HTTP para empleado",
+        "search_keywords": [
+          "empleado",
+          "index",
+          "perfil",
+          "estado",
+          "turno_hoy",
+          "puede_iniciar",
+          "metricas"
+        ],
+        "related_to": [
+          "blueprints/auth.py",
+          "database.py",
+          "models.py",
+          "services/__init__.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "index",
+            "line": 20,
+            "kind": "function",
+            "end_line": 29
+          },
+          {
+            "name": "perfil",
+            "line": 34,
             "kind": "function",
             "end_line": 43
           },
           {
-            "name": "test_meta_envia_mensaje_correcto",
-            "line": 45,
-            "kind": "function",
-            "end_line": 59
-          },
-          {
-            "name": "test_meta_llama_raise_for_status",
-            "line": 61,
-            "kind": "function",
-            "end_line": 71
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_token_service.py",
-        "purpose": "Tests for services/token_service",
-        "search_keywords": [
-          "token",
-          "service",
-          "TestGenerarTokenTemporal",
-          "TestGenerarEnlace",
-          "test_datos_validos_retorna_string",
-          "test_token_se_almacena_en_redis",
-          "test_datos_invalidos_lanza_value_error",
-          "test_datos_invalidos_no_escribe_redis"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "TestGenerarTokenTemporal",
-            "line": 26,
-            "kind": "class"
-          },
-          {
-            "name": "test_datos_validos_retorna_string",
-            "line": 28,
-            "kind": "function",
-            "end_line": 36
-          },
-          {
-            "name": "test_token_se_almacena_en_redis",
-            "line": 38,
-            "kind": "function",
-            "end_line": 50
-          },
-          {
-            "name": "test_datos_invalidos_lanza_value_error",
-            "line": 52,
-            "kind": "function",
-            "end_line": 56
-          },
-          {
-            "name": "test_datos_invalidos_no_escribe_redis",
-            "line": 58,
-            "kind": "function",
-            "end_line": 65
-          },
-          {
-            "name": "TestGenerarEnlace",
-            "line": 68,
-            "kind": "class"
-          },
-          {
-            "name": "test_retorna_url_con_formato_correcto",
-            "line": 70,
-            "kind": "function",
-            "end_line": 81
-          },
-          {
-            "name": "test_error_en_token_no_genera_enlace_roto",
-            "line": 83,
-            "kind": "function",
-            "end_line": 89
-          }
-        ],
-        "test_file": null
-      }
-    ],
-    "template": [
-      {
-        "path": "templates/quiniela.html",
-        "purpose": "Plantilla HTML de quiniela",
-        "search_keywords": [
-          "quiniela"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/confirmacion_pago.html",
-        "purpose": "Plantilla HTML de pago",
-        "search_keywords": [
-          "confirmacion",
-          "pago"
-        ],
-        "related_to": [
-          "gestor_dashboard"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/error.html",
-        "purpose": "Plantilla HTML de error",
-        "search_keywords": [
-          "error"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/ver_comandas.html",
-        "purpose": "Plantilla HTML de comandas",
-        "search_keywords": [
-          "ver",
-          "comandas"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/auth/login.html",
-        "purpose": "Plantilla HTML de login",
-        "search_keywords": [
-          "login"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/dashboard/index.html",
-        "purpose": "Plantilla HTML de index",
-        "search_keywords": [
-          "index"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/dashboard/monitor.html",
-        "purpose": "Plantilla HTML de monitor",
-        "search_keywords": [
-          "monitor"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/dashboard/turnos.html",
-        "purpose": "Plantilla HTML de turnos",
-        "search_keywords": [
-          "turnos"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/dashboard/estadisticas.html",
-        "purpose": "Plantilla HTML de estadisticas",
-        "search_keywords": [
-          "estadisticas"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/dashboard/historial.html",
-        "purpose": "Plantilla HTML de historial",
-        "search_keywords": [
-          "historial"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/dashboard/rendimiento.html",
-        "purpose": "Plantilla HTML de rendimiento",
-        "search_keywords": [
-          "rendimiento"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/dashboard/_nav.html",
-        "purpose": "Plantilla HTML de nav",
-        "search_keywords": [
-          "nav"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/empleado/index.html",
-        "purpose": "Plantilla HTML de index",
-        "search_keywords": [
-          "index"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/empleado/checkin.html",
-        "purpose": "Plantilla HTML de checkin",
-        "search_keywords": [
-          "checkin"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": "tests/test_checkin_empleado.py"
-      },
-      {
-        "path": "templates/macros/ui.html",
-        "purpose": "Plantilla HTML de ui",
-        "search_keywords": [],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": "tests/test_seguimiento.py"
-      },
-      {
-        "path": "templates/picker/index.html",
-        "purpose": "Plantilla HTML de index",
-        "search_keywords": [
-          "index"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/productos/index.html",
-        "purpose": "Plantilla HTML de index",
-        "search_keywords": [
-          "index"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/repartidor/index.html",
-        "purpose": "Plantilla HTML de index",
-        "search_keywords": [
-          "index"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      },
-      {
-        "path": "templates/repartidor/cierre.html",
-        "purpose": "Plantilla HTML de cierre",
-        "search_keywords": [
-          "cierre"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [],
-        "test_file": null
-      }
-    ],
-    "test": [
-      {
-        "path": "tests/test_mensajes_registrados.py",
-        "purpose": "Tests for controllers/mensajes_registrados",
-        "search_keywords": [
-          "mensajes",
-          "registrados",
-          "TestPedidoEnPreparacion",
-          "TestPedidoPreparado",
-          "TestPedidoEnReparto",
-          "TestSinTelefonoSoporte",
-          "test_retorna_200",
-          "test_envia_mensaje_whatsapp"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "_make_pedido",
-            "line": 23,
-            "kind": "function",
-            "end_line": 29
-          },
-          {
-            "name": "_make_reparto",
-            "line": 32,
-            "kind": "function",
-            "end_line": 38
-          },
-          {
-            "name": "_run",
-            "line": 41,
-            "kind": "function",
-            "end_line": 56
-          },
-          {
-            "name": "TestPedidoEnPreparacion",
-            "line": 63,
-            "kind": "class"
-          },
-          {
-            "name": "test_retorna_200",
-            "line": 65,
-            "kind": "function",
-            "end_line": 212
-          },
-          {
-            "name": "test_envia_mensaje_whatsapp",
-            "line": 69,
-            "kind": "function",
-            "end_line": 74
-          },
-          {
-            "name": "test_no_inicia_nuevo_pedido",
-            "line": 76,
-            "kind": "function",
-            "end_line": 222
-          },
-          {
-            "name": "test_bloqueado_aunque_mensaje_sea_1",
-            "line": 80,
-            "kind": "function",
-            "end_line": 163
-          },
-          {
-            "name": "test_bloqueado_con_cualquier_texto",
-            "line": 87,
-            "kind": "function",
-            "end_line": 90
-          },
-          {
-            "name": "TestPedidoPreparado",
-            "line": 97,
-            "kind": "class"
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_startup.py",
-        "purpose": "Módulo de startup",
-        "search_keywords": [
-          "startup",
-          "test_create_app_falla_si_falta_secret_key"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_create_app_falla_si_falta_secret_key",
-            "line": 6,
-            "kind": "function",
-            "end_line": 11
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_webhook.py",
-        "purpose": "Tests for blueprints/webhook",
-        "search_keywords": [
-          "webhook",
-          "TestWebhookTwilio",
-          "TestWebhookMonei",
-          "TestWebhookMeta",
-          "monei_body",
-          "make_monei_signature",
-          "make_meta_signature",
-          "meta_body"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "monei_body",
-            "line": 23,
-            "kind": "function",
-            "end_line": 34
-          },
-          {
-            "name": "make_monei_signature",
-            "line": 40,
-            "kind": "function",
-            "end_line": 44
-          },
-          {
-            "name": "TestWebhookTwilio",
-            "line": 51,
-            "kind": "class"
-          },
-          {
-            "name": "test_payload_invalido_retorna_400",
-            "line": 53,
-            "kind": "function",
-            "end_line": 56
-          },
-          {
-            "name": "test_body_vacio_retorna_400",
-            "line": 58,
-            "kind": "function",
-            "end_line": 61
-          },
-          {
-            "name": "test_usuario_bloqueado_retorna_403",
-            "line": 63,
-            "kind": "function",
-            "end_line": 68
-          },
-          {
-            "name": "test_firma_invalida_retorna_403",
-            "line": 70,
-            "kind": "function",
-            "end_line": 86
-          },
-          {
-            "name": "test_firma_valida_no_bloquea",
-            "line": 88,
-            "kind": "function",
-            "end_line": 109
-          },
-          {
-            "name": "test_usuario_no_registrado_llama_manejar_registro",
-            "line": 111,
-            "kind": "function",
-            "end_line": 120
-          },
-          {
-            "name": "test_usuario_registrado_llama_manejador",
-            "line": 122,
-            "kind": "function",
-            "end_line": 135
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_auth.py",
-        "purpose": "Módulo de auth",
-        "search_keywords": [
-          "auth",
-          "test_login_sin_credenciales_devuelve_400",
-          "test_login_credenciales_invalidas_devuelve_401",
-          "test_dashboard_sin_sesion_redirige_a_login",
-          "test_picker_sin_sesion_redirige_a_login",
-          "test_repartidor_sin_sesion_redirige_a_login"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_login_sin_credenciales_devuelve_400",
-            "line": 1,
-            "kind": "function",
-            "end_line": 3
-          },
-          {
-            "name": "test_login_credenciales_invalidas_devuelve_401",
-            "line": 5,
-            "kind": "function",
-            "end_line": 10
-          },
-          {
-            "name": "test_dashboard_sin_sesion_redirige_a_login",
-            "line": 12,
-            "kind": "function",
-            "end_line": 14
-          },
-          {
-            "name": "test_picker_sin_sesion_redirige_a_login",
-            "line": 16,
-            "kind": "function",
-            "end_line": 18
-          },
-          {
-            "name": "test_repartidor_sin_sesion_redirige_a_login",
-            "line": 20,
-            "kind": "function",
-            "end_line": 22
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_dashboard_sprint3.py",
-        "purpose": "Módulo de dashboard sprint3",
-        "search_keywords": [
-          "dashboard",
-          "sprint3",
-          "test_turnos_hoy_devuelve_claves_esperadas",
-          "test_turnos_hoy_resumen_sin_empleados",
-          "test_turnos_historial_devuelve_claves_esperadas",
-          "test_turnos_historial_paginacion_por_defecto",
-          "test_turnos_html_devuelve_200",
-          "test_turnos_html_requiere_auth"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_turnos_hoy_devuelve_claves_esperadas",
-            "line": 7,
-            "kind": "function",
-            "end_line": 25
-          },
-          {
-            "name": "test_turnos_hoy_resumen_sin_empleados",
-            "line": 28,
-            "kind": "function",
-            "end_line": 41
-          },
-          {
-            "name": "test_turnos_historial_devuelve_claves_esperadas",
-            "line": 44,
-            "kind": "function",
-            "end_line": 67
-          },
-          {
-            "name": "test_turnos_historial_paginacion_por_defecto",
-            "line": 70,
-            "kind": "function",
-            "end_line": 89
-          },
-          {
-            "name": "test_turnos_html_devuelve_200",
-            "line": 94,
-            "kind": "function",
-            "end_line": 101
-          },
-          {
-            "name": "test_turnos_html_requiere_auth",
-            "line": 104,
-            "kind": "function",
-            "end_line": 107
-          },
-          {
-            "name": "test_turnos_hoy_json_devuelve_estructura",
-            "line": 110,
-            "kind": "function",
-            "end_line": 127
-          },
-          {
-            "name": "test_turnos_historial_json_devuelve_estructura",
-            "line": 130,
-            "kind": "function",
-            "end_line": 147
-          },
-          {
-            "name": "test_turnos_historial_json_pasa_filtros",
-            "line": 150,
-            "kind": "function",
-            "end_line": 167
-          },
-          {
-            "name": "test_turnos_template_cargable_en_jinja2",
-            "line": 172,
-            "kind": "function",
-            "end_line": 176
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_dashboard_sprint2.py",
-        "purpose": "Módulo de dashboard sprint2",
-        "search_keywords": [
-          "dashboard",
-          "sprint2",
-          "test_historial_pedidos_devuelve_claves_esperadas",
-          "test_historial_pedidos_paginacion_por_defecto",
-          "test_detalle_pedido_devuelve_none_si_no_existe",
-          "test_detalle_pedido_devuelve_claves_esperadas",
-          "test_historial_html_devuelve_200",
-          "test_historial_html_requiere_auth"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_historial_pedidos_devuelve_claves_esperadas",
-            "line": 7,
-            "kind": "function",
-            "end_line": 29
-          },
-          {
-            "name": "test_historial_pedidos_paginacion_por_defecto",
-            "line": 32,
-            "kind": "function",
-            "end_line": 50
-          },
-          {
-            "name": "test_detalle_pedido_devuelve_none_si_no_existe",
-            "line": 53,
-            "kind": "function",
-            "end_line": 64
-          },
-          {
-            "name": "test_detalle_pedido_devuelve_claves_esperadas",
-            "line": 67,
-            "kind": "function",
-            "end_line": 102
-          },
-          {
-            "name": "test_historial_html_devuelve_200",
-            "line": 107,
-            "kind": "function",
-            "end_line": 114
-          },
-          {
-            "name": "test_historial_html_requiere_auth",
-            "line": 117,
-            "kind": "function",
-            "end_line": 120
-          },
-          {
-            "name": "test_historial_pedidos_json_devuelve_estructura",
-            "line": 123,
-            "kind": "function",
-            "end_line": 142
-          },
-          {
-            "name": "test_historial_pedidos_json_pasa_filtros",
-            "line": 145,
-            "kind": "function",
-            "end_line": 162
-          },
-          {
-            "name": "test_detalle_pedido_json_devuelve_404_si_no_existe",
-            "line": 165,
-            "kind": "function",
-            "end_line": 176
-          },
-          {
-            "name": "test_detalle_pedido_json_devuelve_datos",
-            "line": 179,
-            "kind": "function",
-            "end_line": 200
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_repartidor_cola.py",
-        "purpose": "Módulo de repartidor cola",
-        "search_keywords": [
-          "repartidor",
-          "cola",
-          "TestRepartosSinAsignar",
-          "TestReclamarReparto",
-          "TestCompletarPickingCreaReparto",
-          "TestBlueprintRepartidorCola",
-          "setup_method",
-          "test_devuelve_lista"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "_mock_session",
-            "line": 6,
-            "kind": "function",
-            "end_line": 11
-          },
-          {
-            "name": "TestRepartosSinAsignar",
-            "line": 14,
-            "kind": "class"
-          },
-          {
-            "name": "setup_method",
-            "line": 16,
-            "kind": "function",
-            "end_line": 194
-          },
-          {
-            "name": "_mock_q_vacio",
-            "line": 20,
-            "kind": "function",
-            "end_line": 27
-          },
-          {
-            "name": "test_devuelve_lista",
-            "line": 29,
-            "kind": "function",
-            "end_line": 59
-          },
-          {
-            "name": "test_vacio",
-            "line": 61,
-            "kind": "function",
-            "end_line": 71
-          },
-          {
-            "name": "test_hace_join_y_filter",
-            "line": 73,
-            "kind": "function",
-            "end_line": 85
-          },
-          {
-            "name": "TestReclamarReparto",
-            "line": 88,
-            "kind": "class"
-          },
-          {
-            "name": "test_ok",
-            "line": 94,
-            "kind": "function",
-            "end_line": 126
-          },
-          {
-            "name": "test_no_encontrado",
-            "line": 128,
-            "kind": "function",
-            "end_line": 142
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_empleado.py",
-        "purpose": "Tests para GestorEmpleado y el blueprint /empleado",
-        "search_keywords": [
-          "empleado",
-          "TestGestorEmpleadoCambiarEstado",
-          "TestGestorEmpleadoPerfil",
-          "TestBlueprintEmpleadoAuth",
-          "TestBlueprintEmpleadoEstado",
-          "test_cambiar_a_en_pausa_ok",
-          "test_cambiar_a_desconectado_ok",
-          "test_rechaza_disponible_manual"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "TestGestorEmpleadoCambiarEstado",
-            "line": 9,
-            "kind": "class"
-          },
-          {
-            "name": "_make_gestor",
-            "line": 12,
-            "kind": "function",
-            "end_line": 290
-          },
-          {
-            "name": "test_cambiar_a_en_pausa_ok",
-            "line": 22,
-            "kind": "function",
-            "end_line": 27
-          },
-          {
-            "name": "test_cambiar_a_desconectado_ok",
-            "line": 29,
-            "kind": "function",
-            "end_line": 34
-          },
-          {
-            "name": "test_rechaza_disponible_manual",
-            "line": 36,
-            "kind": "function",
-            "end_line": 41
-          },
-          {
-            "name": "test_rechaza_ocupado_manual",
-            "line": 43,
-            "kind": "function",
-            "end_line": 47
-          },
-          {
-            "name": "test_empleado_no_encontrado",
-            "line": 49,
-            "kind": "function",
-            "end_line": 56
-          },
-          {
-            "name": "TestGestorEmpleadoPerfil",
-            "line": 59,
-            "kind": "class"
-          },
-          {
-            "name": "test_perfil_estructura",
-            "line": 62,
-            "kind": "function",
-            "end_line": 83
-          },
-          {
-            "name": "TestBlueprintEmpleadoAuth",
-            "line": 90,
-            "kind": "class"
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_seguimiento.py",
-        "purpose": "Tests para GET /api/seguimiento/<redis_id>",
-        "search_keywords": [
-          "seguimiento",
-          "TestSeguimientoEndpoint",
-          "make_pedido",
-          "test_pedido_no_encontrado_devuelve_404",
-          "test_pedido_sin_reparto",
-          "test_pedido_en_reparto_con_repartidor",
-          "test_pedido_con_reparto_sin_repartidor_asignado",
-          "test_pedido_entregado"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "make_pedido",
-            "line": 9,
-            "kind": "function",
-            "end_line": 33
-          },
-          {
-            "name": "TestSeguimientoEndpoint",
-            "line": 39,
-            "kind": "class"
-          },
-          {
-            "name": "_patch_db",
-            "line": 41,
-            "kind": "function",
-            "end_line": 45
-          },
-          {
-            "name": "test_pedido_no_encontrado_devuelve_404",
-            "line": 47,
-            "kind": "function",
-            "end_line": 51
-          },
-          {
-            "name": "test_pedido_sin_reparto",
-            "line": 53,
-            "kind": "function",
-            "end_line": 61
-          },
-          {
-            "name": "test_pedido_en_reparto_con_repartidor",
-            "line": 63,
-            "kind": "function",
-            "end_line": 75
-          },
-          {
-            "name": "test_pedido_con_reparto_sin_repartidor_asignado",
-            "line": 77,
-            "kind": "function",
-            "end_line": 85
-          },
-          {
-            "name": "test_pedido_entregado",
-            "line": 87,
-            "kind": "function",
-            "end_line": 92
-          },
-          {
-            "name": "test_respuesta_incluye_forma_pago",
-            "line": 94,
-            "kind": "function",
-            "end_line": 98
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_registro.py",
-        "purpose": "Tests del flujo de registro de usuario (máquina de estados en Redis)",
-        "search_keywords": [
-          "registro",
-          "TestSaludoInicial",
-          "TestEsperandoConfirmacion",
-          "TestEsperandoNombre",
-          "TestEsperandoDireccion",
-          "make_redis_manager",
-          "manejar",
-          "test_cualquier_mensaje_envia_bienvenida"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "make_redis_manager",
-            "line": 14,
-            "kind": "function",
-            "end_line": 24
-          },
-          {
-            "name": "manejar",
-            "line": 30,
-            "kind": "function",
-            "end_line": 39
-          },
-          {
-            "name": "TestSaludoInicial",
-            "line": 46,
-            "kind": "class"
-          },
-          {
-            "name": "test_cualquier_mensaje_envia_bienvenida",
-            "line": 47,
+            "name": "estado",
+            "line": 48,
             "kind": "function",
             "end_line": 57
           },
           {
-            "name": "test_transiciona_a_esperando_confirmacion",
-            "line": 59,
-            "kind": "function",
-            "end_line": 68
-          },
-          {
-            "name": "TestEsperandoConfirmacion",
-            "line": 75,
-            "kind": "class"
-          },
-          {
-            "name": "test_respuesta_afirmativa_avanza",
-            "line": 77,
-            "kind": "function",
-            "end_line": 86
-          },
-          {
-            "name": "test_respuesta_negativa_cancela_sin_avanzar",
-            "line": 88,
-            "kind": "function",
-            "end_line": 95
-          },
-          {
-            "name": "TestEsperandoNombre",
-            "line": 102,
-            "kind": "class"
-          },
-          {
-            "name": "test_nombre_valido_avanza_a_direccion",
-            "line": 103,
-            "kind": "function",
-            "end_line": 114
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_checkin_empleado.py",
-        "purpose": "Tests para la lógica de fichaje en GestorEmpleado",
-        "search_keywords": [
-          "checkin",
-          "empleado",
-          "TestIniciarTurno",
-          "TestCerrarTurno",
-          "TestCheckinHoy",
-          "test_crea_checkin_sin_rol_activo",
-          "test_lanza_error_si_ya_hay_checkin_abierto",
-          "test_crea_tramo_si_tiene_rol_activo"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "TestIniciarTurno",
-            "line": 7,
-            "kind": "class"
-          },
-          {
-            "name": "test_crea_checkin_sin_rol_activo",
-            "line": 9,
-            "kind": "function",
-            "end_line": 21
-          },
-          {
-            "name": "test_lanza_error_si_ya_hay_checkin_abierto",
-            "line": 23,
-            "kind": "function",
-            "end_line": 32
-          },
-          {
-            "name": "test_crea_tramo_si_tiene_rol_activo",
-            "line": 34,
-            "kind": "function",
-            "end_line": 49
-          },
-          {
-            "name": "TestCerrarTurno",
-            "line": 52,
-            "kind": "class"
-          },
-          {
-            "name": "test_lanza_error_si_no_hay_checkin",
-            "line": 54,
-            "kind": "function",
-            "end_line": 61
-          },
-          {
-            "name": "test_cierra_checkin_y_devuelve_resumen",
-            "line": 63,
-            "kind": "function",
-            "end_line": 80
-          },
-          {
-            "name": "TestCheckinHoy",
-            "line": 83,
-            "kind": "class"
-          },
-          {
-            "name": "test_devuelve_falso_si_no_hay_checkin",
-            "line": 85,
-            "kind": "function",
-            "end_line": 92
-          },
-          {
-            "name": "test_devuelve_resumen_con_checkin_activo",
-            "line": 94,
-            "kind": "function",
-            "end_line": 112
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_metricas_analitica.py",
-        "purpose": "Módulo de metricas analitica",
-        "search_keywords": [
-          "metricas",
-          "analitica",
-          "TestAnaliticaAuth",
-          "TestAnaliticaFechasDefault",
-          "TestAnaliticaResumen",
-          "TestAnaliticaComparativaRolRequerido",
-          "client",
-          "test_sin_sesion_redirige"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "client",
-            "line": 8,
-            "kind": "function",
-            "end_line": 9
-          },
-          {
-            "name": "_login",
-            "line": 12,
-            "kind": "function",
-            "end_line": 15
-          },
-          {
-            "name": "TestAnaliticaAuth",
-            "line": 18,
-            "kind": "class"
-          },
-          {
-            "name": "test_sin_sesion_redirige",
-            "line": 19,
-            "kind": "function",
-            "end_line": 21
-          },
-          {
-            "name": "TestAnaliticaFechasDefault",
-            "line": 24,
-            "kind": "class"
-          },
-          {
-            "name": "test_sin_params_usa_7_dias",
-            "line": 25,
-            "kind": "function",
-            "end_line": 33
-          },
-          {
-            "name": "TestAnaliticaResumen",
-            "line": 36,
-            "kind": "class"
-          },
-          {
-            "name": "test_devuelve_200_y_ok",
-            "line": 37,
-            "kind": "function",
-            "end_line": 42
-          },
-          {
-            "name": "TestAnaliticaComparativaRolRequerido",
-            "line": 45,
-            "kind": "class"
-          },
-          {
-            "name": "test_sin_rol_devuelve_400",
-            "line": 46,
-            "kind": "function",
-            "end_line": 50
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_dashboard_sprint5.py",
-        "purpose": "Módulo de dashboard sprint5",
-        "search_keywords": [
-          "dashboard",
-          "sprint5",
-          "test_estadisticas_devuelve_claves_esperadas",
-          "test_estadisticas_kpis_tienen_campos_requeridos",
-          "test_estadisticas_serie_vacia_si_no_hay_pedidos",
-          "test_estadisticas_acepta_granularidad_semana",
-          "test_estadisticas_html_devuelve_200",
-          "test_estadisticas_html_requiere_auth"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_estadisticas_devuelve_claves_esperadas",
-            "line": 7,
-            "kind": "function",
-            "end_line": 24
-          },
-          {
-            "name": "test_estadisticas_kpis_tienen_campos_requeridos",
-            "line": 27,
-            "kind": "function",
-            "end_line": 47
-          },
-          {
-            "name": "test_estadisticas_serie_vacia_si_no_hay_pedidos",
-            "line": 50,
-            "kind": "function",
-            "end_line": 67
-          },
-          {
-            "name": "test_estadisticas_acepta_granularidad_semana",
-            "line": 70,
-            "kind": "function",
-            "end_line": 86
-          },
-          {
-            "name": "test_estadisticas_html_devuelve_200",
-            "line": 91,
-            "kind": "function",
-            "end_line": 98
-          },
-          {
-            "name": "test_estadisticas_html_requiere_auth",
-            "line": 101,
-            "kind": "function",
-            "end_line": 104
-          },
-          {
-            "name": "test_estadisticas_datos_json_devuelve_estructura",
-            "line": 107,
-            "kind": "function",
-            "end_line": 134
-          },
-          {
-            "name": "test_estadisticas_datos_pasa_parametros",
-            "line": 137,
-            "kind": "function",
-            "end_line": 160
-          },
-          {
-            "name": "test_estadisticas_template_cargable_en_jinja2",
-            "line": 165,
-            "kind": "function",
-            "end_line": 169
-          },
-          {
-            "name": "test_estadisticas_html_contiene_nav_links",
-            "line": 172,
-            "kind": "function",
-            "end_line": 182
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_menu.py",
-        "purpose": "Tests for blueprints/menu",
-        "search_keywords": [
-          "menu",
-          "TestMenuToken",
-          "TestConfirmacionPago",
-          "make_pedido",
-          "test_token_expirado_retorna_403",
-          "test_datos_redis_invalidos_retorna_400",
-          "test_estado_enlace_renderiza_quiniela",
-          "test_estado_enlace2_redirige_a_confirmacion"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "make_pedido",
-            "line": 26,
-            "kind": "function",
-            "end_line": 31
-          },
-          {
-            "name": "TestMenuToken",
-            "line": 38,
-            "kind": "class"
-          },
-          {
-            "name": "_get",
-            "line": 40,
-            "kind": "function",
-            "end_line": 41
-          },
-          {
-            "name": "test_token_expirado_retorna_403",
-            "line": 43,
-            "kind": "function",
-            "end_line": 48
-          },
-          {
-            "name": "test_datos_redis_invalidos_retorna_400",
-            "line": 50,
-            "kind": "function",
-            "end_line": 55
-          },
-          {
-            "name": "test_estado_enlace_renderiza_quiniela",
-            "line": 57,
-            "kind": "function",
-            "end_line": 64
-          },
-          {
-            "name": "test_estado_enlace2_redirige_a_confirmacion",
-            "line": 66,
-            "kind": "function",
-            "end_line": 74
-          },
-          {
-            "name": "test_sin_pedido_activo_retorna_404",
-            "line": 76,
-            "kind": "function",
-            "end_line": 83
-          },
-          {
-            "name": "test_estado_desconocido_retorna_400",
-            "line": 85,
-            "kind": "function",
-            "end_line": 92
-          },
-          {
-            "name": "TestConfirmacionPago",
-            "line": 111,
-            "kind": "class"
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_api_pedido.py",
-        "purpose": "Módulo de api pedido",
-        "search_keywords": [
-          "api",
-          "pedido",
-          "TestConfirmarCarrito",
-          "TestIniciarPago",
-          "TestIniciarPagoEfectivo",
-          "TestCambiarEstadoAEnlace",
-          "make_pedido",
-          "make_cache"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "make_pedido",
-            "line": 21,
-            "kind": "function",
-            "end_line": 26
-          },
-          {
-            "name": "make_cache",
-            "line": 29,
-            "kind": "function",
-            "end_line": 34
-          },
-          {
-            "name": "make_gestor_pedidos",
-            "line": 37,
-            "kind": "function",
-            "end_line": 44
-          },
-          {
-            "name": "TestConfirmarCarrito",
+            "name": "turno_hoy",
             "line": 62,
-            "kind": "class"
-          },
-          {
-            "name": "test_happy_path_returns_true_and_url",
-            "line": 63,
-            "kind": "function",
-            "end_line": 88
-          },
-          {
-            "name": "test_cart_stored_in_cache",
-            "line": 90,
-            "kind": "function",
-            "end_line": 119
-          },
-          {
-            "name": "test_state_transition_to_enlace2_called",
-            "line": 121,
-            "kind": "function",
-            "end_line": 141
-          },
-          {
-            "name": "test_wrong_state_does_not_call_actualizar_estado",
-            "line": 143,
-            "kind": "function",
-            "end_line": 164
-          },
-          {
-            "name": "test_no_active_order_returns_false",
-            "line": 166,
-            "kind": "function",
-            "end_line": 437
-          },
-          {
-            "name": "test_confirmacion_ignora_precio_frontend",
-            "line": 189,
-            "kind": "function",
-            "end_line": 227
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_health.py",
-        "purpose": "Módulo de health",
-        "search_keywords": [
-          "health",
-          "test_health_devuelve_200",
-          "test_health_incluye_componentes"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_health_devuelve_200",
-            "line": 1,
-            "kind": "function",
-            "end_line": 3
-          },
-          {
-            "name": "test_health_incluye_componentes",
-            "line": 6,
-            "kind": "function",
-            "end_line": 10
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_repartidor.py",
-        "purpose": "Módulo de repartidor",
-        "search_keywords": [
-          "repartidor",
-          "test_marcar_entregado_rechaza_sin_cobro"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_marcar_entregado_rechaza_sin_cobro",
-            "line": 5,
-            "kind": "function",
-            "end_line": 23
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_dashboard_sprint4.py",
-        "purpose": "Módulo de dashboard sprint4",
-        "search_keywords": [
-          "dashboard",
-          "sprint4",
-          "test_rendimiento_resumen_devuelve_claves_esperadas",
-          "test_rendimiento_resumen_acepta_filtro_rol",
-          "test_rendimiento_empleado_devuelve_none_si_no_existe",
-          "test_rendimiento_empleado_devuelve_claves_esperadas",
-          "test_rendimiento_html_devuelve_200",
-          "test_rendimiento_html_requiere_auth"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_rendimiento_resumen_devuelve_claves_esperadas",
-            "line": 7,
-            "kind": "function",
-            "end_line": 22
-          },
-          {
-            "name": "test_rendimiento_resumen_acepta_filtro_rol",
-            "line": 25,
-            "kind": "function",
-            "end_line": 41
-          },
-          {
-            "name": "test_rendimiento_empleado_devuelve_none_si_no_existe",
-            "line": 44,
-            "kind": "function",
-            "end_line": 54
-          },
-          {
-            "name": "test_rendimiento_empleado_devuelve_claves_esperadas",
-            "line": 57,
-            "kind": "function",
-            "end_line": 87
-          },
-          {
-            "name": "test_rendimiento_html_devuelve_200",
-            "line": 92,
-            "kind": "function",
-            "end_line": 99
-          },
-          {
-            "name": "test_rendimiento_html_requiere_auth",
-            "line": 102,
-            "kind": "function",
-            "end_line": 105
-          },
-          {
-            "name": "test_rendimiento_resumen_json_devuelve_estructura",
-            "line": 108,
-            "kind": "function",
-            "end_line": 121
-          },
-          {
-            "name": "test_rendimiento_resumen_json_pasa_filtros",
-            "line": 124,
-            "kind": "function",
-            "end_line": 137
-          },
-          {
-            "name": "test_rendimiento_empleado_json_devuelve_404_si_no_existe",
-            "line": 140,
-            "kind": "function",
-            "end_line": 151
-          },
-          {
-            "name": "test_rendimiento_empleado_json_devuelve_datos",
-            "line": 154,
-            "kind": "function",
-            "end_line": 177
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_picker_cola.py",
-        "purpose": "Módulo de picker cola",
-        "search_keywords": [
-          "picker",
-          "cola",
-          "TestGestorDashboardCola",
-          "TestBlueprintPickerCola",
-          "setup_method",
-          "test_pickings_sin_asignar_devuelve_lista",
-          "test_pickings_sin_asignar_vacio",
-          "test_pickings_sin_asignar_llama_join_y_filter"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "_mock_session",
-            "line": 10,
-            "kind": "function",
-            "end_line": 16
-          },
-          {
-            "name": "TestGestorDashboardCola",
-            "line": 23,
-            "kind": "class"
-          },
-          {
-            "name": "setup_method",
-            "line": 25,
-            "kind": "function",
-            "end_line": 27
-          },
-          {
-            "name": "test_pickings_sin_asignar_devuelve_lista",
-            "line": 29,
-            "kind": "function",
-            "end_line": 55
-          },
-          {
-            "name": "test_pickings_sin_asignar_vacio",
-            "line": 57,
-            "kind": "function",
-            "end_line": 71
-          },
-          {
-            "name": "test_pickings_sin_asignar_llama_join_y_filter",
-            "line": 73,
-            "kind": "function",
-            "end_line": 91
-          },
-          {
-            "name": "test_reclamar_picking_ok",
-            "line": 93,
-            "kind": "function",
-            "end_line": 127
-          },
-          {
-            "name": "test_reclamar_picking_no_encontrado",
-            "line": 129,
-            "kind": "function",
-            "end_line": 143
-          },
-          {
-            "name": "test_reclamar_picking_ya_cogido",
-            "line": 145,
-            "kind": "function",
-            "end_line": 167
-          },
-          {
-            "name": "TestBlueprintPickerCola",
-            "line": 173,
-            "kind": "class"
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_metricas_operacion.py",
-        "purpose": "Módulo de metricas operacion",
-        "search_keywords": [
-          "metricas",
-          "operacion",
-          "TestMetricasOperacionAuth",
-          "TestMetricasOperacionResumen",
-          "TestMetricasOperacionAsistencia",
-          "TestMetricasOperacionColas",
-          "client",
-          "test_sin_sesion_redirige"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "client",
-            "line": 7,
-            "kind": "function",
-            "end_line": 8
-          },
-          {
-            "name": "_login",
-            "line": 11,
-            "kind": "function",
-            "end_line": 14
-          },
-          {
-            "name": "TestMetricasOperacionAuth",
-            "line": 17,
-            "kind": "class"
-          },
-          {
-            "name": "test_sin_sesion_redirige",
-            "line": 18,
-            "kind": "function",
-            "end_line": 20
-          },
-          {
-            "name": "test_rol_picker_no_accede",
-            "line": 22,
-            "kind": "function",
-            "end_line": 25
-          },
-          {
-            "name": "TestMetricasOperacionResumen",
-            "line": 28,
-            "kind": "class"
-          },
-          {
-            "name": "test_devuelve_200_y_ok",
-            "line": 29,
-            "kind": "function",
-            "end_line": 42
-          },
-          {
-            "name": "test_estructura_respuesta",
-            "line": 44,
-            "kind": "function",
-            "end_line": 50
-          },
-          {
-            "name": "TestMetricasOperacionAsistencia",
-            "line": 53,
-            "kind": "class"
-          },
-          {
-            "name": "test_devuelve_lista",
-            "line": 54,
-            "kind": "function",
-            "end_line": 89
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/conftest.py",
-        "purpose": "Módulo de conftest",
-        "search_keywords": [
-          "conftest",
-          "app",
-          "client"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "app",
-            "line": 14,
-            "kind": "function",
-            "end_line": 16
-          },
-          {
-            "name": "client",
-            "line": 20,
-            "kind": "function",
-            "end_line": 21
-          }
-        ],
-        "test_file": "tests/conftest.py"
-      },
-      {
-        "path": "tests/test_dashboard_sprint6.py",
-        "purpose": "Módulo de dashboard sprint6",
-        "search_keywords": [
-          "dashboard",
-          "sprint6",
-          "test_turnos_planificacion_devuelve_claves_esperadas",
-          "test_crear_turno_devuelve_ok_con_datos_validos",
-          "test_crear_turno_devuelve_error_si_empleado_no_existe",
-          "test_editar_turno_devuelve_ok_si_turno_existe",
-          "test_editar_turno_devuelve_error_si_no_existe",
-          "test_cancelar_turno_devuelve_ok_si_turno_existe"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "test_turnos_planificacion_devuelve_claves_esperadas",
-            "line": 8,
-            "kind": "function",
-            "end_line": 30
-          },
-          {
-            "name": "test_crear_turno_devuelve_ok_con_datos_validos",
-            "line": 33,
-            "kind": "function",
-            "end_line": 65
-          },
-          {
-            "name": "flush_side_effect",
-            "line": 50,
-            "kind": "function",
-            "end_line": 53
-          },
-          {
-            "name": "test_crear_turno_devuelve_error_si_empleado_no_existe",
-            "line": 68,
-            "kind": "function",
-            "end_line": 85
-          },
-          {
-            "name": "test_editar_turno_devuelve_ok_si_turno_existe",
-            "line": 88,
-            "kind": "function",
-            "end_line": 108
-          },
-          {
-            "name": "test_editar_turno_devuelve_error_si_no_existe",
-            "line": 111,
-            "kind": "function",
-            "end_line": 123
-          },
-          {
-            "name": "test_cancelar_turno_devuelve_ok_si_turno_existe",
-            "line": 126,
-            "kind": "function",
-            "end_line": 143
-          },
-          {
-            "name": "test_turnos_planificacion_json_devuelve_estructura",
-            "line": 148,
-            "kind": "function",
-            "end_line": 164
-          },
-          {
-            "name": "test_crear_turno_route_devuelve_ok",
-            "line": 167,
-            "kind": "function",
-            "end_line": 183
-          },
-          {
-            "name": "test_crear_turno_route_400_si_faltan_campos",
-            "line": 186,
-            "kind": "function",
-            "end_line": 193
-          }
-        ],
-        "test_file": null
-      },
-      {
-        "path": "tests/test_migracion_bd_dashboard.py",
-        "purpose": "Tests de los nuevos campos del modelo de empleados para el dashboard",
-        "search_keywords": [
-          "migracion",
-          "dashboard",
-          "TestTurnoModeloCampos",
-          "TestCheckInModeloCampos",
-          "TestIniciarTurnoConTurnoId",
-          "TestAusenciaModelo",
-          "test_turno_tiene_campo_estado",
-          "test_turno_estado_default_es_planificado"
-        ],
-        "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
-        ],
-        "symbols": [
-          {
-            "name": "TestTurnoModeloCampos",
-            "line": 7,
-            "kind": "class"
-          },
-          {
-            "name": "test_turno_tiene_campo_estado",
-            "line": 10,
-            "kind": "function",
-            "end_line": 14
-          },
-          {
-            "name": "test_turno_estado_default_es_planificado",
-            "line": 16,
-            "kind": "function",
-            "end_line": 23
-          },
-          {
-            "name": "test_turno_tiene_campo_tipo",
-            "line": 25,
-            "kind": "function",
-            "end_line": 31
-          },
-          {
-            "name": "test_turno_tiene_campo_creado_por",
-            "line": 33,
-            "kind": "function",
-            "end_line": 39
-          },
-          {
-            "name": "test_turno_estados_validos",
-            "line": 41,
-            "kind": "function",
-            "end_line": 49
-          },
-          {
-            "name": "test_turno_tipos_validos",
-            "line": 51,
-            "kind": "function",
-            "end_line": 58
-          },
-          {
-            "name": "TestCheckInModeloCampos",
-            "line": 61,
-            "kind": "class"
-          },
-          {
-            "name": "test_checkin_tiene_turno_id",
-            "line": 64,
             "kind": "function",
             "end_line": 69
           },
           {
-            "name": "test_checkin_tiene_estado_validacion",
-            "line": 71,
+            "name": "puede_iniciar",
+            "line": 74,
             "kind": "function",
-            "end_line": 74
+            "end_line": 81
+          },
+          {
+            "name": "metricas",
+            "line": 86,
+            "kind": "function",
+            "end_line": 94
+          },
+          {
+            "name": "capacidades",
+            "line": 99,
+            "kind": "function",
+            "end_line": 108
+          },
+          {
+            "name": "carga_operativa",
+            "line": 113,
+            "kind": "function",
+            "end_line": 119
+          },
+          {
+            "name": "cambiar_rol",
+            "line": 124,
+            "kind": "function",
+            "end_line": 139
+          },
+          {
+            "name": "checkin",
+            "line": 144,
+            "kind": "function",
+            "end_line": 159
+          }
+        ],
+        "test_file": "tests/test_empleado.py"
+      },
+      {
+        "path": "blueprints/picker.py",
+        "purpose": "Define rutas HTTP para picker",
+        "search_keywords": [
+          "picker",
+          "index",
+          "apple_touch_icon",
+          "manifest",
+          "service_worker",
+          "mis_pedidos",
+          "actualizar_item"
+        ],
+        "related_to": [
+          "blueprints/auth.py",
+          "services/__init__.py",
+          "services/whatsapp_service.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "_notificar",
+            "line": 14,
+            "kind": "function",
+            "end_line": 22
+          },
+          {
+            "name": "_enviar",
+            "line": 17,
+            "kind": "function",
+            "end_line": 21
+          },
+          {
+            "name": "index",
+            "line": 29,
+            "kind": "function",
+            "end_line": 31
+          },
+          {
+            "name": "apple_touch_icon",
+            "line": 41,
+            "kind": "function",
+            "end_line": 46
+          },
+          {
+            "name": "manifest",
+            "line": 51,
+            "kind": "function",
+            "end_line": 56
+          },
+          {
+            "name": "service_worker",
+            "line": 60,
+            "kind": "function",
+            "end_line": 67
+          },
+          {
+            "name": "mis_pedidos",
+            "line": 72,
+            "kind": "function",
+            "end_line": 78
+          },
+          {
+            "name": "actualizar_item",
+            "line": 83,
+            "kind": "function",
+            "end_line": 107
+          },
+          {
+            "name": "buscar_productos",
+            "line": 112,
+            "kind": "function",
+            "end_line": 120
+          },
+          {
+            "name": "finalizar_picking",
+            "line": 125,
+            "kind": "function",
+            "end_line": 131
+          }
+        ],
+        "test_file": "tests/test_picker_cola.py"
+      },
+      {
+        "path": "blueprints/dashboard.py",
+        "purpose": "Define rutas HTTP para dashboard",
+        "search_keywords": [
+          "dashboard",
+          "index",
+          "monitor",
+          "monitor_datos",
+          "metricas",
+          "pedidos_activos",
+          "picking",
+          "repartidores",
+          "alertas",
+          "eventos",
+          "mapa",
+          "empleados",
+          "historial",
+          "historial_pedidos",
+          "detalle_pedido",
+          "turnos",
+          "turnos_hoy",
+          "turnos_historial",
+          "rendimiento",
+          "rendimiento_datos",
+          "rendimiento_empleado",
+          "estadisticas",
+          "estadisticas_datos",
+          "turnos_planificacion",
+          "crear_turno",
+          "editar_turno",
+          "cancelar_turno_route",
+          "eliminar_turno_route",
+          "asignar_picker",
+          "reasignar_picker",
+          "completar_picking",
+          "asignar_repartidor",
+          "marcar_salida",
+          "marcar_entregado",
+          "cancelar_pedido",
+          "eliminar_item",
+          "sustituir_item",
+          "productos_disponibles"
+        ],
+        "related_to": [
+          "blueprints/auth.py",
+          "services/__init__.py",
+          "services/whatsapp_service.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "_notificar",
+            "line": 15,
+            "kind": "function",
+            "end_line": 23
+          },
+          {
+            "name": "_enviar",
+            "line": 18,
+            "kind": "function",
+            "end_line": 22
+          },
+          {
+            "name": "_serial",
+            "line": 28,
+            "kind": "function",
+            "end_line": 34
+          },
+          {
+            "name": "_ok",
+            "line": 37,
+            "kind": "function",
+            "end_line": 43
+          },
+          {
+            "name": "_err",
+            "line": 46,
+            "kind": "function",
+            "end_line": 47
+          },
+          {
+            "name": "index",
+            "line": 56,
+            "kind": "function",
+            "end_line": 57
+          },
+          {
+            "name": "monitor",
+            "line": 62,
+            "kind": "function",
+            "end_line": 63
+          },
+          {
+            "name": "monitor_datos",
+            "line": 68,
+            "kind": "function",
+            "end_line": 83
+          },
+          {
+            "name": "metricas",
+            "line": 92,
+            "kind": "function",
+            "end_line": 97
+          },
+          {
+            "name": "pedidos_activos",
+            "line": 102,
+            "kind": "function",
+            "end_line": 108
+          },
+          {
+            "name": "picking",
+            "line": 113,
+            "kind": "function",
+            "end_line": 118
+          },
+          {
+            "name": "repartidores",
+            "line": 123,
+            "kind": "function",
+            "end_line": 128
+          },
+          {
+            "name": "alertas",
+            "line": 133,
+            "kind": "function",
+            "end_line": 138
+          },
+          {
+            "name": "eventos",
+            "line": 143,
+            "kind": "function",
+            "end_line": 149
+          },
+          {
+            "name": "mapa",
+            "line": 154,
+            "kind": "function",
+            "end_line": 159
+          },
+          {
+            "name": "empleados",
+            "line": 164,
+            "kind": "function",
+            "end_line": 170
+          },
+          {
+            "name": "historial",
+            "line": 175,
+            "kind": "function",
+            "end_line": 176
+          },
+          {
+            "name": "historial_pedidos",
+            "line": 181,
+            "kind": "function",
+            "end_line": 196
+          },
+          {
+            "name": "detalle_pedido",
+            "line": 201,
+            "kind": "function",
+            "end_line": 209
+          },
+          {
+            "name": "turnos",
+            "line": 214,
+            "kind": "function",
+            "end_line": 215
+          },
+          {
+            "name": "turnos_hoy",
+            "line": 220,
+            "kind": "function",
+            "end_line": 225
+          },
+          {
+            "name": "turnos_historial",
+            "line": 230,
+            "kind": "function",
+            "end_line": 244
+          },
+          {
+            "name": "rendimiento",
+            "line": 249,
+            "kind": "function",
+            "end_line": 250
+          },
+          {
+            "name": "rendimiento_datos",
+            "line": 255,
+            "kind": "function",
+            "end_line": 262
+          },
+          {
+            "name": "rendimiento_empleado",
+            "line": 267,
+            "kind": "function",
+            "end_line": 276
+          },
+          {
+            "name": "estadisticas",
+            "line": 285,
+            "kind": "function",
+            "end_line": 286
+          },
+          {
+            "name": "estadisticas_datos",
+            "line": 291,
+            "kind": "function",
+            "end_line": 299
+          },
+          {
+            "name": "turnos_planificacion",
+            "line": 308,
+            "kind": "function",
+            "end_line": 322
+          },
+          {
+            "name": "crear_turno",
+            "line": 327,
+            "kind": "function",
+            "end_line": 349
+          },
+          {
+            "name": "editar_turno",
+            "line": 354,
+            "kind": "function",
+            "end_line": 369
+          },
+          {
+            "name": "cancelar_turno_route",
+            "line": 374,
+            "kind": "function",
+            "end_line": 382
+          },
+          {
+            "name": "eliminar_turno_route",
+            "line": 387,
+            "kind": "function",
+            "end_line": 395
+          },
+          {
+            "name": "asignar_picker",
+            "line": 404,
+            "kind": "function",
+            "end_line": 415
+          },
+          {
+            "name": "reasignar_picker",
+            "line": 420,
+            "kind": "function",
+            "end_line": 428
+          },
+          {
+            "name": "completar_picking",
+            "line": 433,
+            "kind": "function",
+            "end_line": 438
+          },
+          {
+            "name": "asignar_repartidor",
+            "line": 443,
+            "kind": "function",
+            "end_line": 454
+          },
+          {
+            "name": "marcar_salida",
+            "line": 459,
+            "kind": "function",
+            "end_line": 464
+          },
+          {
+            "name": "marcar_entregado",
+            "line": 469,
+            "kind": "function",
+            "end_line": 474
+          },
+          {
+            "name": "cancelar_pedido",
+            "line": 493,
+            "kind": "function",
+            "end_line": 511
+          },
+          {
+            "name": "eliminar_item",
+            "line": 516,
+            "kind": "function",
+            "end_line": 522
+          },
+          {
+            "name": "sustituir_item",
+            "line": 527,
+            "kind": "function",
+            "end_line": 545
+          },
+          {
+            "name": "productos_disponibles",
+            "line": 550,
+            "kind": "function",
+            "end_line": 556
+          }
+        ],
+        "test_file": "tests/test_dashboard_sprint6.py"
+      },
+      {
+        "path": "blueprints/productos.py",
+        "purpose": "Define rutas HTTP para productos",
+        "search_keywords": [
+          "productos",
+          "index",
+          "lista",
+          "actualizar_stock",
+          "toggle_disponible",
+          "actualizar_precio"
+        ],
+        "related_to": [
+          "services/__init__.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "index",
+            "line": 11,
+            "kind": "function",
+            "end_line": 12
+          },
+          {
+            "name": "lista",
+            "line": 16,
+            "kind": "function",
+            "end_line": 21
+          },
+          {
+            "name": "actualizar_stock",
+            "line": 25,
+            "kind": "function",
+            "end_line": 38
+          },
+          {
+            "name": "toggle_disponible",
+            "line": 42,
+            "kind": "function",
+            "end_line": 49
+          },
+          {
+            "name": "actualizar_precio",
+            "line": 53,
+            "kind": "function",
+            "end_line": 64
           }
         ],
         "test_file": null
       },
       {
-        "path": "tests/test_dashboard_sprint1.py",
-        "purpose": "Módulo de dashboard sprint1",
+        "path": "blueprints/__init__.py",
+        "purpose": "Define rutas HTTP para init",
+        "search_keywords": [],
+        "related_to": [],
+        "symbols": [],
+        "test_file": null
+      },
+      {
+        "path": "blueprints/menu.py",
+        "purpose": "Define rutas HTTP para menu",
         "search_keywords": [
-          "dashboard",
-          "sprint1",
-          "test_macros_ui_cargable_en_jinja2",
-          "test_nav_partial_cargable_en_jinja2",
-          "test_dashboard_index_contiene_links_de_navegacion",
-          "test_dashboard_monitor_contiene_links_de_navegacion"
+          "menu",
+          "quiniela",
+          "mostrar_confirmacion",
+          "mostrar_confirmacion_depago"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "managers/gestor_redis.py",
+          "schemas/usuario.py",
+          "services/__init__.py",
+          "states.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "test_macros_ui_cargable_en_jinja2",
-            "line": 1,
+            "name": "_extraer_calle",
+            "line": 21,
             "kind": "function",
-            "end_line": 10
+            "end_line": 31
           },
           {
-            "name": "test_nav_partial_cargable_en_jinja2",
-            "line": 13,
+            "name": "quiniela",
+            "line": 35,
+            "kind": "function",
+            "end_line": 98
+          },
+          {
+            "name": "mostrar_confirmacion",
+            "line": 102,
+            "kind": "function",
+            "end_line": 124
+          },
+          {
+            "name": "mostrar_confirmacion_depago",
+            "line": 128,
+            "kind": "function",
+            "end_line": 153
+          }
+        ],
+        "test_file": "tests/test_menu.py"
+      },
+      {
+        "path": "blueprints/repartidor.py",
+        "purpose": "Define rutas HTTP para repartidor",
+        "search_keywords": [
+          "repartidor",
+          "index",
+          "apple_touch_icon",
+          "manifest",
+          "service_worker",
+          "mis_pedidos",
+          "marcar_salida"
+        ],
+        "related_to": [
+          "blueprints/auth.py",
+          "services/__init__.py",
+          "services/whatsapp_service.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "_notificar",
+            "line": 15,
+            "kind": "function",
+            "end_line": 23
+          },
+          {
+            "name": "_enviar",
+            "line": 18,
+            "kind": "function",
+            "end_line": 22
+          },
+          {
+            "name": "index",
+            "line": 30,
+            "kind": "function",
+            "end_line": 32
+          },
+          {
+            "name": "apple_touch_icon",
+            "line": 41,
+            "kind": "function",
+            "end_line": 46
+          },
+          {
+            "name": "manifest",
+            "line": 51,
+            "kind": "function",
+            "end_line": 56
+          },
+          {
+            "name": "service_worker",
+            "line": 60,
+            "kind": "function",
+            "end_line": 67
+          },
+          {
+            "name": "mis_pedidos",
+            "line": 72,
+            "kind": "function",
+            "end_line": 78
+          },
+          {
+            "name": "marcar_salida",
+            "line": 83,
+            "kind": "function",
+            "end_line": 89
+          },
+          {
+            "name": "marcar_entregado",
+            "line": 94,
+            "kind": "function",
+            "end_line": 100
+          },
+          {
+            "name": "marcar_no_entregado",
+            "line": 105,
+            "kind": "function",
+            "end_line": 116
+          }
+        ],
+        "test_file": "tests/test_repartidor.py"
+      },
+      {
+        "path": "blueprints/webhook.py",
+        "purpose": "Define rutas HTTP para webhook",
+        "search_keywords": [
+          "webhook",
+          "webhook_monei",
+          "webhook_meta_verify",
+          "webhook_meta"
+        ],
+        "related_to": [
+          "controllers/mensajes_registrados.py",
+          "controllers/registro.py",
+          "managers/gestor_redis.py",
+          "schemas/twilio.py",
+          "services/__init__.py",
+          "services/whatsapp_service.py"
+        ],
+        "symbols": [
+          {
+            "name": "webhook",
+            "line": 26,
+            "kind": "function",
+            "end_line": 87
+          },
+          {
+            "name": "webhook_monei",
+            "line": 92,
+            "kind": "function",
+            "end_line": 153
+          },
+          {
+            "name": "webhook_meta_verify",
+            "line": 157,
+            "kind": "function",
+            "end_line": 165
+          },
+          {
+            "name": "webhook_meta",
+            "line": 169,
+            "kind": "function",
+            "end_line": 253
+          }
+        ],
+        "test_file": "tests/test_webhook.py"
+      },
+      {
+        "path": "blueprints/metricas_analitica.py",
+        "purpose": "Define rutas HTTP para analitica",
+        "search_keywords": [
+          "metricas",
+          "analitica",
+          "resumen",
+          "pedidos",
+          "picking",
+          "reparto",
+          "empleados",
+          "ficha_empleado"
+        ],
+        "related_to": [
+          "blueprints/auth.py",
+          "managers/gestor_metricas.py",
+          "managers/gestor_dashboard.py"
+        ],
+        "symbols": [
+          {
+            "name": "_ok",
+            "line": 14,
+            "kind": "function",
+            "end_line": 15
+          },
+          {
+            "name": "_err",
+            "line": 18,
             "kind": "function",
             "end_line": 19
           },
           {
-            "name": "test_dashboard_index_contiene_links_de_navegacion",
+            "name": "_parse_rango",
             "line": 22,
             "kind": "function",
-            "end_line": 40
+            "end_line": 28
           },
           {
-            "name": "test_dashboard_monitor_contiene_links_de_navegacion",
-            "line": 43,
+            "name": "resumen",
+            "line": 33,
             "kind": "function",
-            "end_line": 63
+            "end_line": 35
+          },
+          {
+            "name": "pedidos",
+            "line": 40,
+            "kind": "function",
+            "end_line": 42
+          },
+          {
+            "name": "picking",
+            "line": 47,
+            "kind": "function",
+            "end_line": 49
+          },
+          {
+            "name": "reparto",
+            "line": 54,
+            "kind": "function",
+            "end_line": 56
+          },
+          {
+            "name": "empleados",
+            "line": 61,
+            "kind": "function",
+            "end_line": 64
+          },
+          {
+            "name": "ficha_empleado",
+            "line": 69,
+            "kind": "function",
+            "end_line": 71
+          },
+          {
+            "name": "comparativa",
+            "line": 76,
+            "kind": "function",
+            "end_line": 81
           }
         ],
-        "test_file": null
-      }
-    ],
-    "utility": [
+        "test_file": "tests/test_metricas_analitica.py"
+      },
       {
-        "path": "utils/text_utils.py",
-        "purpose": "Utilidades para utils",
+        "path": "blueprints/auth.py",
+        "purpose": "Define rutas HTTP para auth",
         "search_keywords": [
-          "text",
-          "utils",
-          "limpiar_texto"
+          "auth",
+          "login",
+          "logout",
+          "requiere_rol",
+          "requiere_autenticacion",
+          "decorator",
+          "wrapped"
         ],
         "related_to": [
-          "gestor_dashboard",
-          "confirmacion_pago"
+          "database.py",
+          "models.py",
+          "managers/gestor_dashboard.py"
         ],
         "symbols": [
           {
-            "name": "limpiar_texto",
-            "line": 5,
+            "name": "_get_empleado_by_email",
+            "line": 17,
             "kind": "function",
-            "end_line": 9
+            "end_line": 18
+          },
+          {
+            "name": "login",
+            "line": 22,
+            "kind": "function",
+            "end_line": 88
+          },
+          {
+            "name": "logout",
+            "line": 92,
+            "kind": "function",
+            "end_line": 107
+          },
+          {
+            "name": "requiere_rol",
+            "line": 110,
+            "kind": "function",
+            "end_line": 123
+          },
+          {
+            "name": "decorator",
+            "line": 112,
+            "kind": "function",
+            "end_line": 122
+          },
+          {
+            "name": "requiere_autenticacion",
+            "line": 126,
+            "kind": "function",
+            "end_line": 138
+          },
+          {
+            "name": "wrapped",
+            "line": 132,
+            "kind": "function",
+            "end_line": 137
           }
         ],
-        "test_file": null
+        "test_file": "tests/test_auth.py"
+      },
+      {
+        "path": "blueprints/api.py",
+        "purpose": "Define rutas HTTP para api",
+        "search_keywords": [
+          "api",
+          "agregar_pedido_confirmacion",
+          "agregar_pedido",
+          "cambiar_estado_a_enlace",
+          "agregar_pedido_efectivo",
+          "volver_al_menu",
+          "obtener_productos"
+        ],
+        "related_to": [
+          "controllers/pago.py",
+          "controllers/pedido.py",
+          "database.py",
+          "models.py",
+          "services/__init__.py",
+          "states.py"
+        ],
+        "symbols": [
+          {
+            "name": "agregar_pedido_confirmacion",
+            "line": 19,
+            "kind": "function",
+            "end_line": 45
+          },
+          {
+            "name": "agregar_pedido",
+            "line": 49,
+            "kind": "function",
+            "end_line": 87
+          },
+          {
+            "name": "cambiar_estado_a_enlace",
+            "line": 91,
+            "kind": "function",
+            "end_line": 110
+          },
+          {
+            "name": "agregar_pedido_efectivo",
+            "line": 114,
+            "kind": "function",
+            "end_line": 144
+          },
+          {
+            "name": "volver_al_menu",
+            "line": 148,
+            "kind": "function",
+            "end_line": 166
+          },
+          {
+            "name": "obtener_productos",
+            "line": 170,
+            "kind": "function",
+            "end_line": 194
+          },
+          {
+            "name": "seguimiento_pedido",
+            "line": 198,
+            "kind": "function",
+            "end_line": 225
+          }
+        ],
+        "test_file": "tests/test_api_pedido.py"
       }
     ]
   },
@@ -3491,12 +2832,17 @@
     {
       "file": "blueprints/dashboard.py",
       "type": "god_object",
-      "description": "237 líneas aprox, 20 funciones"
+      "description": "244 líneas aprox, 20 funciones"
     },
     {
-      "file": "managers/gestor_dashboard.py",
-      "type": "god_object",
-      "description": "1517 líneas aprox, 20 funciones"
+      "file": "blueprints/productos.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "controllers/pago.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
     },
     {
       "file": "managers/gestor_redis.py",
@@ -3511,12 +2857,52 @@
     {
       "file": "managers/gestor_empleado.py",
       "type": "god_object",
-      "description": "300 líneas aprox, 17 funciones"
+      "description": "342 líneas aprox, 19 funciones"
+    },
+    {
+      "file": "managers/estado_usuario.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
     },
     {
       "file": "managers/gestor_metricas.py",
       "type": "god_object",
       "description": "608 líneas aprox, 15 funciones"
+    },
+    {
+      "file": "managers/dashboard/gestor_estadisticas_mixin.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "managers/dashboard/gestor_empleados_mixin.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "managers/dashboard/gestor_picking_mixin.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "managers/dashboard/_base.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "managers/dashboard/gestor_reparto_mixin.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "managers/dashboard/gestor_turnos_mixin.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
+    },
+    {
+      "file": "managers/dashboard/gestor_pedidos_mixin.py",
+      "type": "no_tests",
+      "description": "sin archivo de test asociado"
     },
     {
       "file": "services/maps_service.py",
@@ -3525,123 +2911,48 @@
     }
   ],
   "cochange": {
-    "managers/gestor_dashboard.py": [
+    "controllers/registro.py": [
       "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "templates/repartidor/index.html": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "blueprints/repartidor.py": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "templates/picker/index.html": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "blueprints/picker.py": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "blueprints/dashboard.py": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "scripts/crear_pedidos_demo.py": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "scripts/crear_pedidos_demo_pagados.py": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "templates/dashboard/index.html": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "templates/dashboard/turnos.html": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "tests/test_dashboard_sprint6.py": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "templates/dashboard/estadisticas.html": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "tests/test_dashboard_sprint5.py": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "scripts/seed_turnos_ui.sql": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "templates/dashboard/historial.html": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
-    ],
-    "templates/macros/ui.html": [
-      "managers/gestor_dashboard.py",
-      "main.py",
-      "templates/confirmacion_pago.html"
+      "templates/dashboard/index.html",
+      "templates/repartidor/index.html"
     ]
   },
   "hotspots": [
     {
       "file": "managers/gestor_dashboard.py",
-      "commits": 41
-    },
-    {
-      "file": "main.py",
-      "commits": 31
-    },
-    {
-      "file": "templates/confirmacion_pago.html",
-      "commits": 24
-    },
-    {
-      "file": "templates/quiniela.html",
-      "commits": 22
-    },
-    {
-      "file": "templates/repartidor/index.html",
-      "commits": 20
+      "commits": 48
     },
     {
       "file": "templates/dashboard/index.html",
-      "commits": 20
+      "commits": 25
     },
     {
-      "file": "controllers/mensajes_registrados.py",
-      "commits": 19
+      "file": "templates/repartidor/index.html",
+      "commits": 21
+    },
+    {
+      "file": "blueprints/dashboard.py",
+      "commits": 16
+    },
+    {
+      "file": "templates/picker/index.html",
+      "commits": 15
     },
     {
       "file": "blueprints/webhook.py",
-      "commits": 17
+      "commits": 15
+    },
+    {
+      "file": "main.py",
+      "commits": 14
     },
     {
       "file": "models.py",
-      "commits": 16
+      "commits": 14
+    },
+    {
+      "file": "blueprints/api.py",
+      "commits": 13
     }
   ]
 }

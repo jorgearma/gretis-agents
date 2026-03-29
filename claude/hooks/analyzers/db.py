@@ -19,11 +19,11 @@ DB_INFRA = ("SQL", "Postgres", "MySQL", "Mongo", "Redis", "SQLite", "Dynamo")
 def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
     models: list[ModelInfo] = list(_walk_repo_models_cache)
     db_techs = [t for t in stack if t in DB_ORMS]
-    db_infra = [t for t in stack if any(k in t for k in DB_INFRA)]
+    db_infra = [t for t in stack if any(k in t for k in DB_INFRA) and t not in DB_ORMS]
     migrations = [f.rel_path for f in files if f.role == "migration"]
     seeds = [m for m in migrations if "seed" in m.lower()]
     pure_migrations = [m for m in migrations if "seed" not in m.lower()]
-    db_conn = [f.rel_path for f in files if f.role == "db_connection"]
+    db_conn = [f.rel_path for f in files if f.role == "db_connection" and "test" not in f.rel_path.lower()]
 
     real_models = [
         m for m in models

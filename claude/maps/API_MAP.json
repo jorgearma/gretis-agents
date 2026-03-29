@@ -83,7 +83,7 @@
       "endpoints": [
         {
           "function": "index",
-          "line": 19,
+          "line": 20,
           "methods": [
             "GET"
           ],
@@ -92,7 +92,7 @@
         },
         {
           "function": "perfil",
-          "line": 33,
+          "line": 34,
           "methods": [
             "GET"
           ],
@@ -101,7 +101,7 @@
         },
         {
           "function": "estado",
-          "line": 47,
+          "line": 48,
           "methods": [
             "POST"
           ],
@@ -110,7 +110,7 @@
         },
         {
           "function": "turno_hoy",
-          "line": 61,
+          "line": 62,
           "methods": [
             "GET"
           ],
@@ -118,8 +118,17 @@
           "auth_required": false
         },
         {
+          "function": "puede_iniciar",
+          "line": 74,
+          "methods": [
+            "GET"
+          ],
+          "route": "/empleado/puede-iniciar",
+          "auth_required": false
+        },
+        {
           "function": "metricas",
-          "line": 73,
+          "line": 86,
           "methods": [
             "GET"
           ],
@@ -128,7 +137,7 @@
         },
         {
           "function": "capacidades",
-          "line": 86,
+          "line": 99,
           "methods": [
             "GET"
           ],
@@ -137,7 +146,7 @@
         },
         {
           "function": "carga_operativa",
-          "line": 100,
+          "line": 113,
           "methods": [
             "GET"
           ],
@@ -146,7 +155,7 @@
         },
         {
           "function": "cambiar_rol",
-          "line": 111,
+          "line": 124,
           "methods": [
             "POST"
           ],
@@ -155,7 +164,7 @@
         },
         {
           "function": "checkin",
-          "line": 131,
+          "line": 144,
           "methods": [
             "GET"
           ],
@@ -164,7 +173,7 @@
         },
         {
           "function": "fichaje_iniciar",
-          "line": 151,
+          "line": 164,
           "methods": [
             "POST"
           ],
@@ -173,7 +182,7 @@
         },
         {
           "function": "fichaje_cerrar",
-          "line": 168,
+          "line": 184,
           "methods": [
             "POST"
           ],
@@ -182,11 +191,29 @@
         },
         {
           "function": "fichaje_hoy",
-          "line": 184,
+          "line": 200,
           "methods": [
             "GET"
           ],
           "route": "/empleado/fichaje/hoy",
+          "auth_required": false
+        },
+        {
+          "function": "turnos_page",
+          "line": 211,
+          "methods": [
+            "GET"
+          ],
+          "route": "/empleado/turnos",
+          "auth_required": false
+        },
+        {
+          "function": "turnos_datos",
+          "line": 219,
+          "methods": [
+            "GET"
+          ],
+          "route": "/empleado/turnos/datos",
           "auth_required": false
         }
       ]
@@ -271,7 +298,7 @@
         },
         {
           "function": "cola",
-          "line": 135,
+          "line": 136,
           "methods": [
             "GET"
           ],
@@ -280,7 +307,7 @@
         },
         {
           "function": "coger_picking",
-          "line": 146,
+          "line": 147,
           "methods": [
             "POST"
           ],
@@ -530,8 +557,17 @@
           "auth_required": false
         },
         {
+          "function": "eliminar_turno_route",
+          "line": 387,
+          "methods": [
+            "POST"
+          ],
+          "route": "/dashboard/turnos/<int:turno_id>/eliminar",
+          "auth_required": false
+        },
+        {
           "function": "asignar_picker",
-          "line": 391,
+          "line": 404,
           "methods": [
             "POST"
           ],
@@ -540,7 +576,7 @@
         },
         {
           "function": "reasignar_picker",
-          "line": 407,
+          "line": 420,
           "methods": [
             "POST"
           ],
@@ -549,7 +585,7 @@
         },
         {
           "function": "completar_picking",
-          "line": 420,
+          "line": 433,
           "methods": [
             "POST"
           ],
@@ -558,7 +594,7 @@
         },
         {
           "function": "asignar_repartidor",
-          "line": 430,
+          "line": 443,
           "methods": [
             "POST"
           ],
@@ -567,7 +603,7 @@
         },
         {
           "function": "marcar_salida",
-          "line": 446,
+          "line": 459,
           "methods": [
             "POST"
           ],
@@ -576,7 +612,7 @@
         },
         {
           "function": "marcar_entregado",
-          "line": 456,
+          "line": 469,
           "methods": [
             "POST"
           ],
@@ -585,7 +621,7 @@
         },
         {
           "function": "cancelar_pedido",
-          "line": 480,
+          "line": 493,
           "methods": [
             "POST"
           ],
@@ -594,7 +630,7 @@
         },
         {
           "function": "eliminar_item",
-          "line": 503,
+          "line": 516,
           "methods": [
             "POST"
           ],
@@ -603,7 +639,7 @@
         },
         {
           "function": "sustituir_item",
-          "line": 514,
+          "line": 527,
           "methods": [
             "POST"
           ],
@@ -612,7 +648,7 @@
         },
         {
           "function": "productos_disponibles",
-          "line": 537,
+          "line": 550,
           "methods": [
             "GET"
           ],
@@ -771,7 +807,7 @@
         },
         {
           "function": "marcar_entregado",
-          "line": 92,
+          "line": 94,
           "methods": [
             "POST"
           ],
@@ -780,7 +816,7 @@
         },
         {
           "function": "marcar_no_entregado",
-          "line": 101,
+          "line": 105,
           "methods": [
             "POST"
           ],
@@ -789,7 +825,7 @@
         },
         {
           "function": "registrar_cobro",
-          "line": 115,
+          "line": 121,
           "methods": [
             "POST"
           ],
@@ -798,7 +834,7 @@
         },
         {
           "function": "cierre",
-          "line": 137,
+          "line": 145,
           "methods": [
             "GET"
           ],
@@ -807,7 +843,7 @@
         },
         {
           "function": "cierre_datos",
-          "line": 144,
+          "line": 152,
           "methods": [
             "GET"
           ],
@@ -816,7 +852,7 @@
         },
         {
           "function": "cola",
-          "line": 157,
+          "line": 165,
           "methods": [
             "GET"
           ],
@@ -825,7 +861,7 @@
         },
         {
           "function": "coger_reparto",
-          "line": 168,
+          "line": 176,
           "methods": [
             "POST"
           ],

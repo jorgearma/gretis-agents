@@ -22,7 +22,8 @@
     ],
     "templates/empleado": [
       "checkin.html",
-      "index.html"
+      "index.html",
+      "turnos.html"
     ],
     "templates/macros": [
       "ui.html"
@@ -38,6 +39,22 @@
       "index.html"
     ]
   },
-  "routers": [],
+  "routers": [
+    "blueprints/metricas_operacion.py",
+    "blueprints/empleado.py",
+    "blueprints/picker.py",
+    "blueprints/dashboard.py",
+    "blueprints/productos.py",
+    "blueprints/__init__.py",
+    "blueprints/menu.py",
+    "blueprints/repartidor.py",
+    "blueprints/webhook.py",
+    "blueprints/metricas_analitica.py",
+    "blueprints/auth.py",
+    "blueprints/api.py",
+    "controllers/mensajes_registrados.py",
+    "controllers/pago.py",
+    "controllers/__init__.py"
+  ],
   "static": "static"
 }

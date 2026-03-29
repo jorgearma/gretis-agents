@@ -1,9 +1,8 @@
 {
   "orm": "SQLAlchemy",
-  "database": "SQLAlchemy",
+  "database": null,
   "connection_files": [
-    "database.py",
-    "tests/test_database.py"
+    "database.py"
   ],
   "models": [
     {
@@ -458,6 +457,14 @@
     }
   ],
   "migrations": [
+    "migrations/add_check_ins.sql",
+    "migrations/004_ausencias.sql",
+    "migrations/003_checkin_campos_dashboard.sql",
+    "migrations/008_metricas_diarias_empleado.sql",
+    "migrations/005_historial_empleado_id.sql",
+    "migrations/006_solicitud_cambio_turno.sql",
+    "migrations/002_turno_campos_dashboard.sql",
+    "migrations/007_turno_origen_id.sql",
     "scripts/migrate_capacidades.py",
     "scripts/run_migrations.py"
   ],

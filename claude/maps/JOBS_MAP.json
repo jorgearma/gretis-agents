@@ -1,38 +1,5 @@
 {
   "scheduler": null,
-  "jobs": [
-    {
-      "file": "scripts/crear_pedidos_demo_pagados.py",
-      "function": "main",
-      "trigger": "manual",
-      "schedule": null,
-      "description": "Crea 4 pedidos demo en estado `pagado`.",
-      "test_file": null
-    },
-    {
-      "file": "scripts/migrate_capacidades.py",
-      "function": "main",
-      "trigger": "manual",
-      "schedule": null,
-      "description": "Migración: poblar empleado_capacidades desde rol_id actual.",
-      "test_file": null
-    },
-    {
-      "file": "scripts/crear_pedidos_demo.py",
-      "function": "main",
-      "trigger": "manual",
-      "schedule": null,
-      "description": "Crea 4 pedidos demo completos en la base de datos con sus tablas relacionadas.",
-      "test_file": null
-    },
-    {
-      "file": "scripts/migrar_empleado.py",
-      "function": "run",
-      "trigger": "manual",
-      "schedule": null,
-      "description": "Migración: Zona de empleados — estado_operativo + tabla turnos",
-      "test_file": null
-    }
-  ],
+  "jobs": [],
   "queues": []
 }
