@@ -1,1 +1,1398 @@
-{"entry_points": ["app.py"], "forward": {"services/sms.py": ["models/user.py", "services/twilio_client.py"], "routes/api.py": ["models/user.py", "services/sms.py"], "app.py": ["routes/api.py"]}, "reverse": {"models/user.py": ["routes/api.py", "services/sms.py"], "services/twilio_client.py": ["services/sms.py"], "services/sms.py": ["routes/api.py"], "routes/api.py": ["app.py"]}, "nodes": {"services/twilio_client.py": {"role": "service", "symbols": [{"name": "send_whatsapp", "line": 12, "kind": "function"}]}, "models/user.py": {"role": "model", "symbols": [{"name": "User", "line": 5, "kind": "class"}]}, "routes/api.py": {"role": "controller", "symbols": [{"name": "send_notification", "line": 20, "kind": "function"}]}, "app.py": {"role": "entry_point", "symbols": []}, "services/sms.py": {"role": "service", "symbols": [{"name": "send_sms", "line": 45, "end_line": 67, "kind": "function"}]}}, "cycles": [], "stats": {"total_files": 5, "connected_files": 5, "edges": 6, "cycles_found": 0}}
+{
+  "entry_points": [
+    "main.py"
+  ],
+  "forward": {
+    "main.py": [
+      "config.py",
+      "database.py",
+      "managers/gestor_redis.py"
+    ],
+    "database.py": [
+      "models.py"
+    ],
+    "models.py": [
+      "database.py"
+    ],
+    "controllers/mensajes_registrados.py": [
+      "config.py",
+      "controllers/pedido.py",
+      "services/__init__.py",
+      "services/whatsapp_service.py",
+      "states.py",
+      "utils/menu_opciones.py"
+    ],
+    "controllers/pago.py": [
+      "services/whatsapp_service.py",
+      "states.py"
+    ],
+    "controllers/pedido.py": [
+      "schemas/twilio.py",
+      "services/__init__.py",
+      "services/maps_service.py",
+      "services/token_service.py",
+      "services/whatsapp_service.py",
+      "states.py",
+      "utils/es_pregunta.py",
+      "utils/menu_opciones.py",
+      "utils/text_utils.py"
+    ],
+    "controllers/registro.py": [
+      "managers/estado_usuario.py",
+      "services/__init__.py",
+      "services/maps_service.py",
+      "services/whatsapp_service.py",
+      "states.py",
+      "utils/menu_opciones.py"
+    ],
+    "managers/gestor_dashboard.py": [
+      "database.py",
+      "models.py",
+      "states.py"
+    ],
+    "managers/gestor_pedidos.py": [
+      "database.py",
+      "models.py",
+      "states.py"
+    ],
+    "managers/gestor_usuarios.py": [
+      "database.py",
+      "models.py"
+    ],
+    "managers/gestor_redis.py": [
+      "config.py"
+    ],
+    "managers/gestor_productos.py": [
+      "database.py",
+      "models.py"
+    ],
+    "managers/gestor_empleado.py": [
+      "database.py",
+      "models.py",
+      "states.py"
+    ],
+    "managers/estado_usuario.py": [
+      "states.py"
+    ],
+    "managers/gestor_metricas.py": [
+      "database.py",
+      "managers/gestor_empleado.py",
+      "models.py"
+    ],
+    "services/token_service.py": [
+      "config.py",
+      "managers/gestor_redis.py",
+      "schemas/usuario.py"
+    ],
+    "services/whatsapp_service.py": [
+      "config.py"
+    ],
+    "services/__init__.py": [
+      "managers/gestor_dashboard.py",
+      "managers/gestor_empleado.py",
+      "managers/gestor_pedidos.py",
+      "managers/gestor_productos.py",
+      "managers/gestor_redis.py",
+      "managers/gestor_usuarios.py"
+    ],
+    "services/maps_service.py": [
+      "config.py"
+    ]
+  },
+  "reverse": {
+    "config.py": [
+      "controllers/mensajes_registrados.py",
+      "main.py",
+      "managers/gestor_redis.py",
+      "services/maps_service.py",
+      "services/token_service.py",
+      "services/whatsapp_service.py"
+    ],
+    "database.py": [
+      "main.py",
+      "managers/gestor_dashboard.py",
+      "managers/gestor_empleado.py",
+      "managers/gestor_metricas.py",
+      "managers/gestor_pedidos.py",
+      "managers/gestor_productos.py",
+      "managers/gestor_usuarios.py",
+      "models.py"
+    ],
+    "managers/gestor_redis.py": [
+      "main.py",
+      "services/__init__.py",
+      "services/token_service.py"
+    ],
+    "models.py": [
+      "database.py",
+      "managers/gestor_dashboard.py",
+      "managers/gestor_empleado.py",
+      "managers/gestor_metricas.py",
+      "managers/gestor_pedidos.py",
+      "managers/gestor_productos.py",
+      "managers/gestor_usuarios.py"
+    ],
+    "controllers/pedido.py": [
+      "controllers/mensajes_registrados.py"
+    ],
+    "services/__init__.py": [
+      "controllers/mensajes_registrados.py",
+      "controllers/pedido.py",
+      "controllers/registro.py"
+    ],
+    "services/whatsapp_service.py": [
+      "controllers/mensajes_registrados.py",
+      "controllers/pago.py",
+      "controllers/pedido.py",
+      "controllers/registro.py"
+    ],
+    "states.py": [
+      "controllers/mensajes_registrados.py",
+      "controllers/pago.py",
+      "controllers/pedido.py",
+      "controllers/registro.py",
+      "managers/estado_usuario.py",
+      "managers/gestor_dashboard.py",
+      "managers/gestor_empleado.py",
+      "managers/gestor_pedidos.py"
+    ],
+    "utils/menu_opciones.py": [
+      "controllers/mensajes_registrados.py",
+      "controllers/pedido.py",
+      "controllers/registro.py"
+    ],
+    "schemas/twilio.py": [
+      "controllers/pedido.py"
+    ],
+    "services/maps_service.py": [
+      "controllers/pedido.py",
+      "controllers/registro.py"
+    ],
+    "services/token_service.py": [
+      "controllers/pedido.py"
+    ],
+    "utils/es_pregunta.py": [
+      "controllers/pedido.py"
+    ],
+    "utils/text_utils.py": [
+      "controllers/pedido.py"
+    ],
+    "managers/estado_usuario.py": [
+      "controllers/registro.py"
+    ],
+    "managers/gestor_empleado.py": [
+      "managers/gestor_metricas.py",
+      "services/__init__.py"
+    ],
+    "schemas/usuario.py": [
+      "services/token_service.py"
+    ],
+    "managers/gestor_dashboard.py": [
+      "services/__init__.py"
+    ],
+    "managers/gestor_pedidos.py": [
+      "services/__init__.py"
+    ],
+    "managers/gestor_productos.py": [
+      "services/__init__.py"
+    ],
+    "managers/gestor_usuarios.py": [
+      "services/__init__.py"
+    ]
+  },
+  "nodes": {
+    "config.py": {
+      "role": "config",
+      "symbols": []
+    },
+    "controllers/mensajes_registrados.py": {
+      "role": "controller",
+      "symbols": [
+        {
+          "name": "ManejadorMensajesRegistrados",
+          "line": 14,
+          "kind": "class"
+        },
+        {
+          "name": "_iniciar_pedido_y_enviar_menu",
+          "line": 17,
+          "kind": "function",
+          "end_line": 35
+        },
+        {
+          "name": "_responder_pedido_en_curso",
+          "line": 38,
+          "kind": "function",
+          "end_line": 94
+        },
+        {
+          "name": "manejar_mensajes_registrados",
+          "line": 97,
+          "kind": "function",
+          "end_line": 174
+        }
+      ]
+    },
+    "controllers/pago.py": {
+      "role": "controller",
+      "symbols": [
+        {
+          "name": "iniciar_pago",
+          "line": 11,
+          "kind": "function",
+          "end_line": 112
+        },
+        {
+          "name": "iniciar_pago_efectivo",
+          "line": 115,
+          "kind": "function",
+          "end_line": 186
+        }
+      ]
+    },
+    "controllers/pedido.py": {
+      "role": "controller",
+      "symbols": [
+        {
+          "name": "procesar_pedido",
+          "line": 18,
+          "kind": "function",
+          "end_line": 66
+        },
+        {
+          "name": "confirmar_carrito",
+          "line": 69,
+          "kind": "function",
+          "end_line": 176
+        }
+      ]
+    },
+    "controllers/registro.py": {
+      "role": "controller",
+      "symbols": [
+        {
+          "name": "_enviar_mensaje_registro",
+          "line": 17,
+          "kind": "function",
+          "end_line": 21
+        },
+        {
+          "name": "confirmar_direccion",
+          "line": 24,
+          "kind": "function",
+          "end_line": 37
+        },
+        {
+          "name": "_enviar_bienvenida",
+          "line": 40,
+          "kind": "function",
+          "end_line": 47
+        },
+        {
+          "name": "_enviar_cancelacion_registro",
+          "line": 50,
+          "kind": "function",
+          "end_line": 54
+        },
+        {
+          "name": "_solicitar_nombre",
+          "line": 57,
+          "kind": "function",
+          "end_line": 61
+        },
+        {
+          "name": "_solicitar_direccion",
+          "line": 64,
+          "kind": "function",
+          "end_line": 69
+        },
+        {
+          "name": "_enviar_confirmacion_direccion",
+          "line": 72,
+          "kind": "function",
+          "end_line": 78
+        },
+        {
+          "name": "_enviar_direccion_invalida",
+          "line": 81,
+          "kind": "function",
+          "end_line": 87
+        },
+        {
+          "name": "_get_nlp",
+          "line": 92,
+          "kind": "function",
+          "end_line": 97
+        },
+        {
+          "name": "_es_nombre_valido",
+          "line": 100,
+          "kind": "function",
+          "end_line": 105
+        },
+        {
+          "name": "_validar_y_confirmar_direccion",
+          "line": 108,
+          "kind": "function",
+          "end_line": 115
+        },
+        {
+          "name": "RegistroUsuario",
+          "line": 117,
+          "kind": "class"
+        },
+        {
+          "name": "__init__",
+          "line": 119,
+          "kind": "function",
+          "end_line": 121
+        },
+        {
+          "name": "manejar_registro",
+          "line": 187,
+          "kind": "function",
+          "end_line": 189
+        }
+      ]
+    },
+    "database.py": {
+      "role": "db_connection",
+      "symbols": [
+        {
+          "name": "get_db",
+          "line": 34,
+          "kind": "function",
+          "end_line": 39
+        },
+        {
+          "name": "close_db",
+          "line": 42,
+          "kind": "function",
+          "end_line": 47
+        },
+        {
+          "name": "conectar_bd1",
+          "line": 50,
+          "kind": "function",
+          "end_line": 77
+        }
+      ]
+    },
+    "main.py": {
+      "role": "entry_point",
+      "symbols": [
+        {
+          "name": "create_app",
+          "line": 17,
+          "kind": "function",
+          "end_line": 133
+        },
+        {
+          "name": "health",
+          "line": 92,
+          "kind": "function",
+          "end_line": 113
+        },
+        {
+          "name": "manejar_errores_globales",
+          "line": 116,
+          "kind": "function",
+          "end_line": 131
+        }
+      ]
+    },
+    "managers/estado_usuario.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "EstadoUsuario",
+          "line": 9,
+          "kind": "class"
+        },
+        {
+          "name": "__init__",
+          "line": 11,
+          "kind": "function",
+          "end_line": 18
+        },
+        {
+          "name": "obtener_estado",
+          "line": 21,
+          "kind": "function",
+          "end_line": 33
+        },
+        {
+          "name": "actualizar_estado",
+          "line": 36,
+          "kind": "function",
+          "end_line": 58
+        }
+      ]
+    },
+    "managers/gestor_dashboard.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "_iso",
+          "line": 21,
+          "kind": "function",
+          "end_line": 26
+        },
+        {
+          "name": "GestorDashboard",
+          "line": 66,
+          "kind": "class"
+        },
+        {
+          "name": "session",
+          "line": 69,
+          "kind": "function",
+          "end_line": 71
+        },
+        {
+          "name": "_actualizar_estado_operativo",
+          "line": 75,
+          "kind": "function",
+          "end_line": 99
+        },
+        {
+          "name": "_ejecutar",
+          "line": 85,
+          "kind": "function",
+          "end_line": 97
+        },
+        {
+          "name": "metricas",
+          "line": 105,
+          "kind": "function",
+          "end_line": 186
+        },
+        {
+          "name": "_tiempo_medio",
+          "line": 188,
+          "kind": "function",
+          "end_line": 211
+        },
+        {
+          "name": "pedidos_activos",
+          "line": 213,
+          "kind": "function",
+          "end_line": 290
+        },
+        {
+          "name": "picking_activo",
+          "line": 292,
+          "kind": "function",
+          "end_line": 443
+        },
+        {
+          "name": "repartidores",
+          "line": 445,
+          "kind": "function",
+          "end_line": 513
+        },
+        {
+          "name": "alertas",
+          "line": 515,
+          "kind": "function",
+          "end_line": 564
+        },
+        {
+          "name": "eventos",
+          "line": 566,
+          "kind": "function",
+          "end_line": 583
+        },
+        {
+          "name": "mapa",
+          "line": 585,
+          "kind": "function",
+          "end_line": 608
+        },
+        {
+          "name": "buscar_productos",
+          "line": 610,
+          "kind": "function",
+          "end_line": 623
+        },
+        {
+          "name": "empleados_disponibles",
+          "line": 625,
+          "kind": "function",
+          "end_line": 637
+        },
+        {
+          "name": "monitor_empleados",
+          "line": 639,
+          "kind": "function",
+          "end_line": 965
+        },
+        {
+          "name": "asignar_picker",
+          "line": 971,
+          "kind": "function",
+          "end_line": 1021
+        },
+        {
+          "name": "reasignar_picker",
+          "line": 1023,
+          "kind": "function",
+          "end_line": 1086
+        },
+        {
+          "name": "completar_picking",
+          "line": 1088,
+          "kind": "function",
+          "end_line": 1201
+        },
+        {
+          "name": "_descontar",
+          "line": 1147,
+          "kind": "function",
+          "end_line": 1170
+        }
+      ]
+    },
+    "managers/gestor_empleado.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "GestorEmpleado",
+          "line": 14,
+          "kind": "class"
+        },
+        {
+          "name": "session",
+          "line": 17,
+          "kind": "function",
+          "end_line": 19
+        },
+        {
+          "name": "perfil",
+          "line": 23,
+          "kind": "function",
+          "end_line": 37
+        },
+        {
+          "name": "cambiar_estado",
+          "line": 39,
+          "kind": "function",
+          "end_line": 67
+        },
+        {
+          "name": "turno_hoy",
+          "line": 69,
+          "kind": "function",
+          "end_line": 82
+        },
+        {
+          "name": "capacidades",
+          "line": 84,
+          "kind": "function",
+          "end_line": 91
+        },
+        {
+          "name": "es_polivalente",
+          "line": 93,
+          "kind": "function",
+          "end_line": 95
+        },
+        {
+          "name": "tiene_rol_activo",
+          "line": 97,
+          "kind": "function",
+          "end_line": 102
+        },
+        {
+          "name": "cambiar_rol",
+          "line": 104,
+          "kind": "function",
+          "end_line": 175
+        },
+        {
+          "name": "_checkin_abierto_hoy",
+          "line": 181,
+          "kind": "function",
+          "end_line": 188
+        },
+        {
+          "name": "_cerrar_tramo_activo",
+          "line": 190,
+          "kind": "function",
+          "end_line": 197
+        },
+        {
+          "name": "_abrir_tramo",
+          "line": 199,
+          "kind": "function",
+          "end_line": 202
+        },
+        {
+          "name": "iniciar_turno",
+          "line": 204,
+          "kind": "function",
+          "end_line": 257
+        },
+        {
+          "name": "cerrar_turno",
+          "line": 259,
+          "kind": "function",
+          "end_line": 277
+        },
+        {
+          "name": "checkin_hoy",
+          "line": 279,
+          "kind": "function",
+          "end_line": 293
+        },
+        {
+          "name": "_resumen_checkin",
+          "line": 295,
+          "kind": "function",
+          "end_line": 312
+        },
+        {
+          "name": "carga_operativa",
+          "line": 314,
+          "kind": "function",
+          "end_line": 339
+        },
+        {
+          "name": "_colas_globales",
+          "line": 341,
+          "kind": "function",
+          "end_line": 352
+        },
+        {
+          "name": "metricas_hoy",
+          "line": 354,
+          "kind": "function",
+          "end_line": 415
+        },
+        {
+          "name": "puntualidad_empleado",
+          "line": 423,
+          "kind": "function",
+          "end_line": 470
+        }
+      ]
+    },
+    "managers/gestor_metricas.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "GestorMetricas",
+          "line": 13,
+          "kind": "class"
+        },
+        {
+          "name": "session",
+          "line": 16,
+          "kind": "function",
+          "end_line": 18
+        },
+        {
+          "name": "resumen_operacion",
+          "line": 24,
+          "kind": "function",
+          "end_line": 92
+        },
+        {
+          "name": "_tiempo_medio_ciclo_hoy",
+          "line": 94,
+          "kind": "function",
+          "end_line": 114
+        },
+        {
+          "name": "asistencia_hoy",
+          "line": 116,
+          "kind": "function",
+          "end_line": 143
+        },
+        {
+          "name": "colas_detalle",
+          "line": 145,
+          "kind": "function",
+          "end_line": 211
+        },
+        {
+          "name": "pedidos_por_estado",
+          "line": 213,
+          "kind": "function",
+          "end_line": 223
+        },
+        {
+          "name": "alertas_tiempo_real",
+          "line": 225,
+          "kind": "function",
+          "end_line": 233
+        },
+        {
+          "name": "_alertas_ausencia",
+          "line": 235,
+          "kind": "function",
+          "end_line": 270
+        },
+        {
+          "name": "_alertas_colas",
+          "line": 272,
+          "kind": "function",
+          "end_line": 303
+        },
+        {
+          "name": "_alertas_pedidos_bloqueados",
+          "line": 305,
+          "kind": "function",
+          "end_line": 345
+        },
+        {
+          "name": "_tiempo_medio_ciclo_periodo",
+          "line": 347,
+          "kind": "function",
+          "end_line": 363
+        },
+        {
+          "name": "_alertas_repartidores_inactivos",
+          "line": 365,
+          "kind": "function",
+          "end_line": 412
+        },
+        {
+          "name": "resumen_periodo",
+          "line": 418,
+          "kind": "function",
+          "end_line": 485
+        },
+        {
+          "name": "metricas_pedidos",
+          "line": 487,
+          "kind": "function",
+          "end_line": 584
+        },
+        {
+          "name": "metricas_picking",
+          "line": 586,
+          "kind": "function",
+          "end_line": 653
+        },
+        {
+          "name": "_picking_tiempos",
+          "line": 655,
+          "kind": "function",
+          "end_line": 678
+        },
+        {
+          "name": "metricas_reparto",
+          "line": 680,
+          "kind": "function",
+          "end_line": 753
+        },
+        {
+          "name": "rendimiento_empleados",
+          "line": 755,
+          "kind": "function",
+          "end_line": 842
+        },
+        {
+          "name": "comparativa_empleados",
+          "line": 844,
+          "kind": "function",
+          "end_line": 873
+        }
+      ]
+    },
+    "managers/gestor_pedidos.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "GestorPedidos",
+          "line": 18,
+          "kind": "class"
+        },
+        {
+          "name": "session",
+          "line": 21,
+          "kind": "function",
+          "end_line": 23
+        },
+        {
+          "name": "iniciar_pedido",
+          "line": 27,
+          "kind": "function",
+          "end_line": 36
+        },
+        {
+          "name": "guardar_enlace",
+          "line": 40,
+          "kind": "function",
+          "end_line": 51
+        },
+        {
+          "name": "hay_pedido_pendiente",
+          "line": 57,
+          "kind": "function",
+          "end_line": 67
+        },
+        {
+          "name": "obtener_pedido_mas_reciente",
+          "line": 71,
+          "kind": "function",
+          "end_line": 88
+        },
+        {
+          "name": "agregar_productos_a_pedido",
+          "line": 91,
+          "kind": "function",
+          "end_line": 133
+        },
+        {
+          "name": "actualizar_estado",
+          "line": 136,
+          "kind": "function",
+          "end_line": 163
+        },
+        {
+          "name": "_asegurar_picking_si_procede",
+          "line": 165,
+          "kind": "function",
+          "end_line": 193
+        },
+        {
+          "name": "guardar_forma_pago",
+          "line": 195,
+          "kind": "function",
+          "end_line": 201
+        },
+        {
+          "name": "guardar_coordenadas",
+          "line": 203,
+          "kind": "function",
+          "end_line": 210
+        },
+        {
+          "name": "guardar_redis_id",
+          "line": 212,
+          "kind": "function",
+          "end_line": 218
+        },
+        {
+          "name": "registrar_pago",
+          "line": 220,
+          "kind": "function",
+          "end_line": 239
+        },
+        {
+          "name": "_recalcular_total",
+          "line": 256,
+          "kind": "function",
+          "end_line": 259
+        },
+        {
+          "name": "cancelar_pedido",
+          "line": 261,
+          "kind": "function",
+          "end_line": 309
+        },
+        {
+          "name": "eliminar_item",
+          "line": 311,
+          "kind": "function",
+          "end_line": 359
+        },
+        {
+          "name": "sustituir_item",
+          "line": 361,
+          "kind": "function",
+          "end_line": 480
+        },
+        {
+          "name": "obtener_pedido",
+          "line": 482,
+          "kind": "function",
+          "end_line": 490
+        }
+      ]
+    },
+    "managers/gestor_productos.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "ProductoManager",
+          "line": 9,
+          "kind": "class"
+        },
+        {
+          "name": "session",
+          "line": 12,
+          "kind": "function",
+          "end_line": 14
+        },
+        {
+          "name": "obtener_productos",
+          "line": 16,
+          "kind": "function",
+          "end_line": 35
+        },
+        {
+          "name": "obtener_producto_por_codigo",
+          "line": 37,
+          "kind": "function",
+          "end_line": 54
+        },
+        {
+          "name": "productos_admin",
+          "line": 56,
+          "kind": "function",
+          "end_line": 81
+        },
+        {
+          "name": "actualizar_stock",
+          "line": 83,
+          "kind": "function",
+          "end_line": 102
+        },
+        {
+          "name": "ajustar_stock",
+          "line": 104,
+          "kind": "function",
+          "end_line": 122
+        },
+        {
+          "name": "toggle_disponible",
+          "line": 124,
+          "kind": "function",
+          "end_line": 136
+        },
+        {
+          "name": "actualizar_precio",
+          "line": 138,
+          "kind": "function",
+          "end_line": 152
+        },
+        {
+          "name": "descontar_stock_picking",
+          "line": 154,
+          "kind": "function",
+          "end_line": 175
+        }
+      ]
+    },
+    "managers/gestor_redis.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "RedisManager",
+          "line": 8,
+          "kind": "class"
+        },
+        {
+          "name": "__init__",
+          "line": 9,
+          "kind": "function",
+          "end_line": 24
+        },
+        {
+          "name": "get",
+          "line": 26,
+          "kind": "function",
+          "end_line": 31
+        },
+        {
+          "name": "set",
+          "line": 34,
+          "kind": "function",
+          "end_line": 46
+        },
+        {
+          "name": "delete",
+          "line": 49,
+          "kind": "function",
+          "end_line": 61
+        },
+        {
+          "name": "esta_bloqueado",
+          "line": 63,
+          "kind": "function",
+          "end_line": 66
+        },
+        {
+          "name": "bloquear_usuario",
+          "line": 68,
+          "kind": "function",
+          "end_line": 75
+        },
+        {
+          "name": "desbloquear_usuario",
+          "line": 77,
+          "kind": "function",
+          "end_line": 80
+        }
+      ]
+    },
+    "managers/gestor_usuarios.py": {
+      "role": "data_access",
+      "symbols": [
+        {
+          "name": "GestorUsuarios",
+          "line": 8,
+          "kind": "class"
+        },
+        {
+          "name": "session",
+          "line": 11,
+          "kind": "function",
+          "end_line": 13
+        },
+        {
+          "name": "obtener_usuario",
+          "line": 16,
+          "kind": "function",
+          "end_line": 29
+        },
+        {
+          "name": "guardar_usuario",
+          "line": 31,
+          "kind": "function",
+          "end_line": 40
+        },
+        {
+          "name": "obtener_usuario_completo",
+          "line": 43,
+          "kind": "function",
+          "end_line": 53
+        },
+        {
+          "name": "verificar_usuario",
+          "line": 56,
+          "kind": "function",
+          "end_line": 67
+        }
+      ]
+    },
+    "models.py": {
+      "role": "model",
+      "symbols": [
+        {
+          "name": "Usuario",
+          "line": 12,
+          "kind": "class"
+        },
+        {
+          "name": "Categoria",
+          "line": 27,
+          "kind": "class"
+        },
+        {
+          "name": "Producto",
+          "line": 38,
+          "kind": "class"
+        },
+        {
+          "name": "Pedido",
+          "line": 64,
+          "kind": "class"
+        },
+        {
+          "name": "PedidoDetalle",
+          "line": 96,
+          "kind": "class"
+        },
+        {
+          "name": "Pago",
+          "line": 116,
+          "kind": "class"
+        },
+        {
+          "name": "AuditLog",
+          "line": 135,
+          "kind": "class"
+        },
+        {
+          "name": "HistorialEstadoPedido",
+          "line": 150,
+          "kind": "class"
+        },
+        {
+          "name": "Rol",
+          "line": 169,
+          "kind": "class"
+        },
+        {
+          "name": "Empleado",
+          "line": 180,
+          "kind": "class"
+        },
+        {
+          "name": "EmpleadoCapacidad",
+          "line": 217,
+          "kind": "class"
+        },
+        {
+          "name": "Ausencia",
+          "line": 232,
+          "kind": "class"
+        },
+        {
+          "name": "SolicitudCambioTurno",
+          "line": 257,
+          "kind": "class"
+        },
+        {
+          "name": "MetricaDiariaEmpleado",
+          "line": 277,
+          "kind": "class"
+        },
+        {
+          "name": "PickingPedido",
+          "line": 304,
+          "kind": "class"
+        },
+        {
+          "name": "PickingItem",
+          "line": 322,
+          "kind": "class"
+        },
+        {
+          "name": "Reparto",
+          "line": 343,
+          "kind": "class"
+        },
+        {
+          "name": "Incidencia",
+          "line": 376,
+          "kind": "class"
+        },
+        {
+          "name": "Turno",
+          "line": 400,
+          "kind": "class"
+        },
+        {
+          "name": "CheckIn",
+          "line": 424,
+          "kind": "class"
+        }
+      ]
+    },
+    "schemas/twilio.py": {
+      "role": "schema",
+      "symbols": [
+        {
+          "name": "WebhookRequest",
+          "line": 4,
+          "kind": "class"
+        },
+        {
+          "name": "validate_phone_number",
+          "line": 10,
+          "kind": "function",
+          "end_line": 15
+        },
+        {
+          "name": "validate_body",
+          "line": 19,
+          "kind": "function",
+          "end_line": 22
+        },
+        {
+          "name": "PedidoInput",
+          "line": 24,
+          "kind": "class"
+        }
+      ]
+    },
+    "schemas/usuario.py": {
+      "role": "schema",
+      "symbols": [
+        {
+          "name": "UsuarioDatos",
+          "line": 4,
+          "kind": "class"
+        }
+      ]
+    },
+    "services/__init__.py": {
+      "role": "service",
+      "symbols": [
+        {
+          "name": "get_monei",
+          "line": 18,
+          "kind": "function",
+          "end_line": 22
+        }
+      ]
+    },
+    "services/maps_service.py": {
+      "role": "service",
+      "symbols": [
+        {
+          "name": "limpiar_direccion",
+          "line": 20,
+          "kind": "function",
+          "end_line": 25
+        },
+        {
+          "name": "construir_url",
+          "line": 27,
+          "kind": "function",
+          "end_line": 30
+        },
+        {
+          "name": "validar_coordenadas",
+          "line": 51,
+          "kind": "function",
+          "end_line": 54
+        },
+        {
+          "name": "geocodificar_direccion",
+          "line": 58,
+          "kind": "function",
+          "end_line": 76
+        },
+        {
+          "name": "validar_direccion",
+          "line": 79,
+          "kind": "function",
+          "end_line": 125
+        }
+      ]
+    },
+    "services/token_service.py": {
+      "role": "service",
+      "symbols": [
+        {
+          "name": "generar_token_temporal",
+          "line": 12,
+          "kind": "function",
+          "end_line": 29
+        },
+        {
+          "name": "generar_enlace",
+          "line": 32,
+          "kind": "function",
+          "end_line": 34
+        }
+      ]
+    },
+    "services/whatsapp_service.py": {
+      "role": "service",
+      "symbols": [
+        {
+          "name": "_get_client",
+          "line": 14,
+          "kind": "function",
+          "end_line": 18
+        },
+        {
+          "name": "_enviar_twilio",
+          "line": 27,
+          "kind": "function",
+          "end_line": 33
+        },
+        {
+          "name": "_enviar_meta",
+          "line": 42,
+          "kind": "function",
+          "end_line": 60
+        },
+        {
+          "name": "enviar_mensaje_whatsapp",
+          "line": 63,
+          "kind": "function",
+          "end_line": 68
+        }
+      ]
+    },
+    "states.py": {
+      "role": "state_machine",
+      "symbols": [
+        {
+          "name": "EstadoRegistro",
+          "line": 4,
+          "kind": "class"
+        },
+        {
+          "name": "__str__",
+          "line": 11,
+          "kind": "function",
+          "end_line": 12
+        },
+        {
+          "name": "EstadoPedido",
+          "line": 15,
+          "kind": "class"
+        },
+        {
+          "name": "EstadoPicking",
+          "line": 44,
+          "kind": "class"
+        },
+        {
+          "name": "EstadoReparto",
+          "line": 55,
+          "kind": "class"
+        },
+        {
+          "name": "transicion_valida_pedido",
+          "line": 97,
+          "kind": "function",
+          "end_line": 103
+        },
+        {
+          "name": "transicion_valida_registro",
+          "line": 106,
+          "kind": "function",
+          "end_line": 112
+        }
+      ]
+    },
+    "utils/es_pregunta.py": {
+      "role": "utility",
+      "symbols": [
+        {
+          "name": "es_pregunta",
+          "line": 6,
+          "kind": "function",
+          "end_line": 54
+        },
+        {
+          "name": "quitar_tildes",
+          "line": 17,
+          "kind": "function",
+          "end_line": 20
+        }
+      ]
+    },
+    "utils/menu_opciones.py": {
+      "role": "utility",
+      "symbols": [
+        {
+          "name": "mostrar_menu",
+          "line": 10,
+          "kind": "function",
+          "end_line": 17
+        }
+      ]
+    },
+    "utils/text_utils.py": {
+      "role": "utility",
+      "symbols": [
+        {
+          "name": "limpiar_texto",
+          "line": 5,
+          "kind": "function",
+          "end_line": 9
+        }
+      ]
+    }
+  },
+  "cycles": [
+    "database.py → models.py → database.py"
+  ],
+  "stats": {
+    "total_files": 51,
+    "connected_files": 26,
+    "edges": 57,
+    "cycles_found": 1
+  }
+}

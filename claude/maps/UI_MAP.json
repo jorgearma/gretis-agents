@@ -22,8 +22,7 @@
     ],
     "templates/empleado": [
       "checkin.html",
-      "index.html",
-      "turnos.html"
+      "index.html"
     ],
     "templates/macros": [
       "ui.html"

@@ -34,7 +34,7 @@ FORWARD_DEPTH = 2
 REVERSE_DEPTH = 1
 
 # Roles que se excluyen de files_to_review (mucho ruido, poco valor)
-_SKIP_ROLES = frozenset({"test", "migration", "config", "other"})
+_SKIP_ROLES = frozenset({"test", "migration", "config", "other", "entry_point"})
 
 
 def bfs(graph: dict[str, list[str]], seeds: set[str], depth: int) -> dict[str, list[str]]:
@@ -105,9 +105,12 @@ def main() -> int:
     for src, deps in fwd_subgraph.items():
         dependency_graph[src] = deps
 
-    # Callers de los seeds: caller → seed (el caller depende del seed)
-    for seed, callers in rev_subgraph.items():
-        for caller in callers:
+    # Callers DIRECTOS de los seeds (solo depth=0 del reverse BFS)
+    # Ignoramos callers de callers — solo quien llama directamente a un seed
+    direct_callers: set[str] = set()
+    for seed in seeds:
+        for caller in rev_subgraph.get(seed, []):
+            direct_callers.add(caller)
             existing = dependency_graph.setdefault(caller, [])
             if seed not in existing:
                 existing.append(seed)
@@ -118,11 +121,14 @@ def main() -> int:
         {item["path"] for item in ctx.get("files_to_review", [])}
     )
 
+    # Solo incluir: dependencias forward de los seeds + callers directos de los seeds
+    # Excluir __init__.py agregadores (hubs que conectan todo y generan ruido masivo)
     all_connected: set[str] = set()
     for deps in fwd_subgraph.values():
         all_connected.update(deps)
-    for callers in rev_subgraph.values():
-        all_connected.update(callers)
+    for caller in direct_callers:
+        if not Path(caller).name == "__init__.py":
+            all_connected.add(caller)
 
     new_entries: list[dict] = []
     for path in sorted(all_connected - seeds - already_listed):

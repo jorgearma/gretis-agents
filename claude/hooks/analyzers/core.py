@@ -142,6 +142,45 @@ FOLDER_ROLES: dict[str, str] = {
     "queries": "queries CQRS",
 }
 
+# Mapeo de carpeta → rol (fallback cuando el nombre de archivo no da pistas)
+FOLDER_TO_ROLE: dict[str, str] = {
+    "controllers": "controller",
+    "handlers":    "controller",
+    "blueprints":  "controller",
+    "routes":      "controller",
+    "routers":     "controller",
+    "schemas":     "schema",
+    "serializers": "schema",
+    "validators":  "schema",
+    "services":    "service",
+    "adapters":    "service",
+    "providers":   "service",
+    "clients":     "service",
+    "integrations":"service",
+    "repositories":"data_access",
+    "repos":       "data_access",
+    "managers":    "data_access",
+    "dao":         "data_access",
+    "models":      "model",
+    "entities":    "model",
+    "domain":      "model",
+    "middleware":  "middleware",
+    "middlewares": "middleware",
+    "guards":      "middleware",
+    "utils":       "utility",
+    "helpers":     "utility",
+    "lib":         "utility",
+    "common":      "utility",
+    "shared":      "utility",
+    "config":      "config",
+    "tests":       "test",
+    "test":        "test",
+    "__tests__":   "test",
+    "spec":        "test",
+    "migrations":  "migration",
+    "seeds":       "migration",
+}
+
 # Indicadores de framework (clave lowercase del paquete → nombre legible)
 FRAMEWORK_MAP: dict[str, str] = {
     "flask": "Flask", "django": "Django", "fastapi": "FastAPI",
@@ -347,6 +386,12 @@ def classify_role(rel_path: str) -> str:
     for pattern, role in ROLE_PATTERNS:
         if re.search(pattern, filename, re.IGNORECASE):
             return role
+    # Fallback: deduce rol por la carpeta padre más cercana
+    parts = Path(rel_path).parts
+    for part in reversed(parts[:-1]):
+        folder_role = FOLDER_TO_ROLE.get(part.lower())
+        if folder_role:
+            return folder_role
     return "other"
 
 def should_ignore(path: Path) -> bool:
@@ -473,7 +518,31 @@ def extract_python(path: Path, project_root: Path) -> FileInfo:
             first = next((l.strip() for l in raw.splitlines() if l.strip()), raw)
             module_docstring = first[:150]
 
-    project_pkg = project_root.name  # heuristic: imports starting with project name are internal
+    # Tops internos válidos: nombre del paquete + cualquier archivo/carpeta Python en la raíz.
+    # Cubre proyectos Flask planos y namespace packages (sin __init__.py, Python 3.3+).
+    project_pkg = project_root.name
+    _internal_tops: set[str] = {project_pkg}
+    try:
+        root_entries = list(project_root.iterdir())
+    except (PermissionError, OSError):
+        root_entries = []
+    for _entry in root_entries:
+        if _entry.suffix == ".py":
+            _internal_tops.add(_entry.stem)
+        elif (
+            _entry.is_dir()
+            and _entry.name not in IGNORE_DIRS
+            and not _entry.name.startswith(".")
+        ):
+            # Paquete tradicional (__init__.py) o namespace package (solo archivos .py)
+            try:
+                is_pkg = (_entry / "__init__.py").exists() or (
+                    next(_entry.glob("*.py"), None) is not None
+                )
+            except (PermissionError, OSError):
+                is_pkg = False
+            if is_pkg:
+                _internal_tops.add(_entry.name)
 
     fn_infos: list[FunctionInfo] = []
 
@@ -559,7 +628,7 @@ def extract_python(path: Path, project_root: Path) -> FileInfo:
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 top = alias.name.split(".")[0]
-                if top == project_pkg:
+                if top in _internal_tops:
                     imports_int.append(alias.name)
                 else:
                     imports_ext.append(top)
@@ -569,7 +638,7 @@ def extract_python(path: Path, project_root: Path) -> FileInfo:
                 imports_int.append(f".{node.module or ''}")
             elif node.module:
                 top = node.module.split(".")[0]
-                if top == project_pkg:
+                if top in _internal_tops:
                     imports_int.append(node.module)
                 else:
                     imports_ext.append(top)
@@ -1054,26 +1123,39 @@ def find_related(
     fi: FileInfo,
     all_files: list[FileInfo],
     cochange: dict[str, list[str]],
+    dep_forward: dict[str, list[str]] | None = None,
 ) -> list[str]:
-    """Encuentra módulos relacionados desde imports internos + git co-change."""
+    """Encuentra módulos relacionados: grafo de deps resuelto → co-change git → imports por stem."""
     stem = Path(fi.rel_path).stem
-    stems_by_path = {f.rel_path: Path(f.rel_path).stem for f in all_files}
     related: list[str] = []
+    seen: set[str] = set()
 
-    # Desde imports internos: busca archivos cuyo stem coincide con el import
-    for imp in fi.imports_internal:
-        imp_stem = imp.rstrip("/").replace(".", "/").split("/")[-1]
-        if imp_stem and imp_stem != stem and imp_stem not in related:
-            if any(s == imp_stem for s in stems_by_path.values()):
-                related.append(imp_stem)
+    # 1. Dependencias resueltas (más preciso: paths completos)
+    if dep_forward:
+        for dep_path in dep_forward.get(fi.rel_path, []):
+            dep_stem = Path(dep_path).stem
+            if dep_path != fi.rel_path and dep_stem not in _GENERIC_STEMS and dep_path not in seen:
+                seen.add(dep_path)
+                related.append(dep_path)
 
-    # Desde co-change git (excluye stems genéricos)
+    # 2. Git co-change (patrones de cambio conjunto)
     for cochanged_path in cochange.get(fi.rel_path, []):
         co_stem = Path(cochanged_path).stem
-        if co_stem != stem and co_stem not in related and co_stem not in _GENERIC_STEMS:
-            related.append(co_stem)
+        if co_stem != stem and cochanged_path not in seen and co_stem not in _GENERIC_STEMS:
+            seen.add(cochanged_path)
+            related.append(cochanged_path)
 
-    return related[:5]
+    # 3. Fallback: stem matching sobre imports internos sin resolver
+    if not dep_forward:
+        stems_by_path = {f.rel_path: Path(f.rel_path).stem for f in all_files}
+        for imp in fi.imports_internal:
+            imp_stem = imp.rstrip("/").replace(".", "/").split("/")[-1]
+            if imp_stem and imp_stem != stem and imp_stem not in seen:
+                if any(s == imp_stem for s in stems_by_path.values()):
+                    seen.add(imp_stem)
+                    related.append(imp_stem)
+
+    return related[:6]
 
 def find_test_file(rel_path: str, all_files: list[FileInfo]) -> str | None:
     """
@@ -1160,13 +1242,22 @@ def detect_problems(files: list[FileInfo]) -> list[dict]:
 
 def build_symbols(fi: FileInfo) -> list[dict]:
     """Devuelve lista de {name, line, kind, end_line?} para grep quirúrgico y recorte de contexto."""
-    fn_info_map = {fn.name: fn for fn in fi.function_infos}
+    # Indexar por (name, start_line) para encontrar el FunctionInfo que coincide con symbols_with_lines.
+    # Evita el bug de line > end_line cuando hay métodos con el mismo nombre en distintas clases.
+    fn_by_start: dict[tuple[str, int], "FunctionInfo"] = {}
+    fn_any: dict[str, "FunctionInfo"] = {}
+    for fn in fi.function_infos:
+        fn_by_start[(fn.name, fn.start_line)] = fn
+        fn_any[fn.name] = fn  # fallback: última aparición
+
     result = []
     for name, line in sorted(fi.symbols_with_lines.items(), key=lambda x: x[1]):
         kind = "class" if name in fi.classes else "function"
         entry: dict = {"name": name, "line": line, "kind": kind}
-        if name in fn_info_map:
-            entry["end_line"] = fn_info_map[name].end_line
+        fn = fn_by_start.get((name, line)) or fn_any.get(name)
+        if fn:
+            end_ln = max(fn.end_line, line)  # garantiza end_line >= line
+            entry["end_line"] = end_ln
         result.append(entry)
     return result[:10]
 
@@ -1175,13 +1266,14 @@ def build_module_entry(
     fi: FileInfo,
     all_files: list[FileInfo],
     cochange: dict[str, list[str]],
+    dep_forward: dict[str, list[str]] | None = None,
 ) -> dict:
     """Construye el objeto enriquecido para un módulo en PROJECT_MAP.json."""
     return {
         "path":            fi.rel_path,
         "purpose":         infer_purpose(fi),
         "search_keywords": extract_keywords(fi),
-        "related_to":      find_related(fi, all_files, cochange),
+        "related_to":      find_related(fi, all_files, cochange, dep_forward),
         "symbols":         build_symbols(fi),
         "test_file":       find_test_file(fi.rel_path, all_files),
     }

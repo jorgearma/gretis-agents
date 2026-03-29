@@ -10,6 +10,7 @@
       "name": "AuditLog",
       "table": "audit_log",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "pedido_id:Integer",
@@ -21,13 +22,13 @@
       "relationships": [
         "pedido",
         "empleado"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Ausencia",
       "table": "ausencias",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "empleado_id:Integer",
@@ -42,13 +43,13 @@
       "relationships": [
         "empleado",
         "aprobador"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Categoria",
       "table": "categorias",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "nombre",
@@ -57,13 +58,13 @@
       ],
       "relationships": [
         "productos"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "CheckIn",
       "table": "check_ins",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "empleado_id:Integer",
@@ -79,13 +80,13 @@
         "empleado",
         "turno",
         "tramos"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Empleado",
       "table": "empleados",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "EmpleadoID:Integer",
         "rol_id:Integer",
@@ -111,13 +112,13 @@
         "turnos",
         "check_ins",
         "capacidades"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "EmpleadoCapacidad",
       "table": "empleado_capacidades",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "empleado_id:Integer",
@@ -125,13 +126,13 @@
       ],
       "relationships": [
         "empleado"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "HistorialEstadoPedido",
       "table": "historial_estados_pedido",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "pedido_id:Integer",
@@ -143,13 +144,13 @@
       ],
       "relationships": [
         "pedido"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Incidencia",
       "table": "incidencias",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "pedido_id:Integer",
@@ -166,13 +167,13 @@
         "pedido",
         "cliente",
         "asignado"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "MetricaDiariaEmpleado",
       "table": "metricas_diarias_empleado",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "empleado_id:Integer",
@@ -187,13 +188,13 @@
       ],
       "relationships": [
         "empleado"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Pago",
       "table": "pagos",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "pedido_id:Integer",
@@ -209,13 +210,13 @@
       ],
       "relationships": [
         "pedido"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Pedido",
       "table": "pedidos",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "PedidoID:Integer",
         "ClienteID:Integer",
@@ -245,13 +246,13 @@
         "picking",
         "reparto",
         "incidencias"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "PedidoDetalle",
       "table": "pedido_detalles",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "DetalleID:Integer",
         "PedidoID:Integer",
@@ -265,13 +266,13 @@
         "pedido",
         "producto",
         "picking_item"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "PickingItem",
       "table": "picking_items",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "picking_id:Integer",
@@ -285,13 +286,13 @@
         "picking",
         "pedido_detalle",
         "producto_sustituto"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "PickingPedido",
       "table": "picking_pedido",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "pedido_id:Integer",
@@ -306,13 +307,13 @@
         "pedido",
         "empleado",
         "items"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Producto",
       "table": "productos",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "ProductoID:Integer",
         "categoria_id:Integer",
@@ -332,13 +333,13 @@
       "relationships": [
         "categoria_rel",
         "detalles"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Reparto",
       "table": "repartos",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "pedido_id:Integer",
@@ -361,13 +362,13 @@
       "relationships": [
         "pedido",
         "repartidor"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Rol",
       "table": "roles",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "nombre",
@@ -375,13 +376,13 @@
       ],
       "relationships": [
         "empleados"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "SolicitudCambioTurno",
       "table": "solicitudes_cambio_turno",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "turno_cedido_id:Integer",
@@ -398,13 +399,13 @@
         "solicitante",
         "sustituto",
         "aprobador"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "TramoTurno",
       "table": "tramos_turno",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "check_in_id:Integer",
@@ -414,13 +415,13 @@
       ],
       "relationships": [
         "check_in"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Turno",
       "table": "turnos",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "empleado_id:Integer",
@@ -437,13 +438,13 @@
       "relationships": [
         "empleado",
         "turno_origen"
-      ],
-      "test_file": null
+      ]
     },
     {
       "name": "Usuario",
       "table": "usuarios",
       "file": "models.py",
+      "test_file": null,
       "fields": [
         "id:Integer",
         "nombre",
@@ -453,8 +454,7 @@
       "relationships": [
         "pedidos",
         "incidencias"
-      ],
-      "test_file": null
+      ]
     }
   ],
   "migrations": [

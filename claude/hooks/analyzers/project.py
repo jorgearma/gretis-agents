@@ -16,8 +16,13 @@ from analyzers.core import (
     FileInfo, detect_stack, git_hotspots, git_cochange,
     walk_repo, detect_project_name, detect_readme_summary,
     infer_architecture, scan_structure,
-    build_module_entry, detect_problems,
+    build_module_entry, detect_problems, resolve_dependencies,
 )
+
+# Roles excluidos de modules (ruido para el planner)
+_SKIP_FROM_MODULES = frozenset({"test", "migration", "template", "component"})
+# Carpetas cuyos archivos se excluyen siempre de modules
+_SKIP_FOLDERS = frozenset({"tests", "test", "__tests__", "spec", "migrations", "seeds", "scripts"})
 
 # Dominios fijos — siempre se incluyen todos en el PROJECT_MAP.
 # El reader usa trigger_keywords para decidir cuáles activar por petición.
@@ -159,12 +164,27 @@ def run(root: Path, files: list[FileInfo], stack: dict) -> dict:
         }
 
     # Build modules dict grouped by role
+    # Solo archivos de producción en el grafo (sin tests, scripts, migrations)
+    prod_files = [
+        f for f in files
+        if f.role not in _SKIP_FROM_MODULES
+        and not any(p.lower() in _SKIP_FOLDERS for p in Path(f.rel_path).parts[:-1])
+    ]
+    dep_graph = resolve_dependencies(prod_files)
+    dep_forward = dep_graph.get("forward", {})
+
     from collections import defaultdict
     modules: dict[str, list] = defaultdict(list)
     for fi in files:
         if fi.role in ("entry_point", "other", None):
             continue
-        entry = build_module_entry(fi, files, cochange_raw)
+        if fi.role in _SKIP_FROM_MODULES:
+            continue
+        # Excluir archivos en carpetas de ruido (tests, scripts, migrations…)
+        path_parts = Path(fi.rel_path).parts
+        if any(p.lower() in _SKIP_FOLDERS for p in path_parts[:-1]):
+            continue
+        entry = build_module_entry(fi, files, cochange_raw, dep_forward)
         modules[fi.role].append(entry)
 
     problems = detect_problems(files)

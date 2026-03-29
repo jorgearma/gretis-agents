@@ -25,23 +25,24 @@ Lee los mapas del proyecto y escribe el contexto para el planner.
 
 ## Pasos — exactamente 3 turnos de tools
 
-**CRÍTICO: Nunca hagas un Read por turno. Agrupa siempre en paralelo.**
+### Turno 1 — Leer PROJECT_MAP.md y PROJECT_MAP.json
 
-### Turno 1 — Leer PROJECT_MAP (2 reads simultáneos)
-
-Lanza estos dos Read **sin especificar rango de líneas** (eso evita fragmentación automática):
+Empieza con estos dos Read:
 - `Read(.claude/maps/PROJECT_MAP.md)`
-- `Read(.claude/maps/PROJECT_MAP.json)` — **leerá todo automáticamente sin fragmentar**
+- `Read(.claude/maps/PROJECT_MAP.json)` — OBLIGATORIO; contiene la lista de dominios y sus `trigger_keywords`
 
-Con PROJECT_MAP.json decide qué dominios toca la petición comparando sus palabras clave con `domains[].trigger_keywords`. Solo selecciona los dominios con match real.
+Con `PROJECT_MAP.json` decide qué dominios toca la petición comparando sus palabras clave con `domains[].trigger_keywords`. Solo selecciona los dominios con match real.
 
-**CRÍTICO:**
-- NO uses `lines 1-3000` ni rango alguno — solo `Read(archivo)`
-- Lee el JSON **completo de una sola vez**, sin fragmentar
+**CRÍTICO para archivos grandes:**
+- Haz primero `Read(.claude/maps/PROJECT_MAP.json)` sin rango.
+- Si `Read` devuelve solo una parte del archivo, se corta en 200 líneas o indica que el contenido fue truncado, sigue leyendo el mismo archivo por tramos consecutivos hasta reconstruir el JSON completo.
+- Los tramos deben ser contiguos y sin solaparse.
+- No pases al Turno 2 hasta haber visto el cierre final del JSON y confirmado las claves top-level relevantes: `domains`, `hotspots`, `cochange` y `entry_points`.
+- Si el archivo es enorme, `PROJECT_MAP.json` puede requerir varias lecturas y eso sigue contando como Turno 1.
 
-### Turno 2 — Leer MAPs de dominio (todos en paralelo)
+### Turno 2 — Leer MAPs de dominio
 
-Lanza **en un solo turno** todos los MAPs de los dominios seleccionados, **sin especificar rango de líneas**:
+Lanza **en un solo turno** todos los MAPs de los dominios seleccionados:
 - `Read(.claude/maps/DB_MAP.json)` — si es necesario
 - `Read(.claude/maps/API_MAP.json)` — si es necesario
 - `Read(.claude/maps/UI_MAP.json)` — si es necesario
@@ -50,6 +51,8 @@ Lanza **en un solo turno** todos los MAPs de los dominios seleccionados, **sin e
 - `Read(.claude/maps/JOBS_MAP.json)` — si es necesario
 
 Lanza **solo los que necesites** según el match de trigger_keywords en Turno 1.
+
+Si uno de esos MAPs también llega truncado por tamaño, se permite releerlo por tramos consecutivos hasta completar su contenido antes de escribir el resultado final.
 
 Si solo hay un dominio, igual es un solo Read en este turno. Si un MAP tiene su array principal vacío (`blueprints: []`, `integrations: []`, `jobs: []`), no lo incluyas en `maps_used` y anota en `constraints` que ese dominio no tiene datos mapeados.
 
@@ -139,4 +142,3 @@ Extraídos de `domains[].reader` del PROJECT_MAP:
   - `"PickingPedido.iniciado_en y completado_en permiten calcular duración de picking"`
 - **NO mezcles** constraints con key_facts. Si algo es una prohibición o límite → `constraints`. Si es información útil → `key_facts`.
 - **NO incluyas** metadata interna del reader (qué MAPs leíste, qué readers seleccionaste) — eso ya va en `selected_readers` y `maps_used`.
-

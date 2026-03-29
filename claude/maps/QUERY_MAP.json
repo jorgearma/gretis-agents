@@ -13,111 +13,6 @@
       "test_file": null
     },
     {
-      "path": "managers/dashboard/gestor_empleados_mixin.py",
-      "role": "data_access",
-      "functions": [
-        "empleados_disponibles",
-        "monitor_empleados",
-        "rendimiento_resumen",
-        "rendimiento_empleado"
-      ],
-      "query_examples": [
-        "session.query(Empleado)",
-        ".filter(Empleado.activo == True)",
-        ".filter(Rol.nombre == rol)"
-      ],
-      "test_file": null
-    },
-    {
-      "path": "managers/dashboard/gestor_estadisticas_mixin.py",
-      "role": "data_access",
-      "functions": [
-        "estadisticas"
-      ],
-      "query_examples": [],
-      "test_file": null
-    },
-    {
-      "path": "managers/dashboard/gestor_pedidos_mixin.py",
-      "role": "data_access",
-      "functions": [
-        "metricas",
-        "pedidos_activos",
-        "alertas",
-        "eventos",
-        "historial_pedidos",
-        "detalle_pedido"
-      ],
-      "query_examples": [
-        ".filter(Pedido.Estado.in_(_ESTADOS_OPERATIVOS)",
-        ".filter(Pedido.Estado == estado)",
-        ".order_by(Pedido.FechaCreacion.asc()"
-      ],
-      "test_file": null
-    },
-    {
-      "path": "managers/dashboard/gestor_picking_mixin.py",
-      "role": "data_access",
-      "functions": [
-        "picking_activo",
-        "buscar_productos",
-        "asignar_picker",
-        "reasignar_picker",
-        "completar_picking",
-        "pickings_del_picker",
-        "actualizar_item_picking",
-        "pickings_sin_asignar",
-        "reclamar_picking"
-      ],
-      "query_examples": [
-        ".order_by(PickingPedido.created_at.asc()",
-        "session.query(Producto)",
-        ".filter(Producto.Disponible == True)"
-      ],
-      "test_file": null
-    },
-    {
-      "path": "managers/dashboard/gestor_reparto_mixin.py",
-      "role": "data_access",
-      "functions": [
-        "repartidores",
-        "mapa",
-        "asignar_repartidor",
-        "marcar_salida_reparto",
-        "marcar_no_entregado",
-        "marcar_entregado",
-        "registrar_cobro",
-        "cierre_caja_repartidor",
-        "repartos_del_repartidor",
-        "repartos_sin_asignar"
-      ],
-      "query_examples": [
-        ".filter(Empleado.activo == True)",
-        ".filter_by(PedidoID=pedido_id)",
-        ".filter_by(EmpleadoID=empleado_id, activo=True)"
-      ],
-      "test_file": null
-    },
-    {
-      "path": "managers/dashboard/gestor_turnos_mixin.py",
-      "role": "data_access",
-      "functions": [
-        "turnos_hoy",
-        "turnos_historial",
-        "turnos_planificacion",
-        "crear_turno",
-        "editar_turno",
-        "cancelar_turno",
-        "eliminar_turno"
-      ],
-      "query_examples": [
-        ".filter_by(activo=True)",
-        ".order_by(Empleado.Nombre)",
-        ".filter(CheckIn.fecha == hoy)"
-      ],
-      "test_file": null
-    },
-    {
       "path": "managers/estado_usuario.py",
       "role": "other",
       "functions": [
@@ -130,9 +25,24 @@
     {
       "path": "managers/gestor_dashboard.py",
       "role": "data_access",
-      "functions": [],
-      "query_examples": [],
-      "test_file": null
+      "functions": [
+        "session",
+        "metricas",
+        "pedidos_activos",
+        "picking_activo",
+        "repartidores",
+        "alertas",
+        "eventos",
+        "mapa",
+        "buscar_productos",
+        "empleados_disponibles"
+      ],
+      "query_examples": [
+        ".filter_by(EmpleadoID=empleado_id)",
+        ".order_by(HistorialEstadoPedido.cambiado_en.desc()",
+        ".filter(Pedido.Estado.in_(_ESTADOS_OPERATIVOS)"
+      ],
+      "test_file": "tests/test_gestor_dashboard.py"
     },
     {
       "path": "managers/gestor_empleado.py",
@@ -142,17 +52,17 @@
         "perfil",
         "cambiar_estado",
         "turno_hoy",
-        "turnos_proximos",
         "capacidades",
         "es_polivalente",
         "tiene_rol_activo",
         "cambiar_rol",
-        "puede_iniciar_turno"
+        "iniciar_turno",
+        "cerrar_turno"
       ],
       "query_examples": [
         "session.query(Empleado)",
         ".filter_by(EmpleadoID=empleado_id)",
-        ".order_by(Turno.fecha, Turno.hora_inicio)"
+        ".filter_by(EmpleadoID=empleado_id, activo=True)"
       ],
       "test_file": null
     },
@@ -176,7 +86,7 @@
         ".filter(Reparto.estado == 'pendiente')",
         ".filter(Turno.fecha == hoy)"
       ],
-      "test_file": null
+      "test_file": "tests/test_gestor_metricas.py"
     },
     {
       "path": "managers/gestor_pedidos.py",
@@ -198,7 +108,7 @@
         ".filter_by(ClienteID=cliente_id, Estado=EstadoPedido.PENDIENTE)",
         ".filter(Pedido.ClienteID == id_usuario)"
       ],
-      "test_file": null
+      "test_file": "tests/test_gestor_pedidos.py"
     },
     {
       "path": "managers/gestor_productos.py",
@@ -248,7 +158,7 @@
       "query_examples": [
         ".filter_by(numero_cliente=numero_cliente)"
       ],
-      "test_file": null
+      "test_file": "tests/test_gestor_usuarios.py"
     },
     {
       "path": "scripts/crear_pedidos_demo.py",
@@ -392,68 +302,42 @@
       ],
       "query_examples": [],
       "test_file": null
+    },
+    {
+      "path": "tests/test_gestor_pedidos.py",
+      "role": "data_access",
+      "functions": [
+        "make_pedido",
+        "gestor",
+        "test_pendiente_a_enlace",
+        "test_enlace_a_enlace2",
+        "test_enlace2_a_confirmando_pago",
+        "test_confirmando_pago_a_pagado",
+        "test_confirmando_pago_a_pagado_crea_picking_pendiente",
+        "test_enlace_a_pendiente_rollback_error",
+        "test_enlace2_a_enlace_boton_atras",
+        "test_saltar_a_pagado_desde_pendiente"
+      ],
+      "query_examples": [],
+      "test_file": null
+    },
+    {
+      "path": "tests/test_gestor_usuarios.py",
+      "role": "data_access",
+      "functions": [
+        "make_usuario",
+        "make_gestor_with_session",
+        "test_usuario_existente_retorna_objeto",
+        "test_usuario_no_existente_retorna_none",
+        "test_error_bd_relanza_excepcion",
+        "test_usuario_existente_retorna_dict",
+        "test_usuario_no_existente_retorna_none",
+        "test_usuario_nuevo_llama_add_y_commit",
+        "test_error_bd_hace_rollback"
+      ],
+      "query_examples": [],
+      "test_file": null
     }
   ],
-  "cochange_with_models": [
-    {
-      "file": "main.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/dashboard/gestor_empleados_mixin.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/dashboard/gestor_estadisticas_mixin.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/dashboard/gestor_pedidos_mixin.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/dashboard/gestor_picking_mixin.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/dashboard/gestor_reparto_mixin.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/dashboard/gestor_turnos_mixin.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/estado_usuario.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/gestor_dashboard.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    },
-    {
-      "file": "managers/gestor_empleado.py",
-      "cochanges": [
-        "managers/gestor_dashboard.py"
-      ]
-    }
-  ]
+  "cochange_with_models": []
 }

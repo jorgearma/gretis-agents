@@ -97,8 +97,12 @@ def _extract_celery_jobs(fi: FileInfo, root: Path) -> list[dict]:
 
 
 def _extract_manual_jobs(fi: FileInfo, root: Path) -> list[dict]:
-    """Scripts manuales en scripts/ o con 'main' que parecen jobs."""
-    if "script" not in fi.rel_path.lower() and "job" not in fi.rel_path.lower():
+    """Scripts manuales de jobs (carpeta jobs/ o nombre con 'job'). Excluye scripts/."""
+    parts = Path(fi.rel_path).parts
+    # Archivos en scripts/ son utilidades del día a día, no jobs del sistema
+    if any(p.lower() == "scripts" for p in parts[:-1]):
+        return []
+    if "job" not in fi.rel_path.lower():
         return []
     if "main" not in fi.functions and "run" not in fi.functions:
         return []

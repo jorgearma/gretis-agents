@@ -144,9 +144,13 @@ if target not in allowed_reads:
 		f"Solo puedes leer: {', '.join(sorted(allowed_reads))}"
 	)
 
-# ── Read: permitir hasta 3 relecturas (límite para evitar loops) ────────────────
+# ── Read: permitir relecturas acotadas (más margen para MAPs grandes) ───────────
 
-MAX_READS = 3
+MAX_READS_DEFAULT = 3
+MAX_READS_BY_TARGET = {
+	".claude/maps/PROJECT_MAP.json": 25,
+	"claude/maps/PROJECT_MAP.json": 25,
+}
 read_count: dict[str, int] = {}
 
 if READS_LOG.exists():
@@ -157,9 +161,11 @@ if READS_LOG.exists():
 	except OSError:
 		pass
 
-if target in read_count and read_count[target] >= MAX_READS:
+max_reads = MAX_READS_BY_TARGET.get(target, MAX_READS_DEFAULT)
+
+if target in read_count and read_count[target] >= max_reads:
 	deny(
-		f"'{target}' ya fue leído {MAX_READS} veces. "
+		f"'{target}' ya fue leído {max_reads} veces. "
 		"Usa la información que obtuviste en las lecturas anteriores o registra en risks si necesitas más contexto."
 	)
 
