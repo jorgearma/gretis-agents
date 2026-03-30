@@ -19,8 +19,8 @@ def _valid_plan() -> dict:
         "risks": [],
         "done_criteria": ["GET /health retorna 200"],
         "context_inputs": {
-            "selected_readers": ["project-reader"],
-            "maps_used": ["PROJECT_MAP.json"],
+            "selected_readers": ["api"],
+            "maps_used": ["ROUTING_MAP.json"],
             "files_to_open": [],
             "files_to_review": [],
         },
@@ -110,9 +110,9 @@ def test_operator_approval_invalid_status():
 
 # ── Cobertura de SCHEMA_MAP ───────────────────────────────────────────────────
 
-def test_schema_map_covers_all_20_schemas():
-    """SCHEMA_MAP debe cubrir exactamente 20 artifacts."""
-    assert len(SCHEMA_MAP) == 20, f"Esperado 20, encontrado {len(SCHEMA_MAP)}"
+def test_schema_map_covers_all_registered_schemas():
+    """SCHEMA_MAP debe cubrir exactamente los artifacts validados hoy."""
+    assert len(SCHEMA_MAP) == 14, f"Esperado 14, encontrado {len(SCHEMA_MAP)}"
 
 
 def test_all_schema_files_exist_on_disk():

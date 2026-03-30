@@ -17,21 +17,7 @@
           "path":               { "type": "string" },
           "role":               { "type": "string" },
           "purpose":            { "type": "string" },
-          "keywords":           { "type": "array", "items": { "type": "string" } },
           "key_symbols":        { "type": "array", "items": { "type": "string" } },
-          "symbols": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": ["name", "line", "kind"],
-              "properties": {
-                "name":     { "type": "string" },
-                "line":     { "type": "integer" },
-                "end_line": { "type": "integer" },
-                "kind":     { "type": "string", "enum": ["function", "class"] }
-              }
-            }
-          },
           "test_files":         { "type": "array", "items": { "type": "string" } },
           "related_paths":      { "type": "array", "items": { "type": "string" } },
           "contracts":          { "type": "array", "items": { "type": "string" } },

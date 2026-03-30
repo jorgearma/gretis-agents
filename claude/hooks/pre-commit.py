@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hook simple de pre-commit para verificar la estructura minima del plugin de Claude."""
+"""Valida la estructura activa del plugin y los artefactos JSON actuales."""
 
 from __future__ import annotations
 
@@ -8,91 +8,53 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from validate import validate_artifact
+from validate import SCHEMA_MAP, validate_artifact
 
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
 ROOT = PLUGIN_DIR.parent
+PLUGIN_JSON = PLUGIN_DIR / "plugin.json"
+IS_SOURCE_REPO_LAYOUT = PLUGIN_DIR.name == "claude"
 
-# Archivos que siempre deben existir (versionados)
-REQUIRED_PATHS = [
-    ROOT / "CLAUDE.md",
-    PLUGIN_DIR / "plugin.json",
-    # Agentes
-    PLUGIN_DIR / "agents" / "reader.md",
-    PLUGIN_DIR / "agents" / "planner.md",
-    PLUGIN_DIR / "agents" / "writer.md",
-    PLUGIN_DIR / "agents" / "frontend.md",
-    PLUGIN_DIR / "agents" / "backend.md",
-    # MAPs generados (deben existir después de analyze-repo.py)
-    PLUGIN_DIR / "maps" / "ROUTING_MAP.json",
-    PLUGIN_DIR / "maps" / "DOMAIN_INDEX_api.json",
-    PLUGIN_DIR / "maps" / "DOMAIN_INDEX_data.json",
-    PLUGIN_DIR / "maps" / "CONTRACT_MAP.json",
-    PLUGIN_DIR / "maps" / "DEPENDENCY_MAP.json",
-    # Schemas de runtime
-    PLUGIN_DIR / "schemas" / "reader-context.json",
-    PLUGIN_DIR / "schemas" / "plan.json",
-    PLUGIN_DIR / "schemas" / "execution-brief.json",
-    PLUGIN_DIR / "schemas" / "execution-dispatch.json",
-    PLUGIN_DIR / "schemas" / "operator-approval.json",
-    PLUGIN_DIR / "schemas" / "result.json",
-    # Schemas de maps
+EXTRA_REQUIRED_PATHS = [
+    PLUGIN_DIR / "settings.local.json",
+    PLUGIN_DIR / "hooks" / "reader-only.py",
+    PLUGIN_DIR / "hooks" / "planner-only.py",
+    PLUGIN_DIR / "hooks" / "writer-only.py",
+    PLUGIN_DIR / "hooks" / "guard-reader.py",
+    PLUGIN_DIR / "hooks" / "guard-planner.py",
+    PLUGIN_DIR / "hooks" / "guard-writer.py",
+]
+
+if IS_SOURCE_REPO_LAYOUT:
+    EXTRA_REQUIRED_PATHS.insert(0, ROOT / "CLAUDE.md")
+
+MAP_SCHEMA_FILES = [
     PLUGIN_DIR / "schemas" / "routing-map.json",
     PLUGIN_DIR / "schemas" / "domain-index.json",
     PLUGIN_DIR / "schemas" / "contract-map.json",
     PLUGIN_DIR / "schemas" / "dependency-map.json",
-    # Runtime obligatorio
-    PLUGIN_DIR / "runtime" / "operator-approval.json",
-    PLUGIN_DIR / "runtime" / "map-scan-approval.json",
-    # Hooks
-    PLUGIN_DIR / "hooks" / "approve-plan.py",
-    PLUGIN_DIR / "hooks" / "approve-map-scan.py",
-    PLUGIN_DIR / "hooks" / "analyze-repo.py",
-    PLUGIN_DIR / "hooks" / "execute-plan.py",
-    PLUGIN_DIR / "hooks" / "recover-cycle.py",
-    # Comandos
-    PLUGIN_DIR / "commands" / "start-cycle.md",
-    PLUGIN_DIR / "commands" / "implement-feature.md",
 ]
 
-# Runtime generado en cada ciclo (gitignored — validar solo si existe)
-RUNTIME_JSON_FILES = [
-    PLUGIN_DIR / "runtime" / "execution-brief.json",
-    PLUGIN_DIR / "runtime" / "plan.json",
-    PLUGIN_DIR / "runtime" / "execution-dispatch.json",
-    PLUGIN_DIR / "runtime" / "reviewer-dispatch.json",
-    PLUGIN_DIR / "runtime" / "result.json",
-]
-
-# JSON estáticos que siempre deben ser JSON válido
-STATIC_JSON_FILES = [
-    PLUGIN_DIR / "plugin.json",
-    PLUGIN_DIR / "schemas" / "reader-context.json",
-    PLUGIN_DIR / "schemas" / "plan.json",
-    PLUGIN_DIR / "schemas" / "execution-brief.json",
-    PLUGIN_DIR / "schemas" / "execution-dispatch.json",
-    PLUGIN_DIR / "schemas" / "operator-approval.json",
-    PLUGIN_DIR / "schemas" / "result.json",
-    PLUGIN_DIR / "schemas" / "routing-map.json",
-    PLUGIN_DIR / "schemas" / "domain-index.json",
-    PLUGIN_DIR / "schemas" / "contract-map.json",
-    PLUGIN_DIR / "schemas" / "dependency-map.json",
-    PLUGIN_DIR / "runtime" / "operator-approval.json",
-    PLUGIN_DIR / "runtime" / "map-scan-approval.json",
-]
-
-# Maps que se validan contra su schema (artifact_name → path)
 MAP_ARTIFACTS = {
-    "ROUTING_MAP.json":           PLUGIN_DIR / "maps" / "ROUTING_MAP.json",
-    "DOMAIN_INDEX_api.json":      PLUGIN_DIR / "maps" / "DOMAIN_INDEX_api.json",
-    "DOMAIN_INDEX_data.json":     PLUGIN_DIR / "maps" / "DOMAIN_INDEX_data.json",
-    "DOMAIN_INDEX_ui.json":       PLUGIN_DIR / "maps" / "DOMAIN_INDEX_ui.json",
-    "DOMAIN_INDEX_services.json": PLUGIN_DIR / "maps" / "DOMAIN_INDEX_services.json",
-    "DOMAIN_INDEX_jobs.json":     PLUGIN_DIR / "maps" / "DOMAIN_INDEX_jobs.json",
-    "CONTRACT_MAP.json":          PLUGIN_DIR / "maps" / "CONTRACT_MAP.json",
-    "DEPENDENCY_MAP.json":        PLUGIN_DIR / "maps" / "DEPENDENCY_MAP.json",
+    "ROUTING_MAP.json",
+    "DOMAIN_INDEX_api.json",
+    "DOMAIN_INDEX_data.json",
+    "DOMAIN_INDEX_ui.json",
+    "DOMAIN_INDEX_services.json",
+    "DOMAIN_INDEX_jobs.json",
+    "CONTRACT_MAP.json",
+    "DEPENDENCY_MAP.json",
 }
+
+
+def plugin_path_from_manifest(rel_path: str) -> Path:
+    """Resuelve una ruta declarada en plugin.json al layout real actual."""
+    if rel_path.startswith(".claude/"):
+        rel_path = rel_path.removeprefix(".claude/")
+    elif rel_path.startswith("claude/"):
+        rel_path = rel_path.removeprefix("claude/")
+    return PLUGIN_DIR / rel_path
 
 
 def validate_json_file(path: Path) -> str | None:
@@ -106,53 +68,125 @@ def validate_json_file(path: Path) -> str | None:
     return None
 
 
+def load_manifest() -> dict:
+    with PLUGIN_JSON.open("r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def required_paths_from_manifest(manifest: dict) -> list[Path]:
+    paths = [PLUGIN_JSON]
+
+    for agent in manifest.get("agents", []):
+        paths.append(PLUGIN_DIR / "agents" / f"{agent}.md")
+
+    for command in manifest.get("commands", []):
+        paths.append(PLUGIN_DIR / "commands" / f"{command}.md")
+
+    for hook in manifest.get("hooks", []):
+        paths.append(PLUGIN_DIR / "hooks" / hook)
+
+    for map_name in manifest.get("maps", []):
+        paths.append(PLUGIN_DIR / "maps" / map_name)
+
+    for schema_rel in manifest.get("schemas", {}).values():
+        paths.append(plugin_path_from_manifest(schema_rel))
+
+    return paths
+
+
+def optional_runtime_json_paths(manifest: dict) -> list[Path]:
+    paths: list[Path] = []
+    for runtime_rel in manifest.get("runtime", {}).values():
+        path = plugin_path_from_manifest(runtime_rel)
+        if path.exists():
+            paths.append(path)
+    return paths
+
+
+def validate_artifact_file(name: str, path: Path) -> str | None:
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+    vr = validate_artifact(name, data)
+    if vr.ok:
+        return None
+    return f"{path.relative_to(ROOT)}: schema violations\n{vr.format()}"
+
+
+def validate_known_maps(map_dir: Path) -> list[str]:
+    errors: list[str] = []
+    for artifact_name in sorted(MAP_ARTIFACTS):
+        path = map_dir / artifact_name
+        if not path.exists():
+            continue
+        err = validate_artifact_file(artifact_name, path)
+        if err:
+            errors.append(err)
+    return errors
+
+
 def main() -> int:
-    # 1. Archivos requeridos
-    missing = [str(p.relative_to(ROOT)) for p in REQUIRED_PATHS if not p.exists()]
-    if missing:
-        print("Missing required Claude plugin files:")
-        for p in missing:
-            print(f"  - {p}")
+    manifest_error = validate_json_file(PLUGIN_JSON)
+    if manifest_error:
+        print("Invalid plugin manifest:")
+        print(f"  - {manifest_error}")
         return 1
 
-    # 2. JSON estático válido
-    invalid_json = [err for p in STATIC_JSON_FILES if (err := validate_json_file(p))]
+    manifest = load_manifest()
+
+    required_paths = required_paths_from_manifest(manifest) + EXTRA_REQUIRED_PATHS + MAP_SCHEMA_FILES
+    missing = sorted({str(path.relative_to(ROOT)) for path in required_paths if not path.exists()})
+    if missing:
+        print("Missing required Claude plugin files:")
+        for rel in missing:
+            print(f"  - {rel}")
+        return 1
+
+    static_json_files = {
+        PLUGIN_JSON,
+        PLUGIN_DIR / "settings.local.json",
+        *[plugin_path_from_manifest(rel) for rel in manifest.get("schemas", {}).values()],
+        *MAP_SCHEMA_FILES,
+        *[PLUGIN_DIR / "maps" / name for name in manifest.get("maps", [])],
+    }
+
+    invalid_json = sorted(
+        err for path in static_json_files
+        if (err := validate_json_file(path))
+    )
     if invalid_json:
         print("Invalid JSON files detected:")
         for err in invalid_json:
             print(f"  - {err}")
         return 1
 
-    # 3. Maps contra schema
-    schema_errors: list[str] = []
-    for artifact_name, map_path in MAP_ARTIFACTS.items():
-        if not map_path.exists():
-            continue  # ya detectado en REQUIRED_PATHS si es obligatorio
-        try:
-            with map_path.open("r", encoding="utf-8") as fh:
-                data = json.load(fh)
-        except (json.JSONDecodeError, OSError):
-            continue  # ya detectado en invalid_json
-        vr = validate_artifact(artifact_name, data)
-        if not vr.ok:
-            schema_errors.append(
-                f"{map_path.relative_to(ROOT)}: schema violations\n{vr.format()}"
-            )
-
+    schema_errors = validate_known_maps(PLUGIN_DIR / "maps")
     if schema_errors:
-        print("Map files with schema violations:")
+        print("Versioned map files with schema violations:")
         for err in schema_errors:
             print(f"  - {err}")
         return 1
 
-    # 4. Runtime JSON (solo si existe)
-    runtime_errors = [
-        err for p in RUNTIME_JSON_FILES
-        if p.exists() and (err := validate_json_file(p))
-    ]
-    if runtime_errors:
-        print("Invalid runtime JSON files detected:")
-        for err in runtime_errors:
+    runtime_json_errors: list[str] = []
+    for path in optional_runtime_json_paths(manifest):
+        err = validate_json_file(path)
+        if err:
+            runtime_json_errors.append(err)
+            continue
+        if path.name in SCHEMA_MAP:
+            schema_err = validate_artifact_file(path.name, path)
+            if schema_err:
+                runtime_json_errors.append(schema_err)
+
+    runtime_map_dir = ROOT / ".claude" / "maps"
+    runtime_map_errors = validate_known_maps(runtime_map_dir) if runtime_map_dir.exists() else []
+
+    if runtime_json_errors or runtime_map_errors:
+        print("Runtime artifacts with validation issues:")
+        for err in runtime_json_errors + runtime_map_errors:
             print(f"  - {err}")
         return 1
 

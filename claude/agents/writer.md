@@ -84,7 +84,7 @@ Una vista humana del JSON. Estructura fija:
 {notes como bullets}
 
 ---
-⏳ Pendiente de aprobación. Ejecutar `approve-plan.py approve --by "nombre"` para continuar.
+⏳ Pendiente de ejecución manual del siguiente paso del operador.
 ```
 
 ## Lo que NO debes hacer

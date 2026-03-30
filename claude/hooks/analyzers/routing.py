@@ -9,8 +9,7 @@ Este es el primer map que lee el reader. Es pequeño e informa:
   - default_constraints: restricciones que aplican a cualquier dominio
   - entry_points: archivos de arranque
 
-Reemplaza PROJECT_MAP.json como fuente de routing. PROJECT_MAP.md se mantiene
-como apoyo de contexto narrativo, pero no como fuente de selección de dominio.
+Centraliza el enrutamiento real en ROUTING_MAP.json + DOMAIN_INDEX_*.json.
 """
 from __future__ import annotations
 

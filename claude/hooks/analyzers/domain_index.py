@@ -12,8 +12,6 @@ from pathlib import Path
 
 from analyzers.core import (
     FileInfo,
-    build_symbols,
-    extract_keywords,
     find_related,
     find_test_file,
     infer_purpose,
@@ -32,22 +30,25 @@ def build_candidate(
     """
     Construye un candidato uniforme para DOMAIN_INDEX_<domain>.json.
 
-    open_priority:
-        "seed"   — archivo primario, el reader debe abrirlo siempre.
-        "review" — archivo secundario, abrirlo si el seed apunta a él
-                   o si la petición lo menciona explícitamente.
+    Campos incluidos — solo lo que el reader necesita para decidir qué abrir:
+      path, role, purpose      → identidad del archivo
+      key_symbols              → nombres de funciones/clases (sin líneas — eso es del planner)
+      test_files               → tests asociados
+      related_paths            → vecinos por deps o co-change
+      contracts                → qué no romper ("POST /route", "model:X", "env:VAR")
+      open_priority            → "seed" → files_to_open | "review" → files_to_review
+      confidence_signals       → por qué es candidato (informativo)
 
-    confidence_signals: indicadores de por qué este archivo es candidato
-        (e.g. "has_route_decorators", "is_data_access_role", "has_sdk_import").
+    NO incluidos:
+      symbols[]  — líneas exactas por símbolo: el planner las obtiene con Grep directamente
+      keywords[] — ya sirvieron para el routing en ROUTING_MAP; aquí son ruido
     """
     test = find_test_file(fi.rel_path, all_files)
     return {
         "path": fi.rel_path,
         "role": fi.role,
         "purpose": infer_purpose(fi),
-        "keywords": extract_keywords(fi),
         "key_symbols": (fi.functions or fi.exports)[:4],
-        "symbols": build_symbols(fi),
         "test_files": [test] if test else [],
         "related_paths": find_related(fi, all_files, cochange, dep_forward),
         "contracts": contracts or [],

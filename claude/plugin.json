@@ -13,30 +13,26 @@
     "planner",
     "writer",
     "frontend",
-    "backend",
-    "quick-agent"
+    "backend"
   ],
   "commands": [
-    "start-cycle",
-    "implement-feature"
+    "start-cycle"
   ],
   "hooks": [
     "pre-commit.py",
-    "approve-map-scan.py",
     "analyze-repo.py",
-    "approve-plan.py",
-    "execute-plan.py",
-    "quick-execute.py",
-    "run-cycle.py",
-    "recover-cycle.py",
-    "token-usage.py",
+    "build-subgraph.py",
     "validate.py"
   ],
   "maps": [
-    "PROJECT_MAP.md",
-    "DB_MAP.md",
-    "QUERY_MAP.md",
-    "UI_MAP.md"
+    "ROUTING_MAP.json",
+    "DOMAIN_INDEX_api.json",
+    "DOMAIN_INDEX_data.json",
+    "DOMAIN_INDEX_ui.json",
+    "DOMAIN_INDEX_services.json",
+    "DOMAIN_INDEX_jobs.json",
+    "CONTRACT_MAP.json",
+    "DEPENDENCY_MAP.json"
   ],
   "schemas": {
     "reader_context":     ".claude/schemas/reader-context.json",
@@ -44,8 +40,7 @@
     "execution_brief":    ".claude/schemas/execution-brief.json",
     "execution_dispatch": ".claude/schemas/execution-dispatch.json",
     "operator_approval":  ".claude/schemas/operator-approval.json",
-    "result":             ".claude/schemas/result.json",
-    "quick_dispatch":     ".claude/schemas/quick-dispatch.json"
+    "result":             ".claude/schemas/result.json"
   },
   "runtime": {
     "reader_context":     ".claude/runtime/reader-context.json",
@@ -53,7 +48,6 @@
     "execution_brief":    ".claude/runtime/execution-brief.json",
     "execution_dispatch": ".claude/runtime/execution-dispatch.json",
     "operator_approval":  ".claude/runtime/operator-approval.json",
-    "result":             ".claude/runtime/result.json",
-    "quick_dispatch":     ".claude/runtime/quick-dispatch.json"
+    "result":             ".claude/runtime/result.json"
   }
 }

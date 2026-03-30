@@ -1,63 +1,167 @@
 {
-  "improved_prompt": "Modificar envio de SMS",
+  "improved_prompt": "Implementar validación de dirección de entrega con Google Maps antes de confirmar pago:\n1. En POST /api/confirmacion y POST /api/agregar_pedido, validar dirección con maps_service.geocodificar_direccion() antes de cambiar estado del pedido o generar enlace Monei\n2. Si dirección es inválida (fuera de Tarancón, genérica, sin coordenadas válidas), retornar error JSON con código 400 y detener flujo — no cambiar estado ni generar enlace de pago\n3. En POST /api/agregar_pedido_efectivo, aplicar la misma validación antes de crear pedido con estado CONTRA_REEMBOLSO\n4. Mostrar error claro en UI web (/menu/<token>) — usar templates/error.html o templates/confirmacion_pago.html\n5. Para trazabilidad interna: reutilizar campo cancel_reason existente en modelo Pedido o completar HistorialEstadoPedido.notas al bloquear por dirección\n6. Dashboard debe poder distinguir pedidos bloqueados por dirección inválida sin cambiar firmas de endpoints públicos\n7. Respetar integraciones Monei (webhook HMAC), Twilio/Meta (servicios WhatsApp), y Redis (tokens) existentes",
   "selected_readers": [
-    "services-reader"
+    "api",
+    "data",
+    "services",
+    "ui"
   ],
   "maps_used": [
-    "PROJECT_MAP.json",
-    "SERVICES_MAP.json"
+    "ROUTING_MAP.json",
+    "DOMAIN_INDEX_api.json",
+    "DOMAIN_INDEX_data.json",
+    "DOMAIN_INDEX_services.json",
+    "DOMAIN_INDEX_ui.json",
+    "CONTRACT_MAP.json",
+    "DATA_MODEL_MAP.json",
+    "TEST_MAP.json"
   ],
   "files_to_open": [
     {
-      "path": "services/sms.py",
-      "hint": "Servicio SMS",
+      "path": "blueprints/api.py",
+      "hint": "Contiene POST /api/confirmacion y POST /api/agregar_pedido (breaking) — aquí se debe insertar validación de dirección antes de cambiar estado o generar enlace Monei",
       "key_symbols": [
-        "send_sms"
-      ]
+        "agregar_pedido",
+        "agregar_pedido_efectivo",
+        "agregar_pedido_confirmacion"
+      ],
+      "test_file": "tests/test_api_pedido.py"
+    },
+    {
+      "path": "services/maps_service.py",
+      "hint": "Servicio Google Maps existente — contiene geocodificar_direccion() y validar_coordenadas() para reutilizar en validación de entrega",
+      "key_symbols": [
+        "geocodificar_direccion",
+        "validar_coordenadas",
+        "limpiar_direccion"
+      ],
+      "test_file": null
+    },
+    {
+      "path": "managers/gestor_pedidos.py",
+      "hint": "Gestiona estado de pedidos con transiciones validadas — insertar validación de dirección antes de cambiar estado en flujos de pago",
+      "key_symbols": [
+        "iniciar_pedido",
+        "guardar_enlace",
+        "hay_pedido_pendiente"
+      ],
+      "test_file": "tests/test_gestor_pedidos.py"
+    },
+    {
+      "path": "blueprints/menu.py",
+      "hint": "Renderiza GET /menu/<token> — ajustar JavaScript o backend para mostrar error de validación de dirección sin navegar a confirmación",
+      "key_symbols": [
+        "quiniela",
+        "mostrar_confirmacion",
+        "mostrar_confirmacion_depago"
+      ],
+      "test_file": "tests/test_menu.py"
     }
   ],
   "files_to_review": [
     {
-      "path": "app.py",
-      "hint": "Descubierto via grafo de dependencias (role: entry_point)",
+      "path": "models.py",
+      "hint": "Define modelo Pedido con campos existentes: cancel_reason (reutilizar para trazabilidad de bloqueos), lat_entrega, lng_entrega (ya geocodificados), HistorialEstadoPedido para audit",
+      "key_symbols": [
+        "Pedido",
+        "HistorialEstadoPedido"
+      ],
       "test_file": null
     },
     {
-      "path": "models/user.py",
-      "hint": "Descubierto via grafo de dependencias (role: model)",
-      "test_file": null,
+      "path": "controllers/pago.py",
+      "hint": "Flujo de pago con iniciar_pago() (Monei) e iniciar_pago_efectivo() — NO romper; validación de dirección debe ocurrir ANTES de estas funciones",
       "key_symbols": [
-        "User"
-      ]
+        "iniciar_pago",
+        "iniciar_pago_efectivo"
+      ],
+      "test_file": null
     },
     {
-      "path": "routes/api.py",
-      "hint": "Descubierto via grafo de dependencias (role: controller)",
-      "test_file": null,
-      "key_symbols": [
-        "send_notification"
-      ]
+      "path": "states.py",
+      "hint": "Define transiciones válidas de estado de pedido — respetar máquina de estados; validación de dirección no debe introducir nuevos estados, solo bloquear transición",
+      "key_symbols": [],
+      "test_file": "tests/test_states.py"
     },
     {
-      "path": "services/twilio_client.py",
-      "hint": "Descubierto via grafo de dependencias (role: service)",
-      "test_file": null,
+      "path": "config.py",
+      "hint": "Carga GOOGLE_MAPS_API_KEY desde env — verificar disponibilidad y pasar a maps_service en llamadas de validación",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "templates/confirmacion_pago.html",
+      "hint": "Plantilla de confirmación de pago — mostrar error si dirección no valida; puede reutilizar estructura de templates/error.html",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "templates/error.html",
+      "hint": "Plantilla de error existente — evaluar si reutilizar directamente o adaptar para errores de dirección inválida",
+      "key_symbols": [],
+      "test_file": null
+    },
+    {
+      "path": "blueprints/webhook.py",
+      "hint": "POST /webhook/monei (breaking) — validación HMAC crítica, NO tocar; la validación de dirección ocurre ANTES de llegar aquí",
       "key_symbols": [
-        "send_whatsapp"
-      ]
+        "webhook_monei"
+      ],
+      "test_file": "tests/test_webhook.py"
+    },
+    {
+      "path": "services/whatsapp_service.py",
+      "hint": "Servicio WhatsApp (Twilio/Meta switcheable) — puede notificar al cliente si dirección no valida; NO romper",
+      "key_symbols": [
+        "enviar_mensaje_whatsapp"
+      ],
+      "test_file": "tests/test_whatsapp_service.py"
+    },
+    {
+      "path": "managers/dashboard/gestor_pedidos_mixin.py",
+      "hint": "Dashboard pedidos — debe poder filtrar/mostrar pedidos bloqueados por dirección sin cambiar contratos públicos",
+      "key_symbols": [
+        "pedidos_activos",
+        "metricas"
+      ],
+      "test_file": null
     }
   ],
+  "constraints": [
+    "No romper endpoints públicos: POST /api/confirmacion (breaking), POST /api/agregar_pedido (breaking), POST /api/agregar_pedido_efectivo (breaking), GET /menu/<token> (breaking)",
+    "No romper POST /webhook/monei (breaking) — validación HMAC es crítica para seguridad de pagos",
+    "No modificar migraciones ya aplicadas — si se necesita nuevo campo, crear migración nueva",
+    "Schema UsuarioDatos en schemas/usuario.py (breaking) — no cambiar campos públicos",
+    "GOOGLE_MAPS_API_KEY requerida en config.py — debe estar disponible para maps_service",
+    "No romper integraciones Twilio/Meta (servicios WhatsApp) ni Redis (tokens) existentes",
+    "Usar campo existente del modelo Pedido para trazabilidad (cancel_reason es reutilizable; si necesitas más campos, crear migración nueva, no modificar tabla existente)"
+  ],
+  "key_facts": [
+    "ORM: SQLAlchemy · DB: SQL Server (pyodbc) · Patrón: Manager / Repository",
+    "Modelo Pedido ya tiene campos: DireccionEntrega (string), lat_entrega/lng_entrega (float), cancel_reason (string para trazabilidad)",
+    "Servicio Google Maps ya integrado en services/maps_service.py con funciones geocodificar_direccion() y validar_coordenadas()",
+    "GOOGLE_MAPS_API_KEY ya cargada en config.py desde env vars",
+    "Estados de pedido: PENDIENTE → ENLACE ⇄ ENLACE2 → CONFIRMANDO_PAGO → PAGADO → EN_PREPARACION → PREPARADO → EN_REPARTO → ENTREGADO / CANCELADO → REEMBOLSADO",
+    "Flujo online: usuario confirma carrito → POST /api/confirmacion (caching en Redis) → POST /api/agregar_pedido (valida precios, genera Monei) → webhook Monei → estado PAGADO",
+    "Flujo efectivo: usuario confirma → POST /api/agregar_pedido_efectivo → estado CONTRA_REEMBOLSO (no pasa por Monei)",
+    "Validación de precio vs DB ya existe en agregar_pedido — patrón a seguir para validación de dirección",
+    "HistorialEstadoPedido registra cambios de estado + notas para auditoria — reutilizar para bloqueos por dirección",
+    "Template error.html y confirmacion_pago.html existen — evaluar reutilización para mostrar error de dirección inválida",
+    "Redis: tokens con TTL en maps_service (key format: <uuid-token>), cart en pedido:<uuid>",
+    "Tenacity decorators en DB/API calls protegen contra SQL Server transient failures — mantener patrón existente"
+  ],
   "status": "ready",
-  "dependency_graph": {
-    "services/sms.py": [
-      "models/user.py",
-      "services/twilio_client.py"
+  "dependency_graph": {},
+  "dependency_context": {
+    "seeds": [
+      "blueprints/api.py",
+      "blueprints/menu.py",
+      "managers/gestor_pedidos.py",
+      "services/maps_service.py"
     ],
-    "routes/api.py": [
-      "services/sms.py"
-    ],
-    "app.py": [
-      "routes/api.py"
-    ]
-  }
+    "callers_of_seeds": [],
+    "seed_dependencies": [],
+    "hubs_not_expanded": []
+  },
+  "_subgraph_added": []
 }

@@ -38,8 +38,6 @@ SCHEMA_MAP: dict[str, str] = {
     "execution-dispatch.json": "execution-dispatch.json",
     "operator-approval.json":  "operator-approval.json",
     "result.json":             "result.json",
-    "review.json":             "review.json",
-    "quick-dispatch.json":     "quick-dispatch.json",
     # Maps (artifact name → schema filename en schemas/)
     "ROUTING_MAP.json":            "routing-map.json",
     "DOMAIN_INDEX_api.json":       "domain-index.json",
@@ -126,7 +124,7 @@ def validate_artifact(name: str, data: dict) -> ValidationResult:
     """Valida `data` contra el schema correspondiente a `name`.
 
     Args:
-        name: Nombre del artifact (ej: "plan.json", "PROJECT_MAP.json").
+        name: Nombre del artifact (ej: "plan.json", "ROUTING_MAP.json").
         data: Contenido ya parseado del artifact.
 
     Returns:

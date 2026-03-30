@@ -1,4 +1,4 @@
-"""Tests para analyzers/services.py — genera SERVICES_MAP.json."""
+"""Tests para analyzers/services.py."""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -33,49 +33,42 @@ def test_run_returns_required_keys(tmp_path):
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
     result = run(root, files, stack)
-    assert "integrations" in result
+    assert result["domain"] == "services"
+    assert "candidates" in result
 
 
-def test_detects_twilio(tmp_path):
+def test_sdk_imports_become_seed_candidates(tmp_path):
     root, _ = _make_project_with_services(tmp_path)
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
     result = run(root, files, stack)
-    names = [i["name"] for i in result["integrations"]]
-    assert "Twilio" in names
+    twilio = next(
+        candidate
+        for candidate in result["candidates"]
+        if candidate["path"] == "services/twilio_service.py"
+    )
+    assert twilio["open_priority"] == "seed"
+    assert "integration:Twilio" in twilio["contracts"]
+    assert "env:TWILIO_ACCOUNT_SID" in twilio["contracts"]
 
 
-def test_integration_has_type(tmp_path):
+def test_env_only_service_file_becomes_review_candidate(tmp_path):
     root, _ = _make_project_with_services(tmp_path)
+    (root / "services" / "mail_adapter.py").write_text(
+        "MAIL_API_KEY = os.environ.get('MAIL_API_KEY')\n"
+        "def send_mail():\n"
+        "    pass\n"
+    )
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
     result = run(root, files, stack)
-    for integration in result["integrations"]:
-        assert "type" in integration
-        assert integration["type"] in (
-            "sms", "email", "payments", "storage", "cache", "queue", "monitoring", "other"
-        )
-
-
-def test_integration_has_required_fields(tmp_path):
-    """Each integration entry must have name, type, files, functions, env_vars."""
-    root, _ = _make_project_with_services(tmp_path)
-    files = core.walk_repo(root)
-    stack = core.detect_stack(root)
-    result = run(root, files, stack)
-    for integration in result["integrations"]:
-        for key in ("name", "type", "files", "functions", "env_vars"):
-            assert key in integration, f"integration missing '{key}': {integration}"
-
-
-def test_integration_has_env_vars(tmp_path):
-    root, _ = _make_project_with_services(tmp_path)
-    files = core.walk_repo(root)
-    stack = core.detect_stack(root)
-    result = run(root, files, stack)
-    twilio = next((i for i in result["integrations"] if i["name"] == "Twilio"), None)
-    assert twilio is not None, "Twilio integration not found"
-    assert "TWILIO_ACCOUNT_SID" in twilio.get("env_vars", [])
+    mail_adapter = next(
+        candidate
+        for candidate in result["candidates"]
+        if candidate["path"] == "services/mail_adapter.py"
+    )
+    assert mail_adapter["open_priority"] == "review"
+    assert "env:MAIL_API_KEY" in mail_adapter["contracts"]
 
 
 def test_empty_project_returns_empty_integrations(tmp_path):
@@ -85,7 +78,7 @@ def test_empty_project_returns_empty_integrations(tmp_path):
     files = core.walk_repo(tmp_path)
     stack = core.detect_stack(tmp_path)
     result = run(tmp_path, files, stack)
-    assert result == {"integrations": []}
+    assert result == {"domain": "services", "candidates": []}
 
 
 def test_services_map_integrations_have_test_file(tmp_path):
@@ -104,5 +97,5 @@ def test_services_map_integrations_have_test_file(tmp_path):
     stack = detect_stack(tmp_path)
     result = run(tmp_path, files, stack)
 
-    for integration in result["integrations"]:
-        assert "test_file" in integration, f"integración {integration['name']} no tiene test_file"
+    for candidate in result["candidates"]:
+        assert "test_files" in candidate, f"candidato {candidate['path']} no tiene test_files"

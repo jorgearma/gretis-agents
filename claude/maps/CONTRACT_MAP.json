@@ -5,31 +5,22 @@
   "env_vars": [
     {
       "name": "REDIS_URL",
-      "used_in": [
-        "claude/hooks/tests/test_analyzer_services.py"
-      ],
-      "breaking_if_missing": true
+      "owner": "claude/hooks/tests/test_analyzer_services.py"
     },
     {
       "name": "STRIPE_SECRET_KEY",
-      "used_in": [
-        "claude/hooks/tests/test_analyzer_services.py"
-      ],
-      "breaking_if_missing": true
+      "owner": "claude/hooks/tests/test_analyzer_services.py"
     },
     {
       "name": "TWILIO_ACCOUNT_SID",
-      "used_in": [
-        "claude/hooks/tests/test_analyzer_services.py"
-      ],
-      "breaking_if_missing": true
+      "owner": "claude/hooks/tests/test_analyzer_services.py"
     }
   ],
   "legacy_contracts": [
     {
       "description": "o # LEGACY: en el código.\"\"\"",
       "file": "claude/hooks/analyzers/contract.py",
-      "line": 269
+      "line": 253
     }
   ]
 }

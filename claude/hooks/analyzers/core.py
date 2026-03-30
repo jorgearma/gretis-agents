@@ -1268,7 +1268,7 @@ def build_module_entry(
     cochange: dict[str, list[str]],
     dep_forward: dict[str, list[str]] | None = None,
 ) -> dict:
-    """Construye el objeto enriquecido para un módulo en PROJECT_MAP.json."""
+    """Construye el objeto enriquecido para un módulo de análisis."""
     return {
         "path":            fi.rel_path,
         "purpose":         infer_purpose(fi),
@@ -1283,7 +1283,7 @@ def build_query_entry(
     all_files: list[FileInfo],
     cochange: dict[str, list[str]],
 ) -> dict:
-    """Objeto mínimo para query-reader: path, role, functions, query_examples, test_file."""
+    """Objeto mínimo legible para resumir un archivo con queries."""
     return {
         "path":           fi.rel_path,
         "role":           fi.role,

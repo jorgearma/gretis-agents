@@ -10,14 +10,11 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["method", "route", "full_path", "owner_paths", "symbols", "tests", "breaking_if_changed"],
+        "required": ["method", "full_path", "owner", "breaking_if_changed"],
         "properties": {
           "method":              { "type": "string" },
-          "route":               { "type": "string" },
           "full_path":           { "type": "string" },
-          "owner_paths":         { "type": "array", "items": { "type": "string" } },
-          "symbols":             { "type": "array", "items": { "type": "string" } },
-          "tests":               { "type": "array", "items": { "type": "string" } },
+          "owner":               { "type": "string" },
           "breaking_if_changed": { "type": "boolean" }
         }
       }
@@ -43,11 +40,10 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "used_in"],
+        "required": ["name"],
         "properties": {
-          "name":               { "type": "string" },
-          "used_in":            { "type": "array", "items": { "type": "string" } },
-          "breaking_if_missing":{ "type": "boolean" }
+          "name":  { "type": "string" },
+          "owner": { "type": ["string", "null"] }
         }
       }
     },

@@ -17,20 +17,17 @@ MAPs generados:
   dependency  → DEPENDENCY_MAP.json       (grafo de dependencias bidireccional)
 
 Uso:
-    python3 .claude/hooks/analyze-repo.py [--root DIR] [--maps routing,api,...] [--force]
+    python3 .claude/hooks/analyze-repo.py [--root DIR] [--maps routing,api,...]
 """
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
 HOOKS_DIR  = Path(__file__).resolve().parent
 sys.path.insert(0, str(HOOKS_DIR))
-
-APPROVAL_PATH = PLUGIN_DIR / "runtime" / "map-scan-approval.json"
 
 from analyzers import core
 from analyzers.routing     import run as run_routing
@@ -63,37 +60,17 @@ DEFAULT_MAPS = "routing,api,data,ui,services,jobs,contract,test,data_model,depen
 # dependency al final (necesita todos los archivos procesados).
 GEN_ORDER = ["routing", "api", "data", "ui", "services", "jobs", "contract", "test", "data_model", "dependency"]
 
-
-def check_approval(force: bool) -> None:
-    if force:
-        return
-    if not APPROVAL_PATH.exists():
-        raise SystemExit(
-            "Aprobación requerida. Ejecuta:\n"
-            "  python3 .claude/hooks/approve-map-scan.py approve --by 'nombre'"
-        )
-    data = json.loads(APPROVAL_PATH.read_text(encoding="utf-8"))
-    if data.get("status") != "approved":
-        raise SystemExit(
-            f"Estado de aprobación: {data.get('status', 'desconocido')}. "
-            "Ejecuta approve-map-scan.py approve primero."
-        )
-
-
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Genera MAP.json para el plugin de Claude.")
     p.add_argument("--root", default=None,
                    help="Raíz del repositorio a analizar (default: directorio que contiene .claude/)")
     p.add_argument("--maps", default=DEFAULT_MAPS,
                    help="MAPs a generar, coma-separados.")
-    p.add_argument("--force", action="store_true",
-                   help="Omitir verificación de aprobación")
     return p.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    check_approval(args.force)
 
     if args.root:
         root = Path(args.root).resolve()
@@ -134,17 +111,6 @@ def main() -> int:
         print(f"  Generando {output_name}...")
         ANALYZER_MAP[map_name](root, files, stack)
         print(f"  OK {output_name}")
-
-    # Reset aprobación
-    if not args.force and APPROVAL_PATH.exists():
-        approval = json.loads(APPROVAL_PATH.read_text(encoding="utf-8"))
-        approval["status"] = "pending"
-        approval["approved_by"] = ""
-        APPROVAL_PATH.write_text(
-            json.dumps(approval, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-        print("  Aprobación reseteada.")
 
     print(f"\n  {len(maps_to_gen)} MAP(s) generados correctamente.")
     return 0

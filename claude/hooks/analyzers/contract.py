@@ -55,7 +55,7 @@ AUTH_DECORATORS = frozenset({
 def _extract_endpoints(files: list[FileInfo], root: Path) -> list[dict]:
     """
     Extrae todos los endpoints HTTP del proyecto.
-    Cada endpoint: method, route, full_path, owner_paths[], symbols[], tests[], breaking_if_changed
+    Cada endpoint: method, full_path, owner, breaking_if_changed
     """
     # 1. Obtener prefijos de blueprints desde archivos de registro
     bp_prefixes: dict[str, str] = {}  # bp_name → url_prefix
@@ -118,11 +118,8 @@ def _extract_endpoints(files: list[FileInfo], root: Path) -> list[dict]:
                 for method in (methods or ["GET"]):
                     endpoints.append({
                         "method": method,
-                        "route": route_path,
                         "full_path": full,
-                        "owner_paths": [fi.rel_path],
-                        "symbols": [func],
-                        "tests": [test] if test else [],
+                        "owner": fi.rel_path,
                         "breaking_if_changed": True,
                     })
             continue
@@ -164,36 +161,24 @@ def _extract_endpoints(files: list[FileInfo], root: Path) -> list[dict]:
             prefix = bp_info.get("prefix") or bp_prefixes.get(bp_info.get("name", ""), "")
             full = (prefix.rstrip("/") + "/" + route_path.lstrip("/")).rstrip("/") or route_path
 
-            test = find_test_file(fi.rel_path, files)
             for method in methods:
                 endpoints.append({
                     "method": method,
-                    "route": route_path,
                     "full_path": full,
-                    "owner_paths": [fi.rel_path],
-                    "symbols": [node.name],
-                    "tests": [test] if test else [],
+                    "owner": fi.rel_path,
                     "breaking_if_changed": True,
                 })
 
-    # Deduplicar por (method, full_path) — fusionar owner_paths y symbols
-    merged: dict[tuple[str, str], dict] = {}
+    # Deduplicar por (method, full_path)
+    seen: set[tuple[str, str]] = set()
+    unique: list[dict] = []
     for ep in endpoints:
         key = (ep["method"], ep["full_path"])
-        if key in merged:
-            for p in ep["owner_paths"]:
-                if p not in merged[key]["owner_paths"]:
-                    merged[key]["owner_paths"].append(p)
-            for s in ep["symbols"]:
-                if s not in merged[key]["symbols"]:
-                    merged[key]["symbols"].append(s)
-            for t in ep["tests"]:
-                if t and t not in merged[key]["tests"]:
-                    merged[key]["tests"].append(t)
-        else:
-            merged[key] = ep
+        if key not in seen:
+            seen.add(key)
+            unique.append(ep)
 
-    return list(merged.values())
+    return unique
 
 
 # ─── Extracción de schemas ────────────────────────────────────────────────────
@@ -256,8 +241,7 @@ def _extract_env_vars(files: list[FileInfo], root: Path) -> list[dict]:
     return [
         {
             "name": var,
-            "used_in": flist,
-            "breaking_if_missing": True,
+            "owner": flist[0] if flist else None,
         }
         for var, flist in sorted(var_to_files.items())
     ]

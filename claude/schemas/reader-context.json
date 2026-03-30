@@ -20,8 +20,7 @@
       "minItems": 1,
       "items": {
         "type": "string",
-        "enum": ["project-reader", "db-reader", "query-reader", "ui-reader",
-                 "api-reader", "services-reader", "jobs-reader"]
+        "enum": ["api", "data", "ui", "services", "jobs"]
       }
     },
     "maps_used": {
@@ -29,8 +28,18 @@
       "minItems": 1,
       "items": {
         "type": "string",
-        "enum": ["PROJECT_MAP.json", "DB_MAP.json", "QUERY_MAP.json", "UI_MAP.json",
-                 "API_MAP.json", "SERVICES_MAP.json", "JOBS_MAP.json"]
+        "enum": [
+          "ROUTING_MAP.json",
+          "DOMAIN_INDEX_api.json",
+          "DOMAIN_INDEX_data.json",
+          "DOMAIN_INDEX_ui.json",
+          "DOMAIN_INDEX_services.json",
+          "DOMAIN_INDEX_jobs.json",
+          "CONTRACT_MAP.json",
+          "DATA_MODEL_MAP.json",
+          "DEPENDENCY_MAP.json",
+          "TEST_MAP.json"
+        ]
       }
     },
     "files_to_open": {
@@ -59,8 +68,62 @@
     },
     "dependency_graph": {
       "type": "object",
-      "description": "Grafo forward de dependencias: clave es un archivo, valor es array de archivos que importa/usa. A -> [B,C] significa A depende de B y C.",
+      "description": "Grafo forward de dependencias: clave es un archivo, valor es array de archivos que importa/usa. A -> [B,C] significa A depende de B y C. Solo incluye arcos de seeds y sus deps directas (hubs excluidos).",
       "additionalProperties": { "type": "array", "items": { "type": "string" } }
+    },
+    "_subgraph_added": {
+      "type": "array",
+      "description": "Paths añadidos por build-subgraph.py en la última ejecución. Uso interno: permite limpiar entradas stale al re-correr el script (idempotencia).",
+      "items": { "type": "string" }
+    },
+    "dependency_context": {
+      "type": "object",
+      "description": "Resumen pre-digerido para el planner: callers de seeds (riesgo de rotura), deps directas de seeds, hubs no expandidos y ciclos relevantes.",
+      "additionalProperties": false,
+      "properties": {
+        "seeds": {
+          "type": "array",
+          "description": "Archivos semilla del BFS (coinciden con files_to_open).",
+          "items": { "type": "string" }
+        },
+        "callers_of_seeds": {
+          "type": "array",
+          "description": "Archivos que importan directamente algún seed. Riesgo: pueden romperse si cambia la API pública del seed.",
+          "items": {
+            "type": "object",
+            "required": ["file", "calls_into", "risk"],
+            "additionalProperties": false,
+            "properties": {
+              "file":       { "type": "string" },
+              "calls_into": { "type": "string" },
+              "risk":       { "type": "string" }
+            }
+          }
+        },
+        "seed_dependencies": {
+          "type": "array",
+          "description": "Archivos importados directamente por los seeds. Contexto de implementación: el planner debe entender qué usan los seeds.",
+          "items": {
+            "type": "object",
+            "required": ["file", "used_by"],
+            "additionalProperties": false,
+            "properties": {
+              "file":    { "type": "string" },
+              "used_by": {}
+            }
+          }
+        },
+        "hubs_not_expanded": {
+          "type": "array",
+          "description": "Nodos con out-degree alto o __init__.py: importados por seeds pero sus vecinos no se expanden para evitar ruido.",
+          "items": { "type": "string" }
+        },
+        "cycles_involving_seeds": {
+          "type": "array",
+          "description": "Ciclos de importación que incluyen algún seed. Dato crítico para evitar imports circulares al modificar.",
+          "items": { "type": "string" }
+        }
+      }
     }
   },
   "$defs": {

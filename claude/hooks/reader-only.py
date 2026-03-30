@@ -10,6 +10,10 @@ import sys
 import time
 from pathlib import Path
 
+# Importar skill loader
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
+from skill_loader import build_system_prompt
+
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = PLUGIN_DIR.parent
 RUNTIME = PLUGIN_DIR / "runtime"
@@ -36,17 +40,12 @@ ALLOWED_MAPS = [
 
 
 def load_reader_prompt() -> str | None:
-    """Lee reader.md y quita el frontmatter YAML (--- ... ---)."""
+    """Carga reader.md + sus skills y construye el system prompt completo."""
     try:
-        content = READER_AGENT.read_text(encoding="utf-8")
-    except OSError:
+        return build_system_prompt(READER_AGENT)
+    except Exception as e:
+        print(f"Error cargando prompt: {e}")
         return None
-    # Quitar frontmatter YAML
-    if content.startswith("---"):
-        end = content.find("---", 3)
-        if end != -1:
-            content = content[end + 3:].lstrip("\n")
-    return content
 
 # Precios por modelo (USD por millón de tokens)
 MODEL_PRICES = {

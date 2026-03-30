@@ -7,11 +7,17 @@ Corre entre el reader y el planner. Lee:
   - .claude/maps/DEPENDENCY_MAP.json       (grafo resuelto de imports reales)
 
 Escribe de vuelta en reader-context.json:
-  - dependency_graph: subgrafo BFS desde los seeds (forward depth-2, reverse depth-1)
-  - files_to_review: expandido con nodos descubiertos que aún no estaban listados
+  - dependency_graph: subgrafo filtrado (arcos de seeds + deps directas, sin hubs)
+  - dependency_context: resumen pre-digerido — callers, deps directas, hubs omitidos
+  - files_to_review: expandido con nodos relevantes y hints descriptivos
 
-El planner recibe así el contexto exacto: qué usan los seeds y quién los consume,
-sin leer el repositorio completo y sin que el reader LLM infiera conexiones.
+Estrategia anti-ruido:
+  - Hubs (out-degree >= HUB_MIN_DEGREE o __init__.py): se anotan pero NO se expanden.
+    Esto evita que un __init__.py agregador llene el contexto con módulos irrelevantes.
+  - Cada nodo descubierto recibe un hint que explica su relación concreta con el seed:
+    quién lo llama, de quién depende, y el riesgo real si se modifica.
+  - dependency_context organiza la info en callers (riesgo de rotura) y deps (contexto
+    de implementación) para que el planner no tenga que inferirlo del grafo crudo.
 """
 
 from __future__ import annotations
@@ -19,7 +25,9 @@ from __future__ import annotations
 import json
 import sys
 from collections import deque
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 PLUGIN_DIR = Path(__file__).resolve().parents[1]
 RUNTIME    = PLUGIN_DIR / "runtime"
@@ -33,31 +41,147 @@ DEPENDENCY_MAP_PATH = MAPS_DIR / "DEPENDENCY_MAP.json"
 FORWARD_DEPTH = 2
 REVERSE_DEPTH = 1
 
-# Roles que se excluyen de files_to_review (mucho ruido, poco valor)
+# Nodos con out-degree >= HUB_MIN_DEGREE en el grafo forward son "hubs":
+# se incluyen como aristas pero sus vecinos NO se expanden (evita explosión).
+# También: cualquier __init__.py se trata como hub.
+HUB_MIN_DEGREE = 5
+
+# Roles que se excluyen de files_to_review (poco valor, mucho ruido)
 _SKIP_ROLES = frozenset({"test", "migration", "config", "other", "entry_point"})
 
 
-def bfs(graph: dict[str, list[str]], seeds: set[str], depth: int) -> dict[str, list[str]]:
+@dataclass
+class NodeOrigin:
+    """Cómo fue descubierto un nodo en el BFS."""
+    seed: str
+    direction: str        # "forward" | "reverse"
+    depth: int
+    via: Optional[str]    # nodo intermedio si depth > 1, None si depth <= 1
+
+
+def is_hub(path: str, forward: dict[str, list[str]]) -> bool:
+    """Un nodo es hub si es __init__.py o tiene demasiados vecinos forward."""
+    if Path(path).name == "__init__.py":
+        return True
+    return len(forward.get(path, [])) >= HUB_MIN_DEGREE
+
+
+def bfs_forward(
+    forward: dict[str, list[str]],
+    seeds: set[str],
+    depth: int,
+) -> tuple[dict[str, list[str]], dict[str, NodeOrigin], list[str]]:
     """
-    BFS en el grafo hasta `depth` saltos desde los seeds.
-    Retorna el subgrafo {src: [vecinos]} con solo las aristas recorridas.
+    BFS forward desde seeds hasta `depth` saltos.
+    Detiene la expansión en hubs: los registra pero no visita sus vecinos.
+
+    Returns:
+      subgraph   — {src: [vecinos]} con todas las aristas recorridas
+      origins    — {node: NodeOrigin} para cada nodo no-seed descubierto
+      hubs_found — rutas de nodos identificados como hubs
     """
     subgraph: dict[str, list[str]] = {}
+    origins: dict[str, NodeOrigin] = {}
+    hubs_found: list[str] = []
     visited: set[str] = set(seeds)
-    queue: deque[tuple[str, int]] = deque((seed, 0) for seed in seeds)
+
+    # (node, level, via_node, origin_seed)
+    queue: deque[tuple[str, int, Optional[str], str]] = deque()
+    for seed in seeds:
+        queue.append((seed, 0, None, seed))
 
     while queue:
-        node, level = queue.popleft()
-        neighbors = graph.get(node, [])
+        node, level, via, seed = queue.popleft()
+        neighbors = forward.get(node, [])
         if neighbors:
             subgraph[node] = neighbors
+
+        # Registrar origen para nodos no-seed
+        if node not in seeds and node not in origins:
+            origins[node] = NodeOrigin(
+                seed=seed,
+                direction="forward",
+                depth=level,
+                via=via,
+            )
+
+        # En hubs: anotar pero no expandir
+        if node not in seeds and is_hub(node, forward):
+            if node not in hubs_found:
+                hubs_found.append(node)
+            continue
+
         if level < depth:
+            # via para el siguiente nivel: si estamos en nivel 0 no hay intermedio
+            next_via = node if level >= 1 else None
             for neighbor in neighbors:
                 if neighbor not in visited:
                     visited.add(neighbor)
-                    queue.append((neighbor, level + 1))
+                    queue.append((neighbor, level + 1, next_via, seed))
 
-    return subgraph
+    return subgraph, origins, hubs_found
+
+
+def bfs_reverse(
+    reverse: dict[str, list[str]],
+    seeds: set[str],
+    depth: int,
+) -> tuple[dict[str, NodeOrigin], dict[str, str]]:
+    """
+    BFS reverse desde seeds hasta `depth` saltos.
+
+    Returns:
+      origins   — {caller: NodeOrigin}
+      caller_of — {caller: seed_que_llama} solo para callers directos (depth=1)
+    """
+    origins: dict[str, NodeOrigin] = {}
+    caller_of: dict[str, str] = {}
+    visited: set[str] = set(seeds)
+    queue: deque[tuple[str, int, str]] = deque()
+
+    for seed in seeds:
+        queue.append((seed, 0, seed))
+
+    while queue:
+        node, level, seed = queue.popleft()
+        if level < depth:
+            for caller in reverse.get(node, []):
+                if caller not in visited:
+                    visited.add(caller)
+                    origins[caller] = NodeOrigin(
+                        seed=seed,
+                        direction="reverse",
+                        depth=level + 1,
+                        via=None,
+                    )
+                    if level == 0:
+                        caller_of[caller] = seed
+                    queue.append((caller, level + 1, seed))
+
+    return origins, caller_of
+
+
+def make_hint(path: str, origin: NodeOrigin) -> str:
+    """Hint descriptivo que explica la relación concreta del archivo con el seed."""
+    seed_name = Path(origin.seed).name
+    seed_stem = Path(origin.seed).stem
+
+    if origin.direction == "reverse":
+        return (
+            f"Importa directamente {seed_name} — "
+            f"revisar si cambia la firma pública de {seed_stem}"
+        )
+    # forward
+    if origin.depth == 1:
+        return (
+            f"Depende directamente de {seed_name} — "
+            f"{seed_stem} lo importa, contexto de implementación"
+        )
+    via_name = Path(origin.via).name if origin.via else "?"
+    return (
+        f"Dep. transitiva de {seed_name} via {via_name} — "
+        f"revisar solo si se modifica {Path(origin.via).stem if origin.via else via_name}"
+    )
 
 
 def main() -> int:
@@ -86,6 +210,7 @@ def main() -> int:
     forward: dict[str, list[str]] = dep_map.get("forward", {})
     reverse: dict[str, list[str]] = dep_map.get("reverse", {})
     nodes:   dict[str, dict]      = dep_map.get("nodes", {})
+    cycles:  list[str]            = dep_map.get("cycles", [])
 
     # ── Seeds desde files_to_open ──────────────────────────────────────────────
     seeds = {item["path"] for item in ctx.get("files_to_open", []) if "path" in item}
@@ -94,26 +219,78 @@ def main() -> int:
         return 0
 
     # ── BFS ────────────────────────────────────────────────────────────────────
-    fwd_subgraph = bfs(forward, seeds, FORWARD_DEPTH)   # qué usan los seeds
-    rev_subgraph = bfs(reverse, seeds, REVERSE_DEPTH)   # quién los consume
+    fwd_subgraph, fwd_origins, hubs_found = bfs_forward(forward, seeds, FORWARD_DEPTH)
+    rev_origins, caller_of = bfs_reverse(reverse, seeds, REVERSE_DEPTH)
 
-    # ── Construir dependency_graph (forward) ───────────────────────────────────
-    # Formato del schema: A → [B,C] significa "A importa/usa B y C"
+    # ── Construir dependency_graph (filtrado) ──────────────────────────────────
+    # Solo incluye arcos relevantes: seeds y sus deps directas (no hubs), más callers.
+    # Los arcos de hubs quedan en dependency_context.hubs_not_expanded.
     dependency_graph: dict[str, list[str]] = {}
 
-    # Aristas forward directas y de nivel-2
     for src, deps in fwd_subgraph.items():
-        dependency_graph[src] = deps
+        origin = fwd_origins.get(src)
+        if src in seeds:
+            # Seed: incluir todos sus arcos directos (el planner los necesita completos)
+            dependency_graph[src] = deps
+        elif origin and origin.depth == 1 and src not in hubs_found:
+            # Dep. directa no-hub: incluir sus arcos (contexto de implementación útil)
+            dependency_graph[src] = deps
+        # Hubs y depth>1: excluidos — su info va en dependency_context
 
-    # Callers DIRECTOS de los seeds (solo depth=0 del reverse BFS)
-    # Ignoramos callers de callers — solo quien llama directamente a un seed
-    direct_callers: set[str] = set()
-    for seed in seeds:
-        for caller in rev_subgraph.get(seed, []):
-            direct_callers.add(caller)
+    # Callers directos de seeds (reverse depth=1)
+    for caller, seed in caller_of.items():
+        if Path(caller).name != "__init__.py":
             existing = dependency_graph.setdefault(caller, [])
             if seed not in existing:
                 existing.append(seed)
+
+    # ── Construir dependency_context ──────────────────────────────────────────
+    # Resumen pre-digerido para el planner: no necesita inferir relaciones del grafo.
+
+    # Qué usan directamente los seeds (deps directas forward, excluyendo hubs)
+    seed_dep_map: dict[str, list[str]] = {}
+    for src, deps in fwd_subgraph.items():
+        if src in seeds:
+            for dep in deps:
+                seed_dep_map.setdefault(dep, []).append(src)
+
+    dependency_context: dict = {
+        "seeds": sorted(seeds),
+        "callers_of_seeds": [
+            {
+                "file": caller,
+                "calls_into": seed,
+                "risk": f"puede romper si cambia la firma pública de {Path(seed).stem}",
+            }
+            for caller, seed in sorted(caller_of.items())
+            if Path(caller).name != "__init__.py"
+        ],
+        "seed_dependencies": [
+            {
+                "file": dep,
+                "used_by": users if len(users) > 1 else users[0],
+            }
+            for dep, users in sorted(seed_dep_map.items())
+        ],
+        "hubs_not_expanded": sorted(hubs_found),
+    }
+
+    # Ciclos que involucran seeds (dato crítico para el planner)
+    seed_cycles = [c for c in cycles if any(s in c for s in seeds)]
+    if seed_cycles:
+        dependency_context["cycles_involving_seeds"] = seed_cycles
+
+    # ── Limpiar entradas previas de build-subgraph (idempotencia) ─────────────
+    # Dos estrategias combinadas para garantizar limpieza en cualquier escenario:
+    #   1. Por path exacto: usa _subgraph_added (tracking formal, desde esta versión).
+    #   2. Por hint pattern: limpia entradas del build-subgraph antiguo sin tracking.
+    # Las entradas del reader nunca tienen el hint genérico ni están en _subgraph_added.
+    prev_added: set[str] = set(ctx.pop("_subgraph_added", []))
+    ctx["files_to_review"] = [
+        f for f in ctx.get("files_to_review", [])
+        if f.get("path") not in prev_added
+        and not f.get("hint", "").startswith("Descubierto via grafo de dependencias")
+    ]
 
     # ── Descubrir nodos nuevos para files_to_review ────────────────────────────
     already_listed = (
@@ -121,19 +298,21 @@ def main() -> int:
         {item["path"] for item in ctx.get("files_to_review", [])}
     )
 
-    # Solo incluir: dependencias forward de los seeds + callers directos de los seeds
-    # Excluir __init__.py agregadores (hubs que conectan todo y generan ruido masivo)
-    all_connected: set[str] = set()
-    for deps in fwd_subgraph.values():
-        all_connected.update(deps)
-    for caller in direct_callers:
-        if not Path(caller).name == "__init__.py":
-            all_connected.add(caller)
+    all_origins: dict[str, NodeOrigin] = {**fwd_origins, **rev_origins}
 
     new_entries: list[dict] = []
-    for path in sorted(all_connected - seeds - already_listed):
+    for path in sorted(all_origins.keys()):
+        if path in already_listed or path in seeds:
+            continue
+
+        # Hubs: están en dependency_context.hubs_not_expanded, no en files_to_review
+        if path in hubs_found:
+            continue
+
+        origin = all_origins[path]
         node_meta = nodes.get(path, {})
-        role      = node_meta.get("role", "other")
+        role = node_meta.get("role", "other")
+
         if role in _SKIP_ROLES:
             continue
 
@@ -142,7 +321,7 @@ def main() -> int:
 
         entry: dict = {
             "path": path,
-            "hint": f"Descubierto via grafo de dependencias (role: {role})",
+            "hint": make_hint(path, origin),
             "test_file": None,
         }
         if top_symbols:
@@ -150,7 +329,9 @@ def main() -> int:
         new_entries.append(entry)
 
     # ── Escribir reader-context.json enriquecido ───────────────────────────────
-    ctx["dependency_graph"] = dependency_graph
+    ctx["dependency_graph"]   = dependency_graph
+    ctx["dependency_context"] = dependency_context
+    ctx["_subgraph_added"]    = [e["path"] for e in new_entries]
     if new_entries:
         ctx.setdefault("files_to_review", [])
         ctx["files_to_review"].extend(new_entries)
@@ -161,9 +342,14 @@ def main() -> int:
     )
 
     # ── Reporte ────────────────────────────────────────────────────────────────
-    n_edges = sum(len(v) for v in dependency_graph.values())
+    n_edges   = sum(len(v) for v in dependency_graph.values())
+    n_callers = len(dependency_context["callers_of_seeds"])
+    n_deps    = len(dependency_context["seed_dependencies"])
     print(f"  Subgrafo: {len(dependency_graph)} nodos, {n_edges} aristas "
           f"(fwd-depth={FORWARD_DEPTH}, rev-depth={REVERSE_DEPTH})")
+    print(f"  Callers de seeds: {n_callers}  |  Deps directas: {n_deps}")
+    if hubs_found:
+        print(f"  Hubs omitidos (no expandidos): {', '.join(Path(h).name for h in hubs_found)}")
     if new_entries:
         print(f"  Nodos nuevos en files_to_review: {len(new_entries)}")
 

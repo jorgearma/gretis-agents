@@ -13,110 +13,73 @@ Plugin base para Claude con agentes especializados, comandos reutilizables y con
 python3 claude/hooks/pre-commit.py
 
 # Validar un artefacto JSON contra su schema
-python3 claude/hooks/validate.py <nombre-artefacto>   # ej: plan, reader-context, result
+python3 claude/hooks/validate.py <nombre-artefacto>   # ej: plan, reader-context
 
-# Analizar repositorio y generar MAPs (requiere aprobacion previa)
-python3 claude/hooks/approve-map-scan.py approve --by "nombre"
-python3 claude/hooks/analyze-repo.py                        # analiza todo
-python3 claude/hooks/analyze-repo.py --maps project,db      # solo esos MAPs
-python3 claude/hooks/analyze-repo.py --root /otro/repo      # repo externo
-python3 claude/hooks/analyze-repo.py --force                # sin gate (testing)
+# Analizar repositorio y generar MAPs
+python3 claude/hooks/analyze-repo.py                         # todos los MAPs
+python3 claude/hooks/analyze-repo.py --maps routing,api,data # solo esos MAPs
+python3 claude/hooks/analyze-repo.py --root /otro/repo       # repo externo
 
-# Ciclo de planificacion (dos opciones, mismos JSONs de salida)
-# Opcion A — desde terminal (eficiente, cero tokens de orquestacion)
-python3 claude/hooks/run-cycle.py "descripcion de la tarea"
-python3 claude/hooks/run-cycle.py -v "tarea"              # verbose: comandos, JSONs, tiempos
-python3 claude/hooks/run-cycle.py --skip-reader "tarea"   # si reader-context.json ya existe
-python3 claude/hooks/run-cycle.py --dry-run "tarea"       # ver comandos sin ejecutar
-# Opcion B — desde Claude Code (conveniente, todo integrado)
+# Enriquecer reader-context.json con dependencias reales
+python3 claude/hooks/build-subgraph.py
+
+# Correr tests (requiere pytest y jsonschema)
+python3 -m pytest claude/hooks/tests/
+python3 -m pytest claude/hooks/tests/test_analyzer_api.py   # un solo test file
+
+# Ciclo manual desde Claude Code
 /start-cycle "descripcion de la tarea"
-
-# Ruta rapida para tareas simples (no necesita planner/writer)
-python3 claude/hooks/quick-execute.py "descripcion"       # evalua complejidad y despacha
-python3 claude/hooks/quick-execute.py "tarea" --force     # forzar aunque score >= 8
-python3 claude/hooks/quick-execute.py "tarea" --full-plan # derivar al flujo completo
-python3 claude/hooks/quick-execute.py --status            # ver quick-dispatch.json actual
-python3 claude/hooks/quick-execute.py "tarea" --dry-run
-
-# Gestion de aprobacion del plan
-python3 claude/hooks/approve-plan.py approve --by "nombre"
-python3 claude/hooks/approve-plan.py reject --by "nombre" --notes "motivo"
-python3 claude/hooks/approve-plan.py replanning             # devuelve al planner con warnings
-python3 claude/hooks/approve-plan.py reset
-
-# Ejecutar despacho (solo si el plan esta aprobado)
-python3 claude/hooks/execute-plan.py
-
-# Recuperar ciclo interrumpido
-python3 claude/hooks/recover-cycle.py status               # ver estado runtime sin modificar
-python3 claude/hooks/recover-cycle.py rollback --by "nombre"  # activar rollback_plan
-python3 claude/hooks/recover-cycle.py reset --by "nombre"     # limpiar ejecucion, conservar plan
-python3 claude/hooks/recover-cycle.py full-reset --by "nombre" # limpiar todo el runtime
-
-# Analisis de consumo de tokens por agente
-python3 claude/hooks/token-usage.py                        # resumen ultimas sesiones
-python3 claude/hooks/token-usage.py --days 7
-python3 claude/hooks/token-usage.py --session <uuid-prefix>
-python3 claude/hooks/token-usage.py --json
-python3 claude/hooks/token-usage.py --all                  # incluir sesiones sin agente identificado
 ```
 
 ## Arquitectura del flujo
 
-Pipeline secuencial con gate de aprobacion obligatorio:
+Pipeline manual recomendado:
 
 ```
-Usuario → Reader → Planner → Writer → [Aprobacion operador] → execute-plan.py → Frontend/Backend
-```
-
-Path rapido para tareas simples (sin overhead de planner):
-```
-Usuario → quick-execute.py → [auto-aprobacion] → Quick-Agent → (opcional) Reviewer
+Usuario → Reader → build-subgraph.py (opcional) → Planner → Writer → Ejecución manual
 ```
 
 ### Agentes, modelos y contratos
 
 | Agente | Modelo | Entrada | Salida |
 |--------|--------|---------|--------|
-| `reader` | claude-sonnet-4-6 | Peticion + MAPs | datos contextuales |
-| `planner` | claude-opus-4-6 | reader-context.json + codigo fuente (lectura quirurgica) | `plan.json` |
+| `reader` | claude-sonnet-4-6 | Peticion + MAPs | `reader-context.json` |
+| `planner` | claude-opus-4-6 | reader-context.json + código fuente (lectura quirúrgica) | `plan.json` |
 | `writer` | claude-sonnet-4-6 | plan.json | `execution-brief.json` + `execution-brief.md` |
 | `frontend` | — | execution-dispatch.json | `result.json["frontend"]` |
 | `backend` | — | execution-dispatch.json | `result.json["backend"]` |
-| `quick-agent` | — | quick-dispatch.json | cambios directos |
 
-### Lectura quirurgica del planner
+Cada agente tiene su prompt en `claude/agents/<nombre>.md` con frontmatter `model:` y reglas estrictas de qué puede leer/escribir.
 
-El `planner` (opus) no lee archivos completos. Estrategia para minimizar tokens:
-1. Usa `Grep` para localizar simbolos clave y obtener numeros de linea exactos.
-2. Lee solo las secciones relevantes (3 lineas antes/despues de cada bloque, fusionando secciones cercanas).
-3. Nunca lee archivos completos de >80 lineas salvo que sea el unico archivo del task.
+### Contratos JSON y runtime
 
-### Gate de aprobacion
-
-Ningun agente ejecutor (frontend/backend) puede actuar sin `operator-approval.json` con `status: "approved"`. `execute-plan.py` valida esto antes de generar `execution-dispatch.json`. Los agentes ejecutores verifican `selected_agents` en el dispatch para saber si deben actuar.
-
-`quick-execute.py` auto-aprueba el gate marcando `approved_by: "quick-execute (auto)"`.
-
-### Complejidad en quick-execute
-
-Score 0–10 calculado con factores aditivos (longitud de descripcion, keywords complejos como "implement/refactor/auth", multiples acciones, alcance masivo "all/every"). Umbrales:
-
-- **0–4:** Simple → fast track OK
-- **5–7:** Borderline → advierte pero ejecuta
-- **8+:** Complejo → bloquea y recomienda flujo completo (`--force` para saltarse el bloqueo)
-
-### Contratos JSON
-
-Todos los artefactos tienen schema en `claude/schemas/`. Los archivos en `claude/runtime/` son generados y sobreescritos en cada ciclo — no editar manualmente salvo `operator-approval.json` via hooks.
+- Todos los artefactos tienen schema en `claude/schemas/`.
+- Los archivos en `claude/runtime/` se generan y sobreescriben durante el flujo — edítalos a mano solo si estás depurando.
+- `plugin.json` en la raíz del plugin es el manifiesto; lista agentes, MAPs, schemas y rutas de runtime.
 
 ### Generacion de MAPs
 
-`analyze-repo.py` llama a `analyzers/core.py` una sola vez para escanear el repo y luego delega a 7 analizadores especializados (`project`, `db`, `query`, `ui`, `api`, `services`, `jobs`). Cada analizador escribe su `*_MAP.json` y `*_MAP.md` en `claude/maps/`. Para añadir un nuevo analizador: crear `claude/hooks/analyzers/<nombre>.py` con la interfaz `analyze(summary: ProjectSummary) -> dict` y registrarlo en `analyze-repo.py`.
+`analyze-repo.py` llama a `analyzers/core.py` una sola vez para escanear el repo y luego delega en los analizadores activos. Cada analizador escribe su mapa en `claude/maps/`. El orden importa: `routing` siempre primero, `dependency` siempre al final.
+
+Analizadores disponibles: `routing`, `api`, `data`, `ui`, `services`, `jobs`, `contract`, `test`, `data_model`, `dependency`.
+
+Para añadir un analizador nuevo: crea `claude/hooks/analyzers/<nombre>.py` con una función `run(files, plugin_dir)` y regístralo en `ANALYZER_MAP` de `analyze-repo.py`.
+
+### Lectura quirurgica del planner
+
+El planner (opus) usa una estrategia para minimizar tokens:
+1. Usa `Grep` para localizar símbolos clave y obtener números de línea exactos.
+2. Lee solo las secciones relevantes (3 líneas antes/después de cada bloque, fusionando secciones cercanas).
+3. Lee archivos completos solo si son `<= 2000` líneas; para los mayores, localiza primero con Grep.
+4. Nunca lee el mismo archivo dos veces.
+
+### Guards y hooks de agente
+
+Los archivos `guard-reader.py`, `guard-planner.py`, `guard-writer.py` y los `*-only.py` son hooks que refuerzan las restricciones de cada agente (qué puede leer, qué puede escribir). Son parte del contrato de seguridad del plugin.
 
 ## Instalacion en un proyecto nuevo
 
 1. Copia la carpeta `claude/` al proyecto destino como `.claude/`.
 2. Verifica que exista `.claude/plugin.json`.
-3. Rellena los `*_MAP.md` en `.claude/maps/` con el contexto real del proyecto (o usa `analyze-repo.py`).
-4. Ejecuta `python3 .claude/hooks/pre-commit.py` para validar la estructura.
+3. Genera o actualiza los mapas con `python3 .claude/hooks/analyze-repo.py`.
+4. Usa `python3 .claude/hooks/validate.py <artefacto>` para validar JSONs manualmente.

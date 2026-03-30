@@ -1,4 +1,4 @@
-"""Tests para analyzers/jobs.py — genera JOBS_MAP.json."""
+"""Tests para analyzers/jobs.py."""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -30,52 +30,64 @@ def test_run_returns_required_keys(tmp_path):
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
     result = run(root, files, stack)
-    assert "scheduler" in result
-    assert "jobs" in result
-    assert "queues" in result
+    assert result["domain"] == "jobs"
+    assert "candidates" in result
 
 
-def test_detects_celery_scheduler(tmp_path):
+def test_writes_domain_index_jobs(tmp_path):
     root, _ = _make_project_with_celery(tmp_path)
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
     result = run(root, files, stack)
-    assert result["scheduler"] == "celery"
+    assert result["domain"] == "jobs"
+    assert (root / ".claude" / "maps" / "DOMAIN_INDEX_jobs.json").exists()
 
 
-def test_detects_celery_tasks(tmp_path):
+def test_task_file_is_seed_candidate_with_job_contracts(tmp_path):
     root, _ = _make_project_with_celery(tmp_path)
     files = core.walk_repo(root)
     stack = core.detect_stack(root)
     result = run(root, files, stack)
-    job_fns = [j["function"] for j in result["jobs"]]
-    assert "enviar_notificacion" in job_fns, f"enviar_notificacion not found in {job_fns}"
-    assert "procesar_pago" in job_fns, f"procesar_pago not found in {job_fns}"
+    candidate = next(
+        candidate
+        for candidate in result["candidates"]
+        if candidate["path"] == "tasks.py"
+    )
+    assert candidate["open_priority"] == "seed"
+    assert "job:enviar_notificacion" in candidate["contracts"]
+    assert "job:procesar_pago" in candidate["contracts"]
+    assert "trigger:manual" in candidate["contracts"]
 
 
-def test_empty_project_returns_null_scheduler(tmp_path):
+def test_manual_job_files_are_review_candidates(tmp_path):
+    (tmp_path / "requirements.txt").write_text("celery==5.3.0\n")
+    (tmp_path / "cleanup_job.py").write_text(
+        "def run():\n"
+        "    return True\n"
+    )
+    (tmp_path / ".claude" / "maps").mkdir(parents=True)
+    files = core.walk_repo(tmp_path)
+    stack = core.detect_stack(tmp_path)
+
+    result = run(tmp_path, files, stack)
+
+    candidate = next(
+        candidate
+        for candidate in result["candidates"]
+        if candidate["path"] == "cleanup_job.py"
+    )
+    assert candidate["open_priority"] == "review"
+    assert "trigger:manual" in candidate["contracts"]
+
+
+def test_empty_project_returns_empty_candidates(tmp_path):
     (tmp_path / "main.py").write_text("print('hello')")
     maps_dir = tmp_path / ".claude" / "maps"
     maps_dir.mkdir(parents=True)
     files = core.walk_repo(tmp_path)
     stack = core.detect_stack(tmp_path)
     result = run(tmp_path, files, stack)
-    assert result == {"scheduler": None, "jobs": [], "queues": []}
-
-
-def test_job_has_required_fields(tmp_path):
-    root, _ = _make_project_with_celery(tmp_path)
-    files = core.walk_repo(root)
-    stack = core.detect_stack(root)
-    result = run(root, files, stack)
-    assert len(result["jobs"]) > 0, "Expected at least one job detected"
-    for job in result["jobs"]:
-        assert "file" in job
-        assert "function" in job
-        assert "trigger" in job
-        assert "schedule" in job
-        assert "description" in job
-        assert job["trigger"] in ("manual", "cron", "interval", "event", "startup")
+    assert result == {"domain": "jobs", "candidates": []}
 
 
 def test_jobs_map_jobs_have_test_file(tmp_path):
@@ -95,5 +107,5 @@ def test_jobs_map_jobs_have_test_file(tmp_path):
     stack = detect_stack(tmp_path)
     result = run(tmp_path, files, stack)
 
-    for job in result["jobs"]:
-        assert "test_file" in job, f"job {job['function']} no tiene test_file"
+    for candidate in result["candidates"]:
+        assert "test_files" in candidate, f"job {candidate['path']} no tiene test_files"
